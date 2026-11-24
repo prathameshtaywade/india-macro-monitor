@@ -190,5 +190,34 @@ test('incremental ratio explains itself instead of showing a number when deposit
   assert.strictEqual(p.textContent, 'Oct 2026');
 });
 
+// ---------- funding and pricing rows ----------
+test('net liquidity shows an amount plus a direction word, never a bare negative', () => {
+  const rows = [{ series: 'mmo_net_liq', period: '2026-11-19', label: '19 Nov 2026', date: '2026-11-19', value: -40000 },
+    { series: 'mmo_net_liq', period: '2026-11-20', label: '20 Nov 2026', date: '2026-11-20', value: -54474.74 }];
+  const { draws } = load({ observations: obs(rows), catalog: obs([]), snapshot: snapshot(5.5, 5.25) });
+  const v = el({ k: 'mmo_net_liq', part: 'value' }); draws.kpi(v);
+  assert.strictEqual(v.textContent, '₹54,475 crore');
+  const w = el(); draws['liq-dir'](w);
+  assert.strictEqual(w.textContent, 'Net absorption by RBI');
+});
+
+test('call-repo spread is shown in basis points', () => {
+  const rows = [{ series: 'mmo_call_spread', period: '2026-11-19', label: '19 Nov 2026', date: '2026-11-19', value: -10 },
+    { series: 'mmo_call_spread', period: '2026-11-20', label: '20 Nov 2026', date: '2026-11-20', value: -23 }];
+  const { draws } = load({ observations: obs(rows), catalog: obs([]), snapshot: snapshot(5.5, 5.25) });
+  const v = el({ k: 'mmo_call_spread', part: 'value' }); draws.kpi(v);
+  assert.strictEqual(v.textContent, '−23 bp');
+  const c = el({ k: 'mmo_call_spread', part: 'change' }); draws.kpi(c);
+  assert.strictEqual(c.textContent, '−13 bp vs 19 Nov 2026');
+});
+
+test('each pricing figure carries its own month', () => {
+  const rows = [monthRow('walr_fresh', '2026-09', 8.51), monthRow('mclr_1y_median', '2026-10', 8.55)];
+  const { draws } = load({ observations: obs(rows), catalog: obs([]), snapshot: snapshot(5.5, 5.25) });
+  const a = el({ k: 'walr_fresh', part: 'label' }), b = el({ k: 'mclr_1y_median', part: 'label' });
+  draws.kpi(a); draws.kpi(b);
+  assert.deepStrictEqual([a.textContent, b.textContent], ['Sep 2026', 'Oct 2026']);
+});
+
 if (failures) { console.log(`${failures} failed`); process.exit(1); }
 console.log('all render checks passed');

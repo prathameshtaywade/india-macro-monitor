@@ -7,7 +7,8 @@
   const parse = d3.utcParse('%Y-%m-%d');
   const MINUS = '−';
   const TOPIC = { 'Growth': 'growth', 'GVA by sector': 'growth', 'Prices': 'prices', 'Industry': 'industry',
-    'Monetary policy': 'policy', 'Rates & yields': 'rates', 'External': 'external', 'Banking': 'banking' };
+    'Monetary policy': 'policy', 'Rates & yields': 'rates', 'External': 'external', 'Banking': 'banking',
+    'Funding': 'funding', 'Pricing': 'funding' };
   const POLICY_NAMES = new Map([['repo', 'Policy Repo Rate'], ['sdf', 'Standing Deposit Facility Rate'],
     ['msf', 'Marginal Standing Facility Rate'], ['crr', 'Cash Reserve Ratio'], ['slr', 'Statutory Liquidity Ratio']]);
   const POLICY_CORRIDOR = ['repo', 'sdf', 'msf'];
@@ -26,7 +27,8 @@
     description: 'Last and previous observation of each series, rounded as shown on the page; change = last minus previous.',
     fn: (observations) => {
       const places = { gdp_growth_q: 1, gva_growth_q: 1, iip_growth: 1, forex_w: 1, forex_m: 1, scb_credit_yoy: 1, scb_dep_yoy: 1,
-        scb_gap: 2, scb_gap_3m: 2, scb_inc_cd_fytd: 1 };
+        scb_gap: 2, scb_gap_3m: 2, scb_inc_cd_fytd: 1, mmo_call_spread: 0, mmo_call_spread_5d: 0, mmo_net_liq: 2,
+        pricing_gap_fresh: 2 };
       const bySeries = {};
       for (const r of observations) {
         if (!isScheduled(r)) (bySeries[r.series] = bySeries[r.series] || []).push(r);
@@ -52,6 +54,8 @@
     const s = (Math.abs(v)).toFixed(p ?? 2), sign = v < 0 ? MINUS : '';
     if (unit === '%' || unit === '% p.a.') return sign + s + '%';
     if (unit === 'pp') return sign + s + ' pp';
+    if (unit === 'bp') return sign + Math.abs(v).toFixed(p ?? 0) + ' bp';
+    if (unit === '₹ crore') return sign + '₹' + Math.abs(v).toLocaleString('en-IN', { maximumFractionDigits: p ?? 0 }) + ' crore';
     if (unit === 'US$ bn') return sign + '$' + (+Math.abs(v)).toFixed(p ?? 1) + ' bn';
     if (unit && unit.startsWith('₹ per')) return sign + '₹' + s;
     if (unit === '₹ lakh crore') return sign + '₹' + (+Math.abs(v)).toFixed(p ?? 1) + ' lakh cr';
@@ -61,6 +65,8 @@
     if (unit === '%' || unit === '% p.a.') return d3.format('~r')(+v.toFixed(2)) + '%';
     if (unit === 'US$ bn') return '$' + d3.format(',~r')(v);
     if (unit === 'pp') return d3.format('~r')(+v.toFixed(2)) + ' pp';
+    if (unit === 'bp') return d3.format('~r')(+v.toFixed(1)) + ' bp';
+    if (unit === '₹ crore') return d3.format('~r')(+(v / 1e5).toFixed(2)) + ' L cr';
     return d3.format(',~r')(+v.toFixed(2));
   }
   function msg(text) { const p = document.createElement('p'); p.className = 'mm-muted'; p.textContent = text; return p; }
@@ -109,6 +115,13 @@
     brief: { unit: 'pp', zero: true, months: 12, dots: true, shade: REPORTING_MIX,
       aria: 'Line chart of credit growth minus deposit growth over the last 12 months, latest month and 3-month average', series: [
       ['scb_gap', 'Latest month'], ['scb_gap_3m', '3-month average']] },
+    spread: { unit: 'bp', zero: true, aria: 'Line chart of the call money rate minus the repo rate, daily and 5-trading-day average', series: [
+      ['mmo_call_spread', 'Daily'], ['mmo_call_spread_5d', '5-trading-day average']] },
+    liquidity: { unit: '₹ crore', zero: true, aria: 'Line chart of RBI net liquidity injection or absorption', series: [
+      ['mmo_net_liq', 'Net liquidity (+ injection, − absorption)']] },
+    pricing: { unit: '%', aria: 'Line chart of lending and deposit rates on fresh business and the outstanding book', series: [
+      ['walr_fresh', 'Lending rate, fresh loans'], ['wadtdr_fresh', 'Term-deposit rate, fresh'], ['walr_out', 'Lending rate, outstanding', { dash: true }],
+      ['wadtdr_out', 'Term-deposit rate, outstanding', { dash: true }], ['mclr_1y_median', '1-year MCLR, median', { muted: true }]] },
     banking: { unit: '%', zero: true, aria: 'Line chart of bank credit and deposit growth', series: [
       ['scb_credit_yoy', 'Bank credit'], ['scb_dep_yoy', 'Aggregate deposits']] },
   };
@@ -153,7 +166,7 @@
       const it = lg.append('span').attr('class', 'mm-lg');
       it.append('i').classed('dashed', s.dash).style('background', s.color).style('border-color', s.color);
       it.append('span').text(s.name);
-      it.append('b').text(fmt(s.last.v, cfg.unit, cfg.unit === 'US$ bn' ? 1 : 2));
+      it.append('b').text(fmt(s.last.v, cfg.unit, cfg.unit === 'US$ bn' ? 1 : cfg.unit === 'bp' || cfg.unit === '₹ crore' ? 0 : 2));
       it.append('span').attr('class', 'mm-muted').text(s.last.label);
     }
     const W = Math.max(260, el.clientWidth), H = 240;
@@ -197,8 +210,17 @@
     gX.select('.domain').style('stroke', 'var(--cds-chart-axis)');
     gX.selectAll('line').style('stroke', 'var(--cds-chart-axis)');
     for (const s of S) {
-      const line = d3.line().x((p) => x(p.d)).y((p) => y(p.v)).curve(s.step ? d3.curveStepAfter : d3.curveLinear);
-      gLines.append('path').attr('d', line(s.pts)).style('fill', 'none').style('stroke', s.color)
+      // Break the line where observations are missing for much longer than the series' usual spacing,
+      // so a gap in the source is not drawn as if values moved in a straight line across it.
+      let drawn = s.pts;
+      if (!s.step && s.pts.length > 2) {
+        const med = d3.median(d3.pairs(s.pts), ([a, b]) => b.d - a.d) || 0;
+        drawn = [];
+        s.pts.forEach((p, i) => { if (i && med && p.d - s.pts[i - 1].d > 3 * med) drawn.push({ d: p.d, v: null }); drawn.push(p); });
+      }
+      const line = d3.line().defined((p) => p.v != null).x((p) => x(p.d)).y((p) => y(p.v))
+        .curve(s.step ? d3.curveStepAfter : d3.curveLinear);
+      gLines.append('path').attr('d', line(drawn)).style('fill', 'none').style('stroke', s.color)
         .style('stroke-width', s.color.includes('muted') ? 1.5 : 2).style('stroke-dasharray', s.dash ? '5 3' : null)
         .style('stroke-linejoin', 'round');
       if (cfg.dots) {
@@ -234,7 +256,7 @@
           const row = tip.append('div');
           row.append('span').style('color', s.color).text('● ');
           row.append('span').text(s.name + ': ');
-          row.append('b').text(fmt(p.v, cfg.unit, cfg.unit === 'US$ bn' ? 1 : 2));
+          row.append('b').text(fmt(p.v, cfg.unit, cfg.unit === 'US$ bn' ? 1 : cfg.unit === 'bp' || cfg.unit === '₹ crore' ? 0 : 2));
           row.append('span').attr('class', 'mm-muted').text(' ' + (s.step ? 'from ' : '') + p.label);
         }
         rule.attr('x1', mx).attr('x2', mx).style('opacity', 1);
@@ -290,6 +312,9 @@
     repo: { unit: '%', p: 2 }, gsec10_w: { unit: '%', p: 2 }, forex_w: { unit: 'US$ bn', p: 1 },
     scb_credit_yoy: { unit: '%', p: 1 }, scb_dep_yoy: { unit: '%', p: 1 }, usdinr_w: { unit: '₹ per US$', p: 2 },
     scb_gap: { unit: 'pp', p: 2 }, scb_gap_3m: { unit: 'pp', p: 2 },
+    mmo_call_spread: { unit: 'bp', p: 0 }, mmo_call_spread_5d: { unit: 'bp', p: 0 }, mmo_net_liq: { unit: '₹ crore', p: 0, abs: true },
+    walr_fresh: { unit: '%', p: 2 }, wadtdr_fresh: { unit: '%', p: 2 }, walr_out: { unit: '%', p: 2 }, wadtdr_out: { unit: '%', p: 2 },
+    mclr_1y_median: { unit: '%', p: 2 }, pricing_gap_fresh: { unit: 'pp', p: 2 },
   };
   function latest(k) { const L = dash.data('latest'); return L.status === 'ok' ? L.data.find((r) => r.series === k) : null; }
   dash.draw('kpi', (el) => {
@@ -297,13 +322,14 @@
     const r = latest(k);
     el.classList.remove('is-flat');
     if (!r) { el.textContent = statusText(dash.data('latest').status); return; }
-    if (part === 'value') el.textContent = c.unit === 'US$ bn' ? r.value.toFixed(c.p) : fmt(r.value, c.unit, c.p);
+    if (part === 'value') el.textContent = c.unit === 'US$ bn' ? r.value.toFixed(c.p) : fmt(c.abs ? Math.abs(r.value) : r.value, c.unit, c.p);
     else if (part === 'label') el.textContent = r.label;
     else if (part === 'change') {
       if (r.change == null) { el.textContent = '—'; return; }
       const d = r.change, sign = d > 0 ? '+' : d < 0 ? MINUS : '±';
       const a = Math.abs(d).toFixed(c.p);
-      const amt = c.unit === '%' || c.unit === 'pp' ? a + ' pp' : c.unit === 'US$ bn' ? '$' + a + ' bn' : '₹' + a;
+      const amt = c.unit === '%' || c.unit === 'pp' ? a + ' pp' : c.unit === 'bp' ? a + ' bp' : c.unit === '₹ crore'
+        ? '₹' + Math.abs(d).toLocaleString('en-IN', { maximumFractionDigits: c.p }) + ' crore' : c.unit === 'US$ bn' ? '$' + a + ' bn' : '₹' + a;
       el.textContent = (k === 'repo' ? sign + amt + ', from ' + fmt(r.prev, '%', 2) + ' on ' : sign + amt + ' vs ') + r.prev_label;
       el.classList.add('is-flat');
     }
@@ -337,6 +363,12 @@
     let run = 1;
     for (let i = rows.length - 2; i >= 1 && step(i) === dir; i--) run++;
     el.textContent = (dir > 0 ? 'widened' : 'narrowed') + (run > 1 ? ` for the ${ORD(run)} month in a row` : '');
+  });
+
+  // Net liquidity is shown as an amount plus a word, so a negative number is never misread.
+  dash.draw('liq-dir', (el) => {
+    const r = latest('mmo_net_liq');
+    el.textContent = !r || r.value == null ? '—' : r.value < 0 ? 'Net absorption by RBI' : r.value > 0 ? 'Net injection by RBI' : 'Neutral';
   });
 
   dash.calc('inccd', {

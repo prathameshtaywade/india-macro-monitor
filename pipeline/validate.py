@@ -39,11 +39,11 @@ CORE = {  # id: minimum number of observations
 RANGES = {  # unit -> (min, max)
     "%": (-60, 120), "% p.a.": (0, 20), "US$ bn": (1, 3000), "₹ per US$": (10, 300), "₹ per €": (10, 400),
     "₹ lakh crore": (1, 2000), "Index (2024=100)": (50, 400), "Index (2022-23=100)": (30, 400),
-    "pp": (-60, 60),
+    "pp": (-60, 60), "bp": (-500, 500), "₹ crore": (-2e7, 2e7),
 }
 # Series whose plausible range differs from their unit's default.
 SERIES_RANGES = {"scb_inc_cd_fytd": (-1000, 1000)}
-STALE_DAYS = {"Weekly": 21, "Monthly": 75, "Monthly / fortnightly": 75, "Quarterly": 200, "Annual (FY)": 500}
+STALE_DAYS = {"Daily": 6, "Weekly": 21, "Monthly": 75, "Monthly / fortnightly": 75, "Quarterly": 200, "Annual (FY)": 500}
 SNAPSHOT_STALE_DAYS = 4
 
 
