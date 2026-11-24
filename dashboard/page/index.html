@@ -43,6 +43,8 @@
   .mm-row-btn { font: inherit; background: none; border: 0; padding: 0; color: var(--color-fg); text-decoration: underline; text-decoration-color: var(--color-border-line); text-underline-offset: 3px; cursor: pointer; text-align: left; }
   .mm-ex { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: var(--cds-gap-md); }
   @media (max-width: 760px) { .mm-ex { grid-template-columns: minmax(0, 1fr); } }
+  .mm-flag { border: 1px solid var(--color-warn); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); line-height: 1.5; max-width: 80ch; }
+  .mm-flag b { color: var(--color-warn); }
   .mm-dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px var(--cds-gap-md); font-size: var(--cds-font-size-caption); margin: 0; }
   .mm-dl dt { color: var(--color-fg-muted); } .mm-dl dd { margin: 0; overflow-wrap: anywhere; }
   .mm-dl a { color: var(--color-fg); }
@@ -61,6 +63,9 @@
     <p class="mm-take" id="takeaway">The RBI policy repo rate is <b class="mm-num" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</b> after a <span data-draw="repo-move">—</span> on <span data-draw="kpi" data-k="repo" data-part="label">—</span>. CPI inflation was <b class="mm-num" data-draw="kpi" data-k="cpi_infl_combined" data-part="value" data-source="latest" data-field="value" data-where="series=cpi_infl_combined">—</b> in <span data-draw="kpi" data-k="cpi_infl_combined" data-part="label">—</span>, <span data-draw="vs-target">—</span> the 4% inflation target, and real GDP grew <b class="mm-num" data-draw="kpi" data-k="gdp_growth_q" data-part="value" data-source="latest" data-field="value" data-where="series=gdp_growth_q">—</b> year on year in <span data-draw="kpi" data-k="gdp_growth_q" data-part="label">—</span>.</p>
     <p class="mm-cap">Official statistics from MoSPI (National Accounts, CPI, IIP) and the Reserve Bank of India (Handbook of Statistics, Weekly Statistical Supplement, policy statements). Data built <span data-draw="built" data-part="obs">—</span>. Each tile shows the latest observation and its change from the one before.</p>
   </header>
+
+  <span data-draw="policy-check"></span>
+  <p class="mm-flag" id="policy-flag" data-policy-flag hidden role="status"><b>Policy rates may be out of date.</b> RBI's website shows different rates from this dashboard's policy history: <span data-draw="policy-diff">—</span>. The history is updated by hand from the MPC resolution, so the headline repo rate and the policy chart may lag until that is done.</p>
 
   <section class="mm-kpis" id="headline" aria-label="Latest readings">
     <div class="mm-card" id="kpi-gdp"><span class="mm-kl">Real GDP growth, y/y</span><span class="mm-kv" data-draw="kpi" data-k="gdp_growth_q" data-part="value" data-source="latest" data-field="value" data-where="series=gdp_growth_q">—</span><span class="mm-kc" data-draw="kpi" data-k="gdp_growth_q" data-part="change" data-source="latest" data-field="change" data-where="series=gdp_growth_q">—</span><span class="mm-cap" data-draw="kpi" data-k="gdp_growth_q" data-part="label">—</span></div>

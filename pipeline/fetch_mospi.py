@@ -72,46 +72,69 @@ def get(endpoint, params):
             time.sleep(2 * (attempt + 1))
 
 
-def fetch_all(endpoint, params, limit=200):
-    rows, page = [], 1
+class IncompleteFetch(Exception):
+    """Raised when the API's paging does not add up; the caller must keep its previous file."""
+
+
+def fetch_all(endpoint, params, limit=200, getter=None):
+    """
+    Read every page. Fails (IncompleteFetch) unless all pages the API announced came back non-empty and,
+    when the API reports totalRecords, the row count matches it. A partial result never replaces cached data.
+    """
+    getter = getter or get
+    rows, page, pages, total = [], 1, None, None
     while True:
-        d = get(endpoint, dict(params, Format="JSON", limit=limit, page=page))
+        d = getter(endpoint, dict(params, Format="JSON", limit=limit, page=page))
+        if not isinstance(d, dict):
+            raise IncompleteFetch(f"page {page}: unexpected response")
+        if d.get("error") or d.get("success") is False:
+            raise IncompleteFetch(f"page {page}: {d.get('error') or d.get('message')}")
         data = d.get("data") or []
-        rows += data
         meta = d.get("meta_data") or {}
-        pages = meta.get("totalPages") or 1
-        if page >= pages or not data:
+        if pages is None:
+            pages = int(meta.get("totalPages") or 1)
+            total = meta.get("totalRecords")
+        if not data:
+            if page == 1 and pages <= 1 and not total:
+                return []                       # genuinely empty answer; main() treats it as a failure
+            raise IncompleteFetch(f"page {page} of {pages} came back empty")
+        rows += data
+        if page >= pages:
             break
         page += 1
+    if total is not None and int(total) != len(rows):
+        raise IncompleteFetch(f"got {len(rows)} rows, API reported {total}")
     return rows
 
 
-def main(names=None):
+def main(names=None, out_dir=None, getter=None):
     """Fetch each query; a failed query keeps its previous file and is reported. Exit 1 if any failed."""
-    os.makedirs(OUT, exist_ok=True)
+    out_dir = out_dir or OUT
+    os.makedirs(out_dir, exist_ok=True)
     failed = []
     for name, (ep, params) in QUERIES.items():
         if names and name not in names:
             continue
         try:
-            rows = fetch_all(ep, params, limit=100 if ep.endswith("getCPIData") else 200)
+            rows = fetch_all(ep, params, limit=100 if ep.endswith("getCPIData") else 200, getter=getter)
             if not rows:
                 raise ValueError("no rows returned")
         except Exception as e:
             failed.append(name)
             print(f"{name:20s} FAILED: {e} (keeping previous file if any)", file=sys.stderr)
             continue
-        tmp = os.path.join(OUT, name + ".json.tmp")
+        tmp = os.path.join(out_dir, name + ".json.tmp")
         with open(tmp, "w") as f:
             json.dump({"endpoint": BASE + ep, "params": params,
                        "fetched_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                        "rows": rows}, f)
-        os.replace(tmp, os.path.join(OUT, name + ".json"))
+        os.replace(tmp, os.path.join(out_dir, name + ".json"))
         print(f"{name:20s} {len(rows):6d} rows")
     if failed:
         print("Failed queries: " + ", ".join(failed), file=sys.stderr)
-        sys.exit(1)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:] or None)
+    sys.exit(main(sys.argv[1:] or None))

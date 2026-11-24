@@ -2,34 +2,44 @@
 """
 Merge a fresh output of pipeline/rbi_extract.js into data/raw/rbi_extract.json.
 
-  python3 pipeline/merge_rbi.py new_extract.json        (or '-' to read from stdin / a pasted clipboard)
+  python3 pipeline/merge_rbi.py new_extract.json        (or '-' to read stdin, e.g. `pbpaste | ... -`)
 
-Weekly/fortnightly WSS series (keys ending in _wss or _weekly) are unioned by date, new values winning,
-so a run that only lists the latest WSS issues adds to the history instead of replacing it.
-Handbook series and the policy list are replaced by the new extract when it has them (the Handbook is a
-complete table each year). A backup of the old file is written next to it.
+Weekly/fortnightly WSS series (keys ending in _wss or _weekly) hold [date, value, issueDate] points.
+Old and new points are combined and, for each date, the value from the NEWEST WSS issue wins, so re-running
+an older issue can never overwrite a revision published later. Handbook series and the policy list are
+replaced by the new extract when it has them (the Handbook is a complete table). A .bak copy is kept.
 """
 import json, os, shutil, sys
 
-ROOT = os.path.join(os.path.dirname(__file__), "..")
-PATH = os.path.join(ROOT, "data", "raw", "rbi_extract.json")
-src = sys.argv[1] if len(sys.argv) > 1 else "-"
-new = json.load(sys.stdin if src == "-" else open(src, encoding="utf-8"))
-old = json.load(open(PATH, encoding="utf-8"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from checks import is_weekly_key, latest_revision  # noqa: E402
 
-out = dict(old)
-for k, v in new.items():
-    if k == "provenance":
-        out[k] = {**old.get(k, {}), **v}
-    elif k.endswith("_wss") or k.endswith("_weekly"):
-        merged = {d: x for d, x in old.get(k, [])}
-        merged.update({d: x for d, x in v if d and x is not None})
-        out[k] = [[d, merged[d]] for d in sorted(merged)]
-    elif isinstance(v, list) and v:
-        out[k] = v
+PATH = os.path.join(os.path.dirname(__file__), "..", "data", "raw", "rbi_extract.json")
 
-shutil.copy(PATH, PATH + ".bak")
-json.dump(out, open(PATH, "w", encoding="utf-8"), separators=(",", ":"), ensure_ascii=False)
-for k in sorted(out):
-    if isinstance(out[k], list) and out[k]:
-        print(f"{k:16s} {len(out[k]):4d} rows, last {out[k][-1][0]}")
+
+def merge(old, new):
+    out = dict(old)
+    for k, v in new.items():
+        if k == "provenance":
+            out[k] = {**old.get(k, {}), **v}
+        elif is_weekly_key(k):
+            out[k] = latest_revision(old.get(k, []), v)
+        elif isinstance(v, list) and v:
+            out[k] = v
+    return out
+
+
+def main(src, path=PATH):
+    new = json.load(sys.stdin if src == "-" else open(src, encoding="utf-8"))
+    old = json.load(open(path, encoding="utf-8"))
+    out = merge(old, new)
+    shutil.copy(path, path + ".bak")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(out, f, separators=(",", ":"), ensure_ascii=False)
+    for k in sorted(out):
+        if isinstance(out[k], list) and out[k]:
+            print(f"{k:16s} {len(out[k]):4d} rows, last {out[k][-1][0]}")
+
+
+if __name__ == "__main__":
+    main(sys.argv[1] if len(sys.argv) > 1 else "-")

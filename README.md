@@ -11,7 +11,7 @@ a browser, and d3 in the dashboard.
 | GDP | `gdp_growth_q` real GDP growth y/y (2022-23 base) | Q (fiscal) | % | Q1 2023-24 → Q1 2026-27 | 7.8 | MoSPI NAS API, indicator 22 |
 | GDP | `gdp_growth_q_old` (2011-12 base, discontinued) | Q | % | Q1 2012-13 → Q2 2025-26 | 8.2 | MoSPI NAS API |
 | GVA | `gva_growth_q` + 8 sector series | Q | % | Q1 2023-24 → Q1 2026-27 | 8.2 (total) | MoSPI NAS API, indicator 21 |
-| GDP | `gdp_level_q`, `gdp_growth_a`, nominal growth | Q / FY | ₹ lakh cr / % | 2022-23 → | | MoSPI NAS API |
+| GDP | `gdp_level_q`, `gdp_growth_a` (charted at 31 March of each FY), nominal growth | Q / FY | ₹ lakh cr / % | 2022-23 → | | MoSPI NAS API |
 | CPI | `cpi_infl_combined/rural/urban`, `cpi_food`, `cpi_index` (2024=100) | M | % / index | Jan 2026 → Oct 2026 (index from Jan 2025) | 6.09 | MoSPI `getCPIData` |
 | CPI | `cpi_infl_old`, `cfpi_old` (2012=100, discontinued) | M | % | Jan 2014 → Dec 2025 | 1.33 | MoSPI `getCPIIndex` |
 | IIP | `iip_growth`, `iip_index`, mining/manufacturing/electricity (2022-23=100) | M | % | Apr 2023 → Sep 2026 | 6.7 | MoSPI `getIipData` |
@@ -51,9 +51,36 @@ The same page runs in two places: the Claude dashboard and a static website buil
 | MPC rate decisions | every two months | **a person** adds them to `POLICY_EXTRA` in `pipeline/rbi_extract.js` |
 | New Handbook file ids | once a year (Jul–Sep) | **a person** updates `HB_IDS` in `pipeline/rbi_extract.js` |
 
-`pipeline/validate.py` blocks publishing if a core series is missing, a value is out of range, a series' latest
-period moves backwards, or its history shrinks by more than 5% versus the last commit. Stale sources only warn.
-If a fetch fails, the Action keeps the last good raw files (cached) and the last good site stays up.
+### Safeguards
+
+| Risk | Guard |
+|---|---|
+| rbi.org.in changes its layout and a rate stops parsing | `fetch_rbi_home.py` replaces the saved snapshot only if every required field parsed and is in range (`pipeline/checks.py`); `validate.py` re-checks it; the page shows a missing value as `—`, never `0.00%` |
+| A new MPC decision is on rbi.org.in but not yet in the policy history | `validate.py` warns, the daily job opens a GitHub issue, and the page shows a warning beside the headline until the history is updated |
+| MoSPI returns a partial set of pages | `fetch_mospi.py` requires every announced page and the reported row total; otherwise it keeps the cached file |
+| An older WSS bulletin overwrites a revision from a newer one | every weekly value carries its issue date; `merge_rbi.py` and `build_data.py` keep the newest issue's value |
+| A series disappears or is renamed | `pipeline/series_ids.txt` lists every published id; any missing or unlisted id fails validation |
+| A series moves backwards or shrinks >5% vs the last commit, out-of-range values, duplicates | `validate.py` errors |
+| Stale sources (e.g. the manual RBI step not run) | `validate.py` warnings in the run summary |
+
+Errors stop publishing; the last good site stays up. If a fetch fails, the Action keeps the last good raw files (cached).
+
+### Tests
+
+`tests/` holds offline checks with fixtures for each failure above (a trimmed real copy of the rbi.org.in rates box
+plus altered versions, MoSPI page sequences, WSS issues). No network is used.
+
+```
+python3 -m unittest discover -s tests -v     # pipeline checks
+node tests/test_render.js                    # page rendering checks
+```
+They run on every pull request and push (`.github/workflows/test.yml`) and before each daily publish.
+
+### Recording an MPC decision
+
+Add `[effectiveDate, repo, sdf, msf, crr, slr, 'source']` to `POLICY_EXTRA` in `pipeline/rbi_extract.js` and the
+same row to `policy` in `data/raw/rbi_extract.json`. Use the effective date stated in the MPC resolution
+(normally the announcement date, "with immediate effect") and cite the press release.
 
 ### One-time GitHub setup
 
@@ -107,9 +134,10 @@ quarter; WSS every Friday; MPC every two months; Handbook yearly (Jul–Sep).
 ## Layout
 
 ```
-.github/workflows/  update.yml (daily build + Pages)  rbi-reminder.yml (weekly issue)
+.github/workflows/  update.yml (daily build + Pages)  test.yml (PR checks)  rbi-reminder.yml (weekly issue)
 pipeline/   fetch_mospi.py  fetch_rbi_home.py  list_wss.py  rbi_extract.js  merge_rbi.py
-            build_data.py  export_dashboard.py  validate.py  build_site.py
+            build_data.py  export_dashboard.py  validate.py  build_site.py  checks.py  series_ids.txt
+tests/      test_pipeline.py  test_render.js  fixtures/
 web/        template.html  dash-shim.js            (standalone-site wrapper)
 dashboard/  page/index.html  page/app.js           (shared page + charts)
             observations.json  catalog.json  snapshot.json

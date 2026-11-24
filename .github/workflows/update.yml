@@ -8,12 +8,13 @@ on:
   workflow_dispatch: {}
   push:
     branches: [main]
-    paths: ["pipeline/**", "web/**", "dashboard/page/**", "data/raw/rbi_extract.json", ".github/workflows/update.yml"]
+    paths: ["pipeline/**", "web/**", "dashboard/page/**", "tests/**", "data/raw/rbi_extract.json", ".github/workflows/update.yml"]
 
 permissions:
   contents: write
   pages: write
   id-token: write
+  issues: write
 
 concurrency:
   group: update
@@ -28,6 +29,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Offline tests (block publishing on failure)
+        run: |
+          python3 -m unittest discover -s tests
+          node tests/test_render.js
 
       # Raw MoSPI pulls are large and not committed; keep the last good copy between runs
       # so one failed query does not break the build.
@@ -51,7 +61,29 @@ jobs:
           python3 pipeline/export_dashboard.py
 
       - name: Validate (blocks publishing on errors)
+        id: validate
         run: python3 pipeline/validate.py
+
+      - name: Open an issue if the policy history needs the latest MPC decision
+        if: steps.validate.outputs.policy_mismatch == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="Policy rates changed on rbi.org.in: record the MPC decision"
+          if [ -z "$(gh issue list --state open --search "$TITLE in:title" --json number --jq '.[].number')" ]; then
+            {
+              echo "rbi.org.in shows policy rates that differ from the policy history, so the headline repo rate and the policy chart lag. The dashboard shows a warning until this is fixed."
+              echo
+              echo "1. Find the MPC resolution on https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx and note the **effective date** it states."
+              echo "2. Add \`[effectiveDate, repo, sdf, msf, crr, slr, 'source']\` to \`POLICY_EXTRA\` in \`pipeline/rbi_extract.js\`, and the same row to \`policy\` in \`data/raw/rbi_extract.json\`."
+              echo "3. Push. The update workflow rebuilds and the warning disappears when the rates agree."
+              echo
+              echo "Validation details are in the run summary: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            } > body.md
+            gh issue create --title "$TITLE" --body-file body.md
+          else
+            echo "An open issue already tracks this."
+          fi
 
       - name: Build site
         run: python3 pipeline/build_site.py

@@ -290,6 +290,34 @@
     el.textContent = t && !isNaN(t) ? d3.utcFormat('%-d %b %Y')(t) : '—';
   });
 
+  // ---------- policy history vs rbi.org.in (flag a pending history update) ----------
+  const POLICY_PAIRS = [['repo', 'Policy Repo Rate'], ['sdf', 'Standing Deposit Facility Rate'], ['msf', 'Marginal Standing Facility Rate']];
+  function policyMismatches() {
+    const s = dash.data('snapshot'), L = dash.data('latest');
+    if (s.status !== 'ok' || L.status !== 'ok') return null;
+    const out = [];
+    for (const [sid, item] of POLICY_PAIRS) {
+      const row = s.data.find((r) => r.group === 'Policy rates' && r.item === item);
+      const live = row && row.value != null && row.value !== '' ? Number(row.value) : NaN;
+      const hist = L.data.find((r) => r.series === sid);
+      if (!Number.isFinite(live) || !hist || hist.value == null) continue;
+      if (Math.abs(live - hist.value) > 1e-9) out.push({ item, live, hist: hist.value, date: hist.label });
+    }
+    return out;
+  }
+  // Empty drawing that shows or hides the stored warning paragraph.
+  dash.draw('policy-check', () => {
+    const m = policyMismatches();
+    const hide = !(m && m.length);
+    for (const el of document.querySelectorAll('[data-policy-flag]')) if (el.hidden !== hide) el.hidden = hide;
+  });
+  dash.draw('policy-diff', (el) => {
+    const m = policyMismatches();
+    el.textContent = m && m.length
+      ? m.map((x) => `${x.item} ${x.live.toFixed(2)}% on rbi.org.in vs ${x.hist.toFixed(2)}% in the history (last change ${x.date})`).join('; ')
+      : '—';
+  });
+
   // ---------- snapshot ----------
   dash.draw('snap', (tb) => {
     const s = dash.data('snapshot');
@@ -298,7 +326,10 @@
     for (const r of s.data) {
       const tr = tb.insertRow(); tr.dataset.key = encodeURIComponent(r.item);
       tr.insertCell().textContent = r.group; tr.insertCell().textContent = r.item;
-      const v = tr.insertCell(); v.className = 'r'; v.textContent = (+r.value).toFixed(r.unit === '₹' ? 4 : 2) + (r.unit.startsWith('%') ? '%' : '');
+      // A missing value must show as a dash, never as 0 (+null === 0 in JavaScript).
+      const num = r.value == null || r.value === '' ? NaN : Number(r.value);
+      const v = tr.insertCell(); v.className = 'r';
+      v.textContent = Number.isFinite(num) ? num.toFixed(r.unit === '₹' ? 4 : 2) + (String(r.unit || '').startsWith('%') ? '%' : '') : '—';
       tr.insertCell().textContent = r.as_of;
     }
   });

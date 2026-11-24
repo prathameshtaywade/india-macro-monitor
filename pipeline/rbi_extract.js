@@ -14,7 +14,11 @@
  *             https://rbi.org.in/Scripts/WSSViewDetail.aspx?TYPE=Section&PARAM1=3   (SCB business, file 4T_)
  *             https://rbi.org.in/Scripts/WSSViewDetail.aspx?TYPE=Section&PARAM1=4   (ratios & rates, file 5T_)
  *             pipeline/list_wss.py prints these lists ready to paste.
- *   POLICY_EXTRA - policy-rate changes after the Handbook cut-off, from MPC resolutions (press releases).
+ *   POLICY_EXTRA - policy-rate changes after the Handbook cut-off. Use the EFFECTIVE date stated in the MPC
+ *             resolution (normally the announcement date, "with immediate effect"), and cite the press release.
+ *
+ * Weekly values are emitted as [date, value, issueDate]. The same week or fortnight appears in several WSS
+ * issues and can be revised; pipeline/merge_rbi.py keeps the value from the newest issue.
  */
 const HB_IDS = {
   40: '40T_HBIE31072026FF3E894445944DA8A3C011F1653F999A',   // policy rates, CRR, SLR (effective dates)
@@ -25,7 +29,8 @@ const HB_IDS = {
   215: '215T_HBIE310720263381697DEC8847C887856367E4BAE81A', // forex reserves, weekly
 };
 const WSS = { fx: [/* [issueDate, '2T_...'] */], scb: [/* '4T_...' */], rr: [/* '5T_...' */] };
-const POLICY_EXTRA = [['2026-10-07', 5.5, 5.25, 5.75, null, null]]; // [date, repo, sdf, msf, crr, slr]
+// [effectiveDate, repo, sdf, msf, crr, slr, source]
+const POLICY_EXTRA = [['2026-10-07', 5.5, 5.25, 5.75, null, null, 'MPC resolution 5-7 Oct 2026, RBI press release prid=63742: with immediate effect']];
 
 async function readXlsx(url) {
   const buf = new Uint8Array(await (await fetch(url)).arrayBuffer());
@@ -103,15 +108,15 @@ async function readXlsx(url) {
     if (r && /^\d{5}$/.test(r[1] || '')) out.forex_w.push([ser(r[1]), num(r[11])]);
 
   const sheet = async id => Object.values(await readXlsx('/rdocs/Wss/DOCs/' + id + '.XLSX'))[0];
-  const dd = a => Object.entries(Object.fromEntries(a.filter(([d, v]) => d && v != null))).sort();
+  const keep = a => a.filter(([d, v]) => d && v != null);   // no de-duplication here: merge_rbi.py resolves revisions by issue date
   const fx = [], dep = [], cr = [], rr = {};
-  for (const [, id] of WSS.fx) { const s = await sheet(id); let d = null, t = null;
+  for (const [issue, id] of WSS.fx) { const s = await sheet(id); let d = null, t = null;
     for (const r of s) { if (!r) continue; if (!d && /As on/i.test(r.join('|'))) d = pd(r.join('|')); if (/^1 Total Reserves/.test(r[1] || '')) t = num(r[3]); }
-    fx.push([d, t]); }
-  for (const [, id] of WSS.scb) { const s = await sheet(id); let d = null, a = null, c = null;
+    fx.push([d, t, issue]); }
+  for (const [issue, id] of WSS.scb) { const s = await sheet(id); let d = null, a = null, c = null;
     for (const r of s) { if (!r) continue; if (!d && /Outstanding as on/i.test(r.join('|'))) d = pd(r.join('|'));
       if (/^2\.1 Aggregate Deposits/.test(r[1] || '')) a = num(r[2]); if (/^7 Bank Credit/.test(r[1] || '')) c = num(r[2]); }
-    dep.push([d, a]); cr.push([d, c]); }
+    dep.push([d, a, issue]); cr.push([d, c, issue]); }
   const want = { 'Policy Repo Rate': 'repo', '10-Year G-Sec': 'gsec10_weekly', 'INR-US$ Spot': 'usdinr_weekly', 'Call Money Rate': 'call_weekly', '91-Day Treasury': 'tb91_weekly' };
   for (const [f, id] of WSS.rr) { const s = await sheet(id); const fy = +f.slice(0, 4), fm = +f.slice(5, 7); let hdr = null;
     for (const r of s) { if (!r) continue; const lab = r[1] || '';
@@ -119,9 +124,9 @@ async function readXlsx(url) {
       if (Array.isArray(hdr)) for (const [k, key] of Object.entries(want)) if (lab.startsWith(k))
         for (let i = 3; i < hdr.length; i++) { const m = String(hdr[i] || '').match(/([A-Za-z]{3})\.?\s*(\d{1,2})/); if (!m) continue;
           const mo = MO[m[1].toLowerCase()]; const v = num(r[i]); if (v == null) continue;
-          (rr[key] = rr[key] || {})[`${mo > fm ? fy - 1 : fy}-${String(mo).padStart(2, '0')}-${m[2].padStart(2, '0')}`] = v; } } }
-  out.forex_w_wss = dd(fx); out.scb_dep_wss = dd(dep); out.scb_credit_wss = dd(cr);
-  for (const k in rr) if (k !== 'repo') out[k] = Object.entries(rr[k]).sort();
+          (rr[key] = rr[key] || []).push([`${mo > fm ? fy - 1 : fy}-${String(mo).padStart(2, '0')}-${m[2].padStart(2, '0')}`, v, f]); } } }
+  out.forex_w_wss = keep(fx); out.scb_dep_wss = keep(dep); out.scb_credit_wss = keep(cr);
+  for (const k in rr) if (k !== 'repo') out[k] = keep(rr[k]);
   const json = JSON.stringify(out);
   try { await navigator.clipboard.writeText(json); console.log('Copied', json.length, 'chars to clipboard'); }
   catch { console.log(json); }
