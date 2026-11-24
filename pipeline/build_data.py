@@ -15,6 +15,7 @@ import json, os, sys, time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from checks import is_weekly_key, latest_revision  # noqa: E402
+from banking import growth_gap, incremental_cd_fytd, trailing_mean  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 RAW = os.path.join(ROOT, "data", "raw")
@@ -193,14 +194,14 @@ if RB.get("policy"):
     add(id="crr", name="Cash Reserve Ratio", notes="% of NDTL.", data=steps["crr"], **meta)
     add(id="slr", name="Statutory Liquidity Ratio", notes="% of NDTL.", data=steps["slr"], **meta)
 
-for k, nm, ten in [("gsec10", "10-year G-Sec yield (month-end)", 10), ("gsec5", "5-year G-Sec yield (month-end)", 5),
-                   ("gsec1", "1-year G-Sec yield (month-end)", 1)]:
+for k, nm, ten in [("gsec10", "10-year G-Sec yield, month-end SGL trades", 10), ("gsec5", "5-year G-Sec yield, month-end SGL trades", 5),
+                   ("gsec1", "1-year G-Sec yield, month-end SGL trades", 1)]:
     if RB.get(k):
         add(id=k, name=nm, group="Rates & yields", unit="% p.a.", freq="Monthly", base="",
             source="RBI – Handbook 2025-26, Table 178 (month-end yield of SGL transactions)", source_url=HB_URL,
             notes=f"Yield for {ten}-year residual maturity from RBI's SGL transaction data.", data=RB[k])
 if RB.get("gsec10_weekly"):
-    add(id="gsec10_w", name="10-year G-Sec benchmark yield (weekly)", group="Rates & yields", unit="% p.a.", freq="Weekly",
+    add(id="gsec10_w", name="10-year G-Sec FBIL par yield (weekly)", group="Rates & yields", unit="% p.a.", freq="Weekly",
         base="", source="RBI – Weekly Statistical Supplement, Table 4 'Ratios and Rates'", source_url=WSS_URL,
         notes="Benchmark 10-year yield as reported in WSS (FBIL).", data=RB["gsec10_weekly"])
 
@@ -220,7 +221,9 @@ add(id="eurinr_m", name="EUR/INR – monthly average", group="External", unit="�
     source="RBI (MoSPI API RBI indicator 33; Handbook Table 205)", source_url=MOSPI_API + "/api/rbi/getRbiRecords?sub_indicator_code=33",
     notes="", data=eur_long + list(RB.get("eurinr_m", [])))
 
+BANK_LEVELS, BANK_YOY = {}, {}
 for k, nm in [("scb_credit", "Bank credit – scheduled commercial banks"), ("scb_dep", "Aggregate deposits – scheduled commercial banks")]:
+    # Handbook (released Jul 2026) is the newer publication for the months it covers, so it wins over WSS.
     lv = {d: v for d, v in RB.get(k, [])}                      # Handbook: YYYY-MM
     for d, v in RB.get(k + "_wss", []):                        # WSS: fortnightly dates; keep month-end points
         nxt = time.strftime("%m", time.gmtime(time.mktime(time.strptime(d, "%Y-%m-%d")) + 86400 * 2))
@@ -239,7 +242,29 @@ for k, nm in [("scb_credit", "Bank credit – scheduled commercial banks"), ("sc
                 gr.append((d, (v / lv[y0] - 1) * 100))
         add(id=k + "_yoy", name=nm.split(" –")[0] + " growth (y/y)", group="Banking", unit="%", freq="Monthly", base="",
             source="Derived here from RBI levels (matches WSS 'Year-on-Year' growth)", source_url=WSS_URL,
-            notes="Jul 2023–Jun 2024 inflated by the HDFC merger (RBI also publishes ex-merger figures).", data=gr)
+            notes="Jul 2023–Jun 2024 inflated by the HDFC merger (RBI also publishes ex-merger figures). "
+                  "Dec 2025–Nov 2026: compared with the corresponding reporting Friday a year earlier (RBI note on the "
+                  "change of reporting date); from Dec 2026 month-end to month-end.", data=gr)
+        BANK_LEVELS[k], BANK_YOY[k] = lv, dict(gr)
+
+if BANK_YOY.get("scb_credit") and BANK_YOY.get("scb_dep"):
+    CAVEAT = ("Dec 2025–Nov 2026 compare a month-end with the corresponding reporting Friday a year earlier, "
+              "because RBI moved the reporting date from the last reporting Friday to month-end in Dec 2025.")
+    gap = growth_gap(BANK_YOY["scb_credit"], BANK_YOY["scb_dep"])
+    common = dict(group="Banking", unit="pp", freq="Monthly", base="", source_url=WSS_URL,
+                  source="Derived here from RBI bank credit and deposit levels (Handbook Table 167, WSS Table 4)")
+    add(id="scb_gap", name="Credit growth minus deposit growth", data=gap,
+        notes="Scheduled commercial banks, y/y growth rates, percentage points. A wider gap means credit is "
+              "growing faster than deposits; it is not a cash shortfall. " + CAVEAT, **common)
+    add(id="scb_gap_3m", name="Credit growth minus deposit growth, 3-month average", data=trailing_mean(gap, 3),
+        notes="Average of the latest three monthly gaps; months with any gap missing are left out. " + CAVEAT, **common)
+    add(id="scb_inc_cd_fytd", name="Incremental credit–deposit ratio, financial year to date", group="Banking",
+        unit="%", freq="Monthly", base="", source_url=WSS_URL,
+        source="Derived here from RBI bank credit and deposit levels (Handbook Table 167, WSS Table 4)",
+        notes="Change in bank credit since end-March per ₹100 change in deposits since end-March. Not shown while "
+              "deposits have grown by less than 0.5% of the end-March stock (or fallen), usually April and May. "
+              "Compare with the same month of the previous financial year.",
+        data=incremental_cd_fytd(BANK_LEVELS["scb_credit"], BANK_LEVELS["scb_dep"]))
 
 for key, sid, nm, unit, note in [
         ("usdinr_weekly", "usdinr_w", "USD/INR – FBIL reference rate (weekly)", "₹ per US$", "Rate on the last trading day of the week, per WSS Table 5."),

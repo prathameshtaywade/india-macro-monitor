@@ -8,9 +8,10 @@ Turn data/macro.json into the three files the published dashboard reads:
   daily/weekly/event -> the date itself; monthly -> 15th; fiscal quarter 'YYYY-Qn' -> middle month of the quarter;
   fiscal year 'YYYY-YY' -> 31 March at the end of that year (the label keeps "FY YYYY-YY").
 """
-import json, os, time
+import json, os, sys, time
 
-from checks import snapshot_date
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from checks import snapshot_date  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 MN = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()

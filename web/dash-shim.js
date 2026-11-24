@@ -69,5 +69,5 @@
   new ResizeObserver(() => { const w = document.body.clientWidth; if (Math.abs(w - lastW) > 4) { lastW = w; schedule(); } })
     .observe(document.body);
   // (only sections: chart tooltips also toggle `hidden` and must not trigger a redraw)
-  new MutationObserver((recs) => { if (recs.some((r) => r.target.matches('.mm-sec, details, [data-policy-flag]'))) schedule(); }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
+  new MutationObserver((recs) => { if (recs.some((r) => r.target.matches('.mm-sec, details, [data-policy-flag], [data-switch]'))) schedule(); }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
 })();

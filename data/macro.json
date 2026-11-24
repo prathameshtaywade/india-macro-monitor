@@ -1,5 +1,5 @@
 {
-"generated_utc": "2026-11-24T16:04:11Z",
+"generated_utc": "2026-11-24T17:28:24Z",
 "snapshot": {
 "fetched_utc": "2026-11-24T15:21:00Z",
 "source_url": "https://www.rbi.org.in/",
@@ -4862,7 +4862,7 @@
 },
 {
 "id": "gsec10",
-"name": "10-year G-Sec yield (month-end)",
+"name": "10-year G-Sec yield, month-end SGL trades",
 "group": "Rates & yields",
 "unit": "% p.a.",
 "freq": "Monthly",
@@ -5031,7 +5031,7 @@
 },
 {
 "id": "gsec5",
-"name": "5-year G-Sec yield (month-end)",
+"name": "5-year G-Sec yield, month-end SGL trades",
 "group": "Rates & yields",
 "unit": "% p.a.",
 "freq": "Monthly",
@@ -5200,7 +5200,7 @@
 },
 {
 "id": "gsec1",
-"name": "1-year G-Sec yield (month-end)",
+"name": "1-year G-Sec yield, month-end SGL trades",
 "group": "Rates & yields",
 "unit": "% p.a.",
 "freq": "Monthly",
@@ -5369,7 +5369,7 @@
 },
 {
 "id": "gsec10_w",
-"name": "10-year G-Sec benchmark yield (weekly)",
+"name": "10-year G-Sec FBIL par yield (weekly)",
 "group": "Rates & yields",
 "unit": "% p.a.",
 "freq": "Weekly",
@@ -11422,7 +11422,7 @@
 "base": "",
 "source": "Derived here from RBI levels (matches WSS 'Year-on-Year' growth)",
 "source_url": "https://rbi.org.in/Scripts/BS_ViewWSS.aspx",
-"notes": "Jul 2023–Jun 2024 inflated by the HDFC merger (RBI also publishes ex-merger figures).",
+"notes": "Jul 2023–Jun 2024 inflated by the HDFC merger (RBI also publishes ex-merger figures). Dec 2025–Nov 2026: compared with the corresponding reporting Friday a year earlier (RBI note on the change of reporting date); from Dec 2026 month-end to month-end.",
 "data": [
 [
 "2023-01",
@@ -11864,7 +11864,7 @@
 "base": "",
 "source": "Derived here from RBI levels (matches WSS 'Year-on-Year' growth)",
 "source_url": "https://rbi.org.in/Scripts/BS_ViewWSS.aspx",
-"notes": "Jul 2023–Jun 2024 inflated by the HDFC merger (RBI also publishes ex-merger figures).",
+"notes": "Jul 2023–Jun 2024 inflated by the HDFC merger (RBI also publishes ex-merger figures). Dec 2025–Nov 2026: compared with the corresponding reporting Friday a year earlier (RBI note on the change of reporting date); from Dec 2026 month-end to month-end.",
 "data": [
 [
 "2023-01",
@@ -12049,6 +12049,601 @@
 [
 "2026-10",
 16.857
+]
+]
+},
+{
+"id": "scb_gap",
+"name": "Credit growth minus deposit growth",
+"data": [
+[
+"2023-01",
+5.7705
+],
+[
+"2023-02",
+5.3761
+],
+[
+"2023-03",
+5.4144
+],
+[
+"2023-04",
+5.7609
+],
+[
+"2023-05",
+4.5437
+],
+[
+"2023-06",
+2.7697
+],
+[
+"2023-07",
+6.611
+],
+[
+"2023-08",
+6.5115
+],
+[
+"2023-09",
+6.7615
+],
+[
+"2023-10",
+6.546
+],
+[
+"2023-11",
+7.0324
+],
+[
+"2023-12",
+6.6773
+],
+[
+"2024-01",
+7.0847
+],
+[
+"2024-02",
+7.4316
+],
+[
+"2024-03",
+6.6856
+],
+[
+"2024-04",
+5.6598
+],
+[
+"2024-05",
+6.0407
+],
+[
+"2024-06",
+6.2809
+],
+[
+"2024-07",
+3.1378
+],
+[
+"2024-08",
+2.763
+],
+[
+"2024-09",
+1.4868
+],
+[
+"2024-10",
+-0.2332
+],
+[
+"2024-11",
+0.0498
+],
+[
+"2024-12",
+1.3289
+],
+[
+"2025-01",
+1.0679
+],
+[
+"2025-02",
+0.6605
+],
+[
+"2025-03",
+0.7434
+],
+[
+"2025-04",
+0.1296
+],
+[
+"2025-05",
+-0.9246
+],
+[
+"2025-06",
+-0.5787
+],
+[
+"2025-07",
+-0.1381
+],
+[
+"2025-08",
+-0.178
+],
+[
+"2025-09",
+0.8918
+],
+[
+"2025-10",
+1.6518
+],
+[
+"2025-11",
+1.3568
+],
+[
+"2025-12",
+1.8757
+],
+[
+"2026-01",
+2.1358
+],
+[
+"2026-02",
+2.3089
+],
+[
+"2026-03",
+0.9229
+],
+[
+"2026-04",
+3.4891
+],
+[
+"2026-05",
+5.4439
+],
+[
+"2026-06",
+5.332
+],
+[
+"2026-07",
+3.9507
+],
+[
+"2026-08",
+1.4809
+],
+[
+"2026-09",
+1.0521
+],
+[
+"2026-10",
+2.6795
+]
+],
+"notes": "Scheduled commercial banks, y/y growth rates, percentage points. A wider gap means credit is growing faster than deposits; it is not a cash shortfall. Dec 2025–Nov 2026 compare a month-end with the corresponding reporting Friday a year earlier, because RBI moved the reporting date from the last reporting Friday to month-end in Dec 2025.",
+"group": "Banking",
+"unit": "pp",
+"freq": "Monthly",
+"base": "",
+"source_url": "https://rbi.org.in/Scripts/BS_ViewWSS.aspx",
+"source": "Derived here from RBI bank credit and deposit levels (Handbook Table 167, WSS Table 4)"
+},
+{
+"id": "scb_gap_3m",
+"name": "Credit growth minus deposit growth, 3-month average",
+"data": [
+[
+"2023-03",
+5.5204
+],
+[
+"2023-04",
+5.5171
+],
+[
+"2023-05",
+5.2397
+],
+[
+"2023-06",
+4.3581
+],
+[
+"2023-07",
+4.6415
+],
+[
+"2023-08",
+5.2974
+],
+[
+"2023-09",
+6.628
+],
+[
+"2023-10",
+6.6063
+],
+[
+"2023-11",
+6.78
+],
+[
+"2023-12",
+6.7519
+],
+[
+"2024-01",
+6.9315
+],
+[
+"2024-02",
+7.0645
+],
+[
+"2024-03",
+7.0673
+],
+[
+"2024-04",
+6.5923
+],
+[
+"2024-05",
+6.1287
+],
+[
+"2024-06",
+5.9938
+],
+[
+"2024-07",
+5.1531
+],
+[
+"2024-08",
+4.0605
+],
+[
+"2024-09",
+2.4625
+],
+[
+"2024-10",
+1.3389
+],
+[
+"2024-11",
+0.4345
+],
+[
+"2024-12",
+0.3818
+],
+[
+"2025-01",
+0.8156
+],
+[
+"2025-02",
+1.0191
+],
+[
+"2025-03",
+0.8239
+],
+[
+"2025-04",
+0.5112
+],
+[
+"2025-05",
+-0.0172
+],
+[
+"2025-06",
+-0.4579
+],
+[
+"2025-07",
+-0.5472
+],
+[
+"2025-08",
+-0.2983
+],
+[
+"2025-09",
+0.1919
+],
+[
+"2025-10",
+0.7885
+],
+[
+"2025-11",
+1.3001
+],
+[
+"2025-12",
+1.6281
+],
+[
+"2026-01",
+1.7894
+],
+[
+"2026-02",
+2.1068
+],
+[
+"2026-03",
+1.7892
+],
+[
+"2026-04",
+2.2403
+],
+[
+"2026-05",
+3.2853
+],
+[
+"2026-06",
+4.755
+],
+[
+"2026-07",
+4.9089
+],
+[
+"2026-08",
+3.5879
+],
+[
+"2026-09",
+2.1612
+],
+[
+"2026-10",
+1.7375
+]
+],
+"notes": "Average of the latest three monthly gaps; months with any gap missing are left out. Dec 2025–Nov 2026 compare a month-end with the corresponding reporting Friday a year earlier, because RBI moved the reporting date from the last reporting Friday to month-end in Dec 2025.",
+"group": "Banking",
+"unit": "pp",
+"freq": "Monthly",
+"base": "",
+"source_url": "https://rbi.org.in/Scripts/BS_ViewWSS.aspx",
+"source": "Derived here from RBI bank credit and deposit levels (Handbook Table 167, WSS Table 4)"
+},
+{
+"id": "scb_inc_cd_fytd",
+"name": "Incremental credit–deposit ratio, financial year to date",
+"group": "Banking",
+"unit": "%",
+"freq": "Monthly",
+"base": "",
+"source_url": "https://rbi.org.in/Scripts/BS_ViewWSS.aspx",
+"source": "Derived here from RBI bank credit and deposit levels (Handbook Table 167, WSS Table 4)",
+"notes": "Change in bank credit since end-March per ₹100 change in deposits since end-March. Not shown while deposits have grown by less than 0.5% of the end-March stock (or fallen), usually April and May. Compare with the same month of the previous financial year.",
+"data": [
+[
+"2022-04",
+41.1108
+],
+[
+"2022-05",
+134.7317
+],
+[
+"2022-06",
+249.0664
+],
+[
+"2022-07",
+94.2872
+],
+[
+"2022-08",
+107.3413
+],
+[
+"2022-09",
+130.3308
+],
+[
+"2022-10",
+134.2856
+],
+[
+"2022-11",
+126.9768
+],
+[
+"2022-12",
+111.5941
+],
+[
+"2023-01",
+115.3181
+],
+[
+"2023-02",
+111.6297
+],
+[
+"2023-04",
+68.7628
+],
+[
+"2023-05",
+65.7964
+],
+[
+"2023-06",
+63.7065
+],
+[
+"2023-07",
+98.9357
+],
+[
+"2023-08",
+103.7618
+],
+[
+"2023-09",
+119.3513
+],
+[
+"2023-10",
+121.1126
+],
+[
+"2023-11",
+120.9973
+],
+[
+"2023-12",
+111.8673
+],
+[
+"2024-01",
+117.5224
+],
+[
+"2024-02",
+117.4918
+],
+[
+"2024-04",
+21.4374
+],
+[
+"2024-05",
+57.3087
+],
+[
+"2024-06",
+56.0209
+],
+[
+"2024-07",
+53.1461
+],
+[
+"2024-08",
+60.3771
+],
+[
+"2024-09",
+67.2419
+],
+[
+"2024-10",
+60.4236
+],
+[
+"2024-11",
+69.82
+],
+[
+"2024-12",
+82.5817
+],
+[
+"2025-01",
+86.9784
+],
+[
+"2025-02",
+86.1109
+],
+[
+"2025-04",
+-20.01
+],
+[
+"2025-05",
+7.3326
+],
+[
+"2025-06",
+28.6645
+],
+[
+"2025-07",
+33.4629
+],
+[
+"2025-08",
+43.6095
+],
+[
+"2025-09",
+68.2186
+],
+[
+"2025-10",
+72.0734
+],
+[
+"2025-11",
+76.5664
+],
+[
+"2025-12",
+91.334
+],
+[
+"2026-01",
+96.9544
+],
+[
+"2026-02",
+96.0794
+],
+[
+"2026-06",
+183.5509
+],
+[
+"2026-07",
+100.7884
+],
+[
+"2026-08",
+62.5582
+],
+[
+"2026-09",
+75.4422
+],
+[
+"2026-10",
+90.1257
 ]
 ]
 },
