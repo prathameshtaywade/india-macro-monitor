@@ -1,0 +1,43 @@
+# Weekly reminder for the one manual step. RBI's XLSX files (rbidocs.rbi.org.in) are served only to a real
+# browser, so a person runs pipeline/rbi_extract.js and commits data/raw/rbi_extract.json. This job lists the
+# new Weekly Statistical Supplement file ids and opens an issue with the ready-to-paste snippet.
+name: RBI weekly update reminder
+
+on:
+  schedule:
+    - cron: "0 6 * * 6"         # Saturday 11:30 IST, after Friday's WSS release
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: List WSS files and open an issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SINCE=$(python3 -c "import json;d=json.load(open('data/raw/rbi_extract.json'));print(max(r[0] for r in d['forex_w_wss']))")
+          python3 pipeline/list_wss.py "$SINCE" > wss.js
+          {
+            echo "New RBI Weekly Statistical Supplement issues since **$SINCE**."
+            echo
+            echo "1. Replace the \`WSS\` constant in \`pipeline/rbi_extract.js\` with:"
+            echo
+            echo '```js'
+            cat wss.js
+            echo '```'
+            echo
+            echo "2. Open https://rbidocs.rbi.org.in/ in a browser, paste the script into the DevTools console and run it."
+            echo "3. Merge the copied JSON into \`data/raw/rbi_extract.json\` (\`python3 pipeline/merge_rbi.py <file>\`), commit and push."
+            echo "   The update workflow rebuilds and republishes on push."
+            echo "4. If the MPC changed rates since the last update, add the decision to \`POLICY_EXTRA\` first."
+          } > body.md
+          gh issue create --title "RBI weekly data update ($(date -u +%Y-%m-%d))" --body-file body.md

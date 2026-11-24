@@ -1,0 +1,5 @@
+site/
+data/raw/mospi/
+*.bak
+__pycache__/
+.DS_Store

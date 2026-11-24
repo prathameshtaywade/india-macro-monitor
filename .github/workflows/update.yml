@@ -1,0 +1,84 @@
+# Daily refresh: fetch MoSPI + rbi.org.in, rebuild, validate, commit the data, publish the site to GitHub Pages.
+# The RBI Handbook/WSS step (data/raw/rbi_extract.json) is manual: see the weekly reminder workflow.
+name: Update data and site
+
+on:
+  schedule:
+    - cron: "30 3 * * *"        # 09:00 IST every day
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths: ["pipeline/**", "web/**", "dashboard/page/**", "data/raw/rbi_extract.json", ".github/workflows/update.yml"]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Raw MoSPI pulls are large and not committed; keep the last good copy between runs
+      # so one failed query does not break the build.
+      - uses: actions/cache@v4
+        with:
+          path: data/raw/mospi
+          key: mospi-raw-${{ github.run_id }}
+          restore-keys: mospi-raw-
+
+      - name: Fetch MoSPI series
+        continue-on-error: true
+        run: python3 pipeline/fetch_mospi.py
+
+      - name: Fetch RBI current rates
+        continue-on-error: true
+        run: python3 pipeline/fetch_rbi_home.py
+
+      - name: Build dataset
+        run: |
+          python3 pipeline/build_data.py
+          python3 pipeline/export_dashboard.py
+
+      - name: Validate (blocks publishing on errors)
+        run: python3 pipeline/validate.py
+
+      - name: Build site
+        run: python3 pipeline/build_site.py
+
+      - name: Commit updated data
+        if: github.event_name != 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/macro.json data/raw/rbi_home.json dashboard/observations.json dashboard/catalog.json dashboard/snapshot.json
+          if git diff --cached --quiet; then
+            echo "No data changes."
+          else
+            git commit -m "data: refresh $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
