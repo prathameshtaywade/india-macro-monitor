@@ -39,7 +39,10 @@ CORE = {  # id: minimum number of observations
 RANGES = {  # unit -> (min, max)
     "%": (-60, 120), "% p.a.": (0, 20), "US$ bn": (1, 3000), "₹ per US$": (10, 300), "₹ per €": (10, 400),
     "₹ lakh crore": (1, 2000), "Index (2024=100)": (50, 400), "Index (2022-23=100)": (30, 400),
+    "pp": (-60, 60),
 }
+# Series whose plausible range differs from their unit's default.
+SERIES_RANGES = {"scb_inc_cd_fytd": (-1000, 1000)}
 STALE_DAYS = {"Weekly": 21, "Monthly": 75, "Monthly / fortnightly": 75, "Quarterly": 200, "Annual (FY)": 500}
 SNAPSHOT_STALE_DAYS = 4
 
@@ -95,7 +98,7 @@ def validate(cur, prev=None, today=None, expected_ids=None, core=None):
             errors.append(f"`{sid}` has {len(s['data'])} observations, expected at least {n}")
 
     for s in records:
-        lo, hi = RANGES.get(s["unit"], (-1e12, 1e12))
+        lo, hi = SERIES_RANGES.get(s["id"]) or RANGES.get(s["unit"], (-1e12, 1e12))
         bad = [(p, v) for p, v in s["data"] if type(v) not in (int, float) or not (lo <= v <= hi)]
         if bad:
             errors.append(f"`{s['id']}` has {len(bad)} value(s) outside {lo}..{hi} {s['unit']}, e.g. {bad[:3]}")

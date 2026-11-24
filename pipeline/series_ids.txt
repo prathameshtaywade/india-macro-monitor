@@ -47,3 +47,6 @@ scb_dep_yoy
 usdinr_w
 call_w
 tb91_w
+scb_gap
+scb_gap_3m
+scb_inc_cd_fytd

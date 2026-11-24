@@ -16,6 +16,8 @@ a browser, and d3 in the dashboard.
 | CPI | `cpi_infl_old`, `cfpi_old` (2012=100, discontinued) | M | % | Jan 2014 → Dec 2025 | 1.33 | MoSPI `getCPIIndex` |
 | IIP | `iip_growth`, `iip_index`, mining/manufacturing/electricity (2022-23=100) | M | % | Apr 2023 → Sep 2026 | 6.7 | MoSPI `getIipData` |
 | IIP | `iip_growth_old` (2011-12=100) | M | % | Apr 2012 → Mar 2026 | 4.1 | MoSPI `getIipData` |
+| Banks | `scb_gap`, `scb_gap_3m` credit growth minus deposit growth, latest and 3-month average | M | pp | Jan 2023 → Oct 2026 | 2.68 / 1.74 | Derived from Handbook T167 + WSS Table 4 |
+| Banks | `scb_inc_cd_fytd` incremental credit–deposit ratio, financial year to date | M | % | Apr 2022 → Oct 2026 | 90.1 (72.1 a year earlier) | Derived; omitted while deposits are up <0.5% since end-March |
 | Policy | `repo`, `sdf`, `msf`, `crr`, `slr` | event | % | Apr 2008 → 7 Oct 2026 | repo 5.50 | RBI Handbook T40 + MPC resolution 7 Oct 2026 |
 | Yields | `gsec10`, `gsec5`, `gsec1` month-end | M | % | Apr 2023 → Jun 2026 | 6.74 (10Y) | RBI Handbook T178 |
 | Yields | `gsec10_w` (FBIL 10Y par), `tb91_w`, `call_w` | W | % | Jan → 13 Nov 2026 | 7.34 / 5.87 / 5.55 | RBI WSS Table 5 |
@@ -36,6 +38,19 @@ a browser, and d3 in the dashboard.
 - CPI Oct 2026 = 6.09% matches the RBI DBIE headline ticker; repo 5.50% matches WSS, the rbi.org.in box and the
   7 Oct 2026 MPC resolution (RBI press release prid 63742); WSS call rate 5.55% matches the DBIE WACR ticker.
 - Browser-extracted RBI data was checksummed against the saved JSON (row counts and value sums per series).
+
+## Page layout
+
+1. **Banking brief: "Bank credit and deposit growth".** Latest gap and its 3-month average with equal prominence,
+   a sentence generated from the data (e.g. "widened to 2.68 pp, while its 3-month average narrowed for the 3rd month
+   in a row to 1.74 pp"), a 12-month chart with Dec 2025–Nov 2026 shaded (those months compare a month-end with the
+   reporting Friday a year earlier), and the incremental credit–deposit ratio, financial year to date, beside the same
+   point last year. The panel says plainly that the gap is not a cash shortfall.
+2. **Macro summary.** The headline tiles. Changes are shown neutrally, with no good/bad colour; CPI is described
+   against the 2–6% tolerance band.
+3. **Research view.** Topic and range filters, all charts, the series explorer and the full catalogue.
+   Old-base series (GDP 2011-12, CPI 2012, IIP 2011-12) are off by default behind "Show discontinued series".
+   The two 10-year yields are labelled by definition (month-end SGL trades vs FBIL par yield, weekly).
 
 ## Website and automation
 

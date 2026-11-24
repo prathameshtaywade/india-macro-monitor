@@ -1,6 +1,9 @@
 // India Macro Monitor — drawings for the dashboard page.
 (function () {
-  const MM = (window.MM = window.MM || { range: '5y', topic: 'all', ex: 'cpi_infl_combined' });
+  const MM = (window.MM = window.MM || { range: '5y', topic: 'all', ex: 'cpi_infl_combined', showOld: false });
+  // RBI moved the bank reporting date to month-end in Dec 2025; until Nov 2026 y/y growth compares a
+  // month-end with the corresponding reporting Friday a year earlier. Shaded on the brief chart.
+  const REPORTING_MIX = { from: '2025-12-01', to: '2026-11-30', label: 'Friday comparator' };
   const parse = d3.utcParse('%Y-%m-%d');
   const MINUS = '−';
   const TOPIC = { 'Growth': 'growth', 'GVA by sector': 'growth', 'Prices': 'prices', 'Industry': 'industry',
@@ -22,7 +25,8 @@
     title: 'Latest value per series',
     description: 'Last and previous observation of each series, rounded as shown on the page; change = last minus previous.',
     fn: (observations) => {
-      const places = { gdp_growth_q: 1, gva_growth_q: 1, iip_growth: 1, forex_w: 1, forex_m: 1, scb_credit_yoy: 1, scb_dep_yoy: 1 };
+      const places = { gdp_growth_q: 1, gva_growth_q: 1, iip_growth: 1, forex_w: 1, forex_m: 1, scb_credit_yoy: 1, scb_dep_yoy: 1,
+        scb_gap: 2, scb_gap_3m: 2, scb_inc_cd_fytd: 1 };
       const bySeries = {};
       for (const r of observations) {
         if (!isScheduled(r)) (bySeries[r.series] = bySeries[r.series] || []).push(r);
@@ -47,6 +51,7 @@
     if (v == null || isNaN(v)) return '—';
     const s = (Math.abs(v)).toFixed(p ?? 2), sign = v < 0 ? MINUS : '';
     if (unit === '%' || unit === '% p.a.') return sign + s + '%';
+    if (unit === 'pp') return sign + s + ' pp';
     if (unit === 'US$ bn') return sign + '$' + (+Math.abs(v)).toFixed(p ?? 1) + ' bn';
     if (unit && unit.startsWith('₹ per')) return sign + '₹' + s;
     if (unit === '₹ lakh crore') return sign + '₹' + (+Math.abs(v)).toFixed(p ?? 1) + ' lakh cr';
@@ -55,6 +60,7 @@
   function fmtTick(v, unit) {
     if (unit === '%' || unit === '% p.a.') return d3.format('~r')(+v.toFixed(2)) + '%';
     if (unit === 'US$ bn') return '$' + d3.format(',~r')(v);
+    if (unit === 'pp') return d3.format('~r')(+v.toFixed(2)) + ' pp';
     return d3.format(',~r')(+v.toFixed(2));
   }
   function msg(text) { const p = document.createElement('p'); p.className = 'mm-muted'; p.textContent = text; return p; }
@@ -83,22 +89,26 @@
   const CH = {
     growth: { unit: '%', zero: true, aria: 'Line chart of real GDP and GVA growth by quarter', series: [
       ['gdp_growth_q', 'Real GDP, 2022-23 base'], ['gva_growth_q', 'Real GVA, 2022-23 base'],
-      ['gdp_growth_q_old', 'Real GDP, old 2011-12 base', { muted: true, dash: true }]] },
+      ['gdp_growth_q_old', 'Real GDP, old 2011-12 base', { muted: true, dash: true, old: true }]] },
     cpi: { unit: '%', zero: true, band: [2, 6], ref: 4, refLabel: '4% target', aria: 'Line chart of CPI inflation with the 2 to 6 percent band', series: [
-      ['cpi_infl_old', 'Headline, 2012 base', { muted: true }], ['cpi_infl_combined', 'Headline, 2024 base'],
-      ['cfpi_old', 'Food (CFPI), 2012 base', { muted: true, dash: true }], ['cpi_food', 'Food & beverages, 2024 base', { dash: true }]] },
+      ['cpi_infl_old', 'Headline, 2012 base', { muted: true, old: true }], ['cpi_infl_combined', 'Headline, 2024 base'],
+      ['cfpi_old', 'Food (CFPI), 2012 base', { muted: true, dash: true, old: true }], ['cpi_food', 'Food & beverages, 2024 base', { dash: true }]] },
     iip: { unit: '%', zero: true, aria: 'Line chart of industrial production growth', series: [
-      ['iip_growth_old', 'IIP, old 2011-12 base', { muted: true }], ['iip_growth', 'IIP general, 2022-23 base'],
+      ['iip_growth_old', 'IIP, old 2011-12 base', { muted: true, old: true }], ['iip_growth', 'IIP general, 2022-23 base'],
       ['iip_manufacturing', 'Manufacturing, 2022-23 base', { dash: true }]] },
     policy: { unit: '%', aria: 'Step chart of repo, SDF and MSF rates with the call money rate', series: [
       ['repo', 'Repo', { step: true }], ['sdf', 'SDF', { step: true }], ['msf', 'MSF', { step: true }],
       ['call_w', 'Call money (weekly)', { dash: true }]] },
     yields: { unit: '%', aria: 'Line chart of government bond yields', series: [
-      ['gsec10', '10Y month-end'], ['gsec10_w', '10Y FBIL weekly'], ['gsec5', '5Y month-end'], ['gsec1', '1Y month-end'],
+      ['gsec10', '10-year, month-end SGL trades'], ['gsec10_w', '10-year FBIL par yield, weekly'], ['gsec5', '5-year, month-end SGL trades'],
+      ['gsec1', '1-year, month-end SGL trades'],
       ['tb91_w', '91-day T-bill', { dash: true }]] },
     forex: { unit: 'US$ bn', aria: 'Line chart of foreign exchange reserves', series: [['forex_m', 'Month-end'], ['forex_w', 'Weekly']] },
     fx: { unit: '₹ per US$', aria: 'Line chart of rupee exchange rates', series: [
       ['usdinr_m', 'USD/INR monthly average'], ['usdinr_w', 'USD/INR weekly'], ['eurinr_m', 'EUR/INR monthly average', { muted: true }]] },
+    brief: { unit: 'pp', zero: true, months: 12, dots: true, shade: REPORTING_MIX,
+      aria: 'Line chart of credit growth minus deposit growth over the last 12 months, latest month and 3-month average', series: [
+      ['scb_gap', 'Latest month'], ['scb_gap_3m', '3-month average']] },
     banking: { unit: '%', zero: true, aria: 'Line chart of bank credit and deposit growth', series: [
       ['scb_credit_yoy', 'Bank credit'], ['scb_dep_yoy', 'Aggregate deposits']] },
   };
@@ -113,17 +123,23 @@
     const I = index();
     const o = dash.data('observations');
     if (!I || !cfg) { el.replaceChildren(msg(statusText(o.status))); return; }
+    // A chart with `months` shows a fixed window ending at its own latest point; others follow the range filter.
+    const end = cfg.months
+      ? d3.max(cfg.series, ([id]) => { const a = I.m.get(id); return a && a.length ? a[a.length - 1].d : null; }) || I.max
+      : I.max;
     const yrs = { '2y': 2, '5y': 5, '10y': 10 }[MM.range];
-    const t0 = yrs ? d3.utcYear.offset(I.max, -yrs) : null;
+    const t0 = cfg.months ? d3.utcDay.offset(d3.utcMonth.offset(end, -(cfg.months - 1)), -5)
+      : yrs ? d3.utcYear.offset(I.max, -yrs) : null;
     const colors = dash.colors; let ci = 0;
     const S = [];
     for (const [id, name, opt = {}] of cfg.series) {
+      if (opt.old && !MM.showOld) continue;            // discontinued series are opt-in
       const a = I.m.get(id); if (!a || !a.length) continue;
-      let pts = t0 ? a.filter((p) => p.d >= t0) : a.slice();
+      let pts = (t0 ? a.filter((p) => p.d >= t0) : a.slice()).filter((p) => p.d <= end);
       if (opt.step) {
         const before = t0 ? a.filter((p) => p.d < t0).pop() : null;
         if (before) pts.unshift({ ...before, d: t0 });
-        if (pts.length) pts.push({ ...pts[pts.length - 1], d: I.max });
+        if (pts.length) pts.push({ ...pts[pts.length - 1], d: end });
       }
       if (!pts.length) continue;
       S.push({ id, name, pts, step: !!opt.step, dash: !!opt.dash, last: a[a.length - 1],
@@ -155,11 +171,20 @@
     const lw = d3.max(yt.nodes(), (n) => n.getComputedTextLength()) || 28;
     const m = { l: Math.ceil(lw) + 10, r: 14, t: 8, b: 22 };
     const x0 = t0 || d3.min(S, (s) => s.pts[0].d);
-    const x = d3.scaleUtc().domain([x0, I.max]).range([m.l, W - m.r]);
+    const x = d3.scaleUtc().domain([x0, cfg.months ? d3.utcDay.offset(end, 5) : end]).range([m.l, W - m.r]);
     y.range([H - m.b, m.t]);
     yt.attr('x', m.l - 8).attr('y', (d) => y(d)).attr('dy', '0.32em').attr('text-anchor', 'end');
     gGrid.selectAll('line').data(ticks).join('line').attr('x1', m.l).attr('x2', W - m.r)
       .attr('y1', (d) => y(d)).attr('y2', (d) => y(d)).style('stroke', (d) => (d === 0 ? 'var(--cds-chart-axis)' : 'var(--cds-chart-grid)'));
+    if (cfg.shade) {
+      const [a, b] = x.domain();
+      const s0 = new Date(Math.max(a, parse(cfg.shade.from))), s1 = new Date(Math.min(b, parse(cfg.shade.to)));
+      if (s1 > s0) {
+        gBand.append('rect').attr('x', x(s0)).attr('width', x(s1) - x(s0)).attr('y', m.t).attr('height', H - m.t - m.b)
+          .style('fill', 'var(--cds-chart-reference)').style('opacity', 0.08);
+        gBand.append('text').attr('x', x(s0) + 4).attr('y', m.t + 10).text(cfg.shade.label || '');
+      }
+    }
     if (cfg.band) gBand.append('rect').attr('x', m.l).attr('width', W - m.l - m.r).attr('y', y(cfg.band[1]))
       .attr('height', y(cfg.band[0]) - y(cfg.band[1])).style('fill', 'var(--cds-chart-reference)').style('opacity', 0.1);
     if (cfg.ref != null) {
@@ -176,8 +201,12 @@
       gLines.append('path').attr('d', line(s.pts)).style('fill', 'none').style('stroke', s.color)
         .style('stroke-width', s.color.includes('muted') ? 1.5 : 2).style('stroke-dasharray', s.dash ? '5 3' : null)
         .style('stroke-linejoin', 'round');
-      const end = s.step ? s.pts[s.pts.length - 2] || s.pts[0] : s.pts[s.pts.length - 1];
-      if (end.d >= x.domain()[0]) gLines.append('circle').attr('cx', x(s.step ? I.max : end.d)).attr('cy', y(end.v)).attr('r', 3).style('fill', s.color);
+      if (cfg.dots) {
+        gLines.append('g').selectAll('circle').data(s.pts).join('circle').attr('cx', (p) => x(p.d)).attr('cy', (p) => y(p.v))
+          .attr('r', 2.5).style('fill', s.color);
+      }
+      const lastPt = s.step ? s.pts[s.pts.length - 2] || s.pts[0] : s.pts[s.pts.length - 1];
+      if (lastPt.d >= x.domain()[0]) gLines.append('circle').attr('cx', x(s.step ? end : lastPt.d)).attr('cy', y(lastPt.v)).attr('r', 3.5).style('fill', s.color);
     }
     // tooltip
     const tip = root.append('div').attr('class', 'mm-tip').property('hidden', true);
@@ -248,24 +277,25 @@
     svg.append('g').selectAll('rect').data(rows).join('rect')
       .attr('x', (d) => x(Math.min(0, d.v))).attr('width', (d) => Math.abs(x(d.v) - x(0)))
       .attr('y', (d, i) => yy(i) + 3).attr('height', bh - 8).attr('rx', 2)
-      .style('fill', (d) => (d.id === 'gva_growth_q' ? 'var(--color-fg)' : d.v < 0 ? 'var(--cds-chart-status-critical)' : dash.colors[0]));
+      .style('fill', (d) => (d.id === 'gva_growth_q' ? 'var(--color-fg)' : d.v < 0 ? 'var(--cds-chart-muted)' : dash.colors[0]));
     vlab.attr('x', (d) => (d.v < 0 ? x(d.v) - 4 : x(d.v) + 4)).attr('y', (d, i) => yy(i) + bh / 2 - 2).attr('dy', '0.32em')
       .attr('text-anchor', (d) => (d.v < 0 ? 'end' : 'start'));
     svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', 0).attr('y2', H).style('stroke', 'var(--cds-chart-axis)');
   });
 
   // ---------- KPI tiles and takeaway ----------
+  // Changes are shown neutrally: a macro move is not good or bad for every bank, so tiles carry no colour judgement.
   const K = {
-    gdp_growth_q: { unit: '%', p: 1, good: 'up' }, cpi_infl_combined: { unit: '%', p: 2, good: 'down' },
-    iip_growth: { unit: '%', p: 1, good: 'up' }, repo: { unit: '%', p: 2, good: null },
-    gsec10_w: { unit: '%', p: 2, good: 'down' }, forex_w: { unit: 'US$ bn', p: 1, good: 'up' },
-    scb_credit_yoy: { unit: '%', p: 1, good: 'up' }, usdinr_w: { unit: '₹ per US$', p: 2, good: 'down' },
+    gdp_growth_q: { unit: '%', p: 1 }, cpi_infl_combined: { unit: '%', p: 2 }, iip_growth: { unit: '%', p: 1 },
+    repo: { unit: '%', p: 2 }, gsec10_w: { unit: '%', p: 2 }, forex_w: { unit: 'US$ bn', p: 1 },
+    scb_credit_yoy: { unit: '%', p: 1 }, scb_dep_yoy: { unit: '%', p: 1 }, usdinr_w: { unit: '₹ per US$', p: 2 },
+    scb_gap: { unit: 'pp', p: 2 }, scb_gap_3m: { unit: 'pp', p: 2 },
   };
   function latest(k) { const L = dash.data('latest'); return L.status === 'ok' ? L.data.find((r) => r.series === k) : null; }
   dash.draw('kpi', (el) => {
     const k = el.dataset.k, part = el.dataset.part, c = K[k];
     const r = latest(k);
-    el.classList.remove('is-good', 'is-bad', 'is-flat');
+    el.classList.remove('is-flat');
     if (!r) { el.textContent = statusText(dash.data('latest').status); return; }
     if (part === 'value') el.textContent = c.unit === 'US$ bn' ? r.value.toFixed(c.p) : fmt(r.value, c.unit, c.p);
     else if (part === 'label') el.textContent = r.label;
@@ -273,10 +303,9 @@
       if (r.change == null) { el.textContent = '—'; return; }
       const d = r.change, sign = d > 0 ? '+' : d < 0 ? MINUS : '±';
       const a = Math.abs(d).toFixed(c.p);
-      const amt = c.unit === '%' ? a + ' pp' : c.unit === 'US$ bn' ? '$' + a + ' bn' : '₹' + a;
+      const amt = c.unit === '%' || c.unit === 'pp' ? a + ' pp' : c.unit === 'US$ bn' ? '$' + a + ' bn' : '₹' + a;
       el.textContent = (k === 'repo' ? sign + amt + ', from ' + fmt(r.prev, '%', 2) + ' on ' : sign + amt + ' vs ') + r.prev_label;
-      if (d === 0 || !c.good) el.classList.add('is-flat');
-      else el.classList.add((d > 0) === (c.good === 'up') ? 'is-good' : 'is-bad');
+      el.classList.add('is-flat');
     }
   });
   dash.draw('repo-move', (el) => {
@@ -285,11 +314,69 @@
     const bp = Math.round(Math.abs(r.change) * 100);
     el.textContent = bp + ' bp ' + (r.change > 0 ? 'increase' : 'cut');
   });
-  dash.draw('vs-target', (el) => {
+  // CPI is described against the 2–6% tolerance band around the 4% target, which is the actual limit in law.
+  dash.draw('vs-band', (el) => {
     const r = latest('cpi_infl_combined');
-    const TARGET = 4;
+    const LOWER = 2, UPPER = 6, TARGET = 4;
+    if (!r || r.value == null) { el.textContent = '—'; return; }
+    el.textContent = r.value > UPPER ? `above the ${UPPER}% upper tolerance level`
+      : r.value < LOWER ? `below the ${LOWER}% lower tolerance level`
+      : `within the ${LOWER}–${UPPER}% tolerance band around the ${TARGET}% target`;
+  });
+
+  // ---------- banking brief ----------
+  const ORD = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+  // "widened" / "narrowed" for the latest month, with the run length when the move continues a streak.
+  dash.draw('direction', (el) => {
+    const I = index();
+    const rows = I ? (I.raw.get(el.dataset.k) || []).slice().sort((a, b) => (a.period < b.period ? -1 : 1)) : [];
+    if (rows.length < 2) { el.textContent = '—'; return; }
+    const step = (i) => Math.sign(+rows[i].value - +rows[i - 1].value);
+    const dir = step(rows.length - 1);
+    if (dir === 0) { el.textContent = 'was unchanged'; return; }
+    let run = 1;
+    for (let i = rows.length - 2; i >= 1 && step(i) === dir; i--) run++;
+    el.textContent = (dir > 0 ? 'widened' : 'narrowed') + (run > 1 ? ` for the ${ORD(run)} month in a row` : '');
+  });
+
+  dash.calc('inccd', {
+    inputs: ['observations'],
+    title: 'Incremental credit–deposit ratio: latest and same month last year',
+    description: 'Latest month of the financial-year-to-date ratio, the same month a year earlier, and whether the ratio is available for the latest month of bank data.',
+    fn: (observations) => {
+      const ratio = observations.filter((r) => r.series === 'scb_inc_cd_fytd');
+      const credit = observations.filter((r) => r.series === 'scb_credit').sort((a, b) => (a.period < b.period ? -1 : 1));
+      const latestBank = credit[credit.length - 1];
+      if (!latestBank) return [];
+      const at = (period) => ratio.find((r) => r.period === period);
+      const cur = at(latestBank.period);
+      const yearAgo = at(`${+latestBank.period.slice(0, 4) - 1}${latestBank.period.slice(4)}`);
+      const one = (v) => (v == null ? null : Math.round(+v * 10) / 10);
+      return [{
+        series: 'scb_inc_cd_fytd', period: latestBank.period, label: latestBank.label, available: !!cur,
+        value: cur ? one(cur.value) : null,
+        year_ago: yearAgo ? one(yearAgo.value) : null, year_ago_label: yearAgo ? yearAgo.label : null,
+      }];
+    },
+  });
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function inccd() { const d = dash.data('inccd'); return d.status === 'ok' && d.data && d.data[0] ? d.data[0] : null; }
+  dash.draw('inccd-state', () => {
+    const r = inccd();
+    const ok = !!(r && r.available);
+    for (const el of document.querySelectorAll('[data-switch="inccd-ok"]')) if (el.hidden === ok) el.hidden = !ok;
+    for (const el of document.querySelectorAll('[data-switch="inccd-missing"]')) { const hide = !r || ok; if (el.hidden !== hide) el.hidden = hide; }
+  });
+  dash.draw('inccd', (el) => {
+    const r = inccd(), part = el.dataset.part;
     if (!r) { el.textContent = '—'; return; }
-    el.textContent = r.value > TARGET ? 'above' : r.value < TARGET ? 'below' : 'at';
+    const monthEnd = `end-${MONTHS[+r.period.slice(5, 7) - 1]} ${r.period.slice(0, 4)}`;
+    if (part === 'value') el.textContent = r.value == null ? '—' : r.value.toFixed(1) + '%';
+    else if (part === 'per100') el.textContent = r.value == null ? '—' : r.value.toFixed(1);
+    else if (part === 'label') el.textContent = monthEnd;
+    else if (part === 'pending_label') el.textContent = r.label;
+    else if (part === 'year_ago') el.textContent = r.year_ago == null ? '—' : r.year_ago.toFixed(1) + '%';
+    else if (part === 'year_ago_label') el.textContent = r.year_ago_label ? 'end-March to end-' + MONTHS[+r.period.slice(5, 7) - 1] + ' ' + (+r.period.slice(0, 4) - 1) : '—';
   });
 
   // ---------- build / fetch dates (from the data files' meta) ----------
@@ -436,6 +523,10 @@
       for (const o of document.querySelectorAll('[data-range-btn]')) o.setAttribute('aria-pressed', String(o === b));
       dash.draw('chart');
     });
+  }
+  for (const cb of document.querySelectorAll('#show-old')) {
+    cb.checked = !!MM.showOld;
+    cb.addEventListener('change', () => { MM.showOld = cb.checked; dash.draw('chart'); });
   }
   window.addEventListener('beforeprint', () => { for (const s of document.querySelectorAll('.mm-sec[data-topic]')) s.hidden = false; });
 })();

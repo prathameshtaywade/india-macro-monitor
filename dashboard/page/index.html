@@ -15,7 +15,7 @@
   .mm-kl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); letter-spacing: .02em; }
   .mm-kv { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.15; }
   .mm-kc { font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
-  .is-good { color: var(--color-ok); } .is-bad { color: var(--color-bad); } .is-flat { color: var(--color-fg-muted); }
+  .is-flat { color: var(--color-fg-muted); }
   .mm-bar { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md) var(--cds-gap-xl); align-items: center; position: sticky; top: 0; z-index: 3; background: var(--color-bg); padding-block: var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
   .mm-seg { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); align-items: center; }
   .mm-seg > span { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-right: var(--cds-gap-xs); }
@@ -46,6 +46,16 @@
   .mm-flag { border: 1px solid var(--color-warn); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); line-height: 1.5; max-width: 80ch; }
   .mm-flag b { color: var(--color-warn); }
   [data-draw="scheduled-policy"]:empty { display: none; }
+  .mm-eyebrow { font-size: var(--cds-font-size-caption); letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); }
+  .mm-brief { gap: var(--cds-gap-lg); }
+  .mm-brief-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--cds-gap-md); }
+  .mm-brief-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: var(--cds-gap-md); align-items: start; }
+  @media (max-width: 760px) { .mm-brief-grid { grid-template-columns: minmax(0, 1fr); } }
+  .mm-brief-chart { display: grid; gap: var(--cds-gap-sm); min-width: 0; }
+  .mm-tile { border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); align-content: start; min-width: 0; }
+  .mm-tile [data-switch] { display: grid; gap: var(--cds-gap-xs); }
+  .mm-check { display: inline-flex; align-items: center; gap: 6px; }
+  .mm-check input { margin: 0; }
   .mm-dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px var(--cds-gap-md); font-size: var(--cds-font-size-caption); margin: 0; }
   .mm-dl dt { color: var(--color-fg-muted); } .mm-dl dd { margin: 0; overflow-wrap: anywhere; }
   .mm-dl a { color: var(--color-fg); }
@@ -61,24 +71,53 @@
 <div class="mm">
   <header class="mm-head" id="top">
     <h1>India Macro Monitor</h1>
-    <p class="mm-take" id="takeaway">The RBI policy repo rate is <b class="mm-num" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</b> after a <span data-draw="repo-move">—</span> on <span data-draw="kpi" data-k="repo" data-part="label">—</span>. CPI inflation was <b class="mm-num" data-draw="kpi" data-k="cpi_infl_combined" data-part="value" data-source="latest" data-field="value" data-where="series=cpi_infl_combined">—</b> in <span data-draw="kpi" data-k="cpi_infl_combined" data-part="label">—</span>, <span data-draw="vs-target">—</span> the 4% inflation target, and real GDP grew <b class="mm-num" data-draw="kpi" data-k="gdp_growth_q" data-part="value" data-source="latest" data-field="value" data-where="series=gdp_growth_q">—</b> year on year in <span data-draw="kpi" data-k="gdp_growth_q" data-part="label">—</span>.</p>
-    <p class="mm-cap">Official statistics from MoSPI (National Accounts, CPI, IIP) and the Reserve Bank of India (Handbook of Statistics, Weekly Statistical Supplement, policy statements). Data built <span data-draw="built" data-part="obs">—</span>. Each tile shows the latest observation and its change from the one before.</p>
+    <p class="mm-take" id="takeaway">The RBI policy repo rate is <b class="mm-num" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</b> after a <span data-draw="repo-move">—</span> on <span data-draw="kpi" data-k="repo" data-part="label">—</span>. CPI inflation was <b class="mm-num" data-draw="kpi" data-k="cpi_infl_combined" data-part="value" data-source="latest" data-field="value" data-where="series=cpi_infl_combined">—</b> in <span data-draw="kpi" data-k="cpi_infl_combined" data-part="label">—</span>, <span data-draw="vs-band">—</span>, and real GDP grew <b class="mm-num" data-draw="kpi" data-k="gdp_growth_q" data-part="value" data-source="latest" data-field="value" data-where="series=gdp_growth_q">—</b> year on year in <span data-draw="kpi" data-k="gdp_growth_q" data-part="label">—</span>.</p>
+    <p class="mm-cap">Official statistics from MoSPI (National Accounts, CPI, IIP) and the Reserve Bank of India (Handbook of Statistics, Weekly Statistical Supplement, policy statements). Data built <span data-draw="built" data-part="obs">—</span>. Each tile shows the latest observation and its change from the one before; changes are shown neutrally, without a good or bad judgement.</p>
   </header>
 
   <span data-draw="policy-check"></span>
   <p class="mm-flag" id="policy-flag" data-policy-flag hidden role="status"><b>Policy rates may be out of date.</b> RBI's website shows different rates from this dashboard's policy history: <span data-draw="policy-diff">—</span>. The history is updated by hand from the MPC resolution, so the headline repo rate and the policy chart may lag until that is done.</p>
   <p class="mm-cap" role="status" data-draw="scheduled-policy" data-source="observations"></p>
 
+  <section class="mm-card mm-brief" id="brief" aria-labelledby="brief-h">
+    <div class="mm-sec-h">
+      <span class="mm-eyebrow">Banking brief</span>
+      <h2 id="brief-h">Bank credit and deposit growth</h2>
+      <p class="mm-take">In <span data-draw="kpi" data-k="scb_gap" data-part="label">—</span>, bank credit grew <b class="mm-num" data-draw="kpi" data-k="scb_credit_yoy" data-part="value" data-source="latest" data-field="value" data-where="series=scb_credit_yoy">—</b> and deposits <b class="mm-num" data-draw="kpi" data-k="scb_dep_yoy" data-part="value" data-source="latest" data-field="value" data-where="series=scb_dep_yoy">—</b> year on year. The gap between them <span data-draw="direction" data-k="scb_gap">—</span> to <b class="mm-num" data-draw="kpi" data-k="scb_gap" data-part="value" data-source="latest" data-field="value" data-where="series=scb_gap">—</b>, while its 3-month average <span data-draw="direction" data-k="scb_gap_3m">—</span> to <b class="mm-num" data-draw="kpi" data-k="scb_gap_3m" data-part="value" data-source="latest" data-field="value" data-where="series=scb_gap_3m">—</b>.</p>
+    </div>
+    <div class="mm-brief-tiles">
+      <div class="mm-tile" id="brief-gap"><span class="mm-kl">Credit growth minus deposit growth, latest month</span><span class="mm-kv" data-draw="kpi" data-k="scb_gap" data-part="value" data-source="latest" data-field="value" data-where="series=scb_gap">—</span><span class="mm-kc" data-draw="kpi" data-k="scb_gap" data-part="change" data-source="latest" data-field="change" data-where="series=scb_gap">—</span><span class="mm-cap" data-draw="kpi" data-k="scb_gap" data-part="label">—</span></div>
+      <div class="mm-tile" id="brief-gap3"><span class="mm-kl">Credit growth minus deposit growth, 3-month average</span><span class="mm-kv" data-draw="kpi" data-k="scb_gap_3m" data-part="value" data-source="latest" data-field="value" data-where="series=scb_gap_3m">—</span><span class="mm-kc" data-draw="kpi" data-k="scb_gap_3m" data-part="change" data-source="latest" data-field="change" data-where="series=scb_gap_3m">—</span><span class="mm-cap">3 months to <span data-draw="kpi" data-k="scb_gap_3m" data-part="label">—</span></span></div>
+    </div>
+    <div class="mm-brief-grid">
+      <div class="mm-brief-chart"><h3>Last 12 months, percentage points</h3><div class="mm-chart" id="ch-brief" data-draw="chart" data-chart="brief" data-source="observations"></div></div>
+      <div class="mm-tile" id="brief-inccd" data-source="inccd">
+        <span class="mm-kl">Incremental credit–deposit ratio, financial year to date</span>
+        <span data-draw="inccd-state"></span>
+        <div data-switch="inccd-ok">
+          <span class="mm-kv" data-draw="inccd" data-part="value" data-source="inccd" data-field="value" data-where="series=scb_inc_cd_fytd">—</span>
+          <p class="mm-cap">From end-March to <span data-draw="inccd" data-part="label">—</span>, outstanding credit rose by about ₹<span data-draw="inccd" data-part="per100" data-source="inccd" data-field="value" data-where="series=scb_inc_cd_fytd">—</span> for every ₹100 increase in deposits.</p>
+          <p class="mm-cap">Same point last year: <b class="mm-num" data-draw="inccd" data-part="year_ago" data-source="inccd" data-field="year_ago" data-where="series=scb_inc_cd_fytd">—</b> (<span data-draw="inccd" data-part="year_ago_label">—</span>).</p>
+        </div>
+        <p class="mm-cap" data-switch="inccd-missing" hidden>Not shown for <span data-draw="inccd" data-part="pending_label">—</span>: deposits have grown by less than 0.5% since end-March (or fallen), so the ratio would swing widely. It appears once deposit growth for the year passes that level, usually from June.</p>
+      </div>
+    </div>
+    <p class="mm-cap">A wider gap means credit is growing faster than deposits. It is not a cash shortfall, and on its own it does not establish tight liquidity. The September reading may also reflect half-year-end balance-sheet effects. Months from December 2025 to November 2026 (shaded) compare a month-end with the corresponding reporting Friday a year earlier, because RBI moved the reporting date to month-end in December 2025; an average does not remove that difference. Source: RBI Handbook Table 167 and Weekly Statistical Supplement Table 4; gap, average and ratio computed here.</p>
+  </section>
+
+  <div class="mm-sec-h" id="macro"><h2>Macro summary</h2></div>
   <section class="mm-kpis" id="headline" aria-label="Latest readings">
     <div class="mm-card" id="kpi-gdp"><span class="mm-kl">Real GDP growth, y/y</span><span class="mm-kv" data-draw="kpi" data-k="gdp_growth_q" data-part="value" data-source="latest" data-field="value" data-where="series=gdp_growth_q">—</span><span class="mm-kc" data-draw="kpi" data-k="gdp_growth_q" data-part="change" data-source="latest" data-field="change" data-where="series=gdp_growth_q">—</span><span class="mm-cap" data-draw="kpi" data-k="gdp_growth_q" data-part="label">—</span></div>
     <div class="mm-card" id="kpi-cpi"><span class="mm-kl">CPI inflation, y/y</span><span class="mm-kv" data-draw="kpi" data-k="cpi_infl_combined" data-part="value" data-source="latest" data-field="value" data-where="series=cpi_infl_combined">—</span><span class="mm-kc" data-draw="kpi" data-k="cpi_infl_combined" data-part="change" data-source="latest" data-field="change" data-where="series=cpi_infl_combined">—</span><span class="mm-cap" data-draw="kpi" data-k="cpi_infl_combined" data-part="label">—</span></div>
     <div class="mm-card" id="kpi-iip"><span class="mm-kl">Industrial production (IIP), y/y</span><span class="mm-kv" data-draw="kpi" data-k="iip_growth" data-part="value" data-source="latest" data-field="value" data-where="series=iip_growth">—</span><span class="mm-kc" data-draw="kpi" data-k="iip_growth" data-part="change" data-source="latest" data-field="change" data-where="series=iip_growth">—</span><span class="mm-cap" data-draw="kpi" data-k="iip_growth" data-part="label">—</span></div>
     <div class="mm-card" id="kpi-repo"><span class="mm-kl">Policy repo rate</span><span class="mm-kv" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</span><span class="mm-kc" data-draw="kpi" data-k="repo" data-part="change" data-source="latest" data-field="change" data-where="series=repo">—</span><span class="mm-cap">Effective <span data-draw="kpi" data-k="repo" data-part="label">—</span></span></div>
-    <div class="mm-card" id="kpi-gsec"><span class="mm-kl">10-year G-Sec yield</span><span class="mm-kv" data-draw="kpi" data-k="gsec10_w" data-part="value" data-source="latest" data-field="value" data-where="series=gsec10_w">—</span><span class="mm-kc" data-draw="kpi" data-k="gsec10_w" data-part="change" data-source="latest" data-field="change" data-where="series=gsec10_w">—</span><span class="mm-cap">Week ended <span data-draw="kpi" data-k="gsec10_w" data-part="label">—</span></span></div>
+    <div class="mm-card" id="kpi-gsec"><span class="mm-kl">10-year G-Sec, FBIL par yield</span><span class="mm-kv" data-draw="kpi" data-k="gsec10_w" data-part="value" data-source="latest" data-field="value" data-where="series=gsec10_w">—</span><span class="mm-kc" data-draw="kpi" data-k="gsec10_w" data-part="change" data-source="latest" data-field="change" data-where="series=gsec10_w">—</span><span class="mm-cap">Week ended <span data-draw="kpi" data-k="gsec10_w" data-part="label">—</span></span></div>
     <div class="mm-card" id="kpi-forex"><span class="mm-kl">Foreign exchange reserves, US$ bn</span><span class="mm-kv" data-draw="kpi" data-k="forex_w" data-part="value" data-source="latest" data-field="value" data-where="series=forex_w">—</span><span class="mm-kc" data-draw="kpi" data-k="forex_w" data-part="change" data-source="latest" data-field="change" data-where="series=forex_w">—</span><span class="mm-cap">As on <span data-draw="kpi" data-k="forex_w" data-part="label">—</span></span></div>
     <div class="mm-card" id="kpi-credit"><span class="mm-kl">Bank credit growth, y/y</span><span class="mm-kv" data-draw="kpi" data-k="scb_credit_yoy" data-part="value" data-source="latest" data-field="value" data-where="series=scb_credit_yoy">—</span><span class="mm-kc" data-draw="kpi" data-k="scb_credit_yoy" data-part="change" data-source="latest" data-field="change" data-where="series=scb_credit_yoy">—</span><span class="mm-cap">Scheduled commercial banks, <span data-draw="kpi" data-k="scb_credit_yoy" data-part="label">—</span></span></div>
     <div class="mm-card" id="kpi-inr"><span class="mm-kl">USD/INR (FBIL reference)</span><span class="mm-kv" data-draw="kpi" data-k="usdinr_w" data-part="value" data-source="latest" data-field="value" data-where="series=usdinr_w">—</span><span class="mm-kc" data-draw="kpi" data-k="usdinr_w" data-part="change" data-source="latest" data-field="change" data-where="series=usdinr_w">—</span><span class="mm-cap">Week ended <span data-draw="kpi" data-k="usdinr_w" data-part="label">—</span></span></div>
   </section>
+
+  <div class="mm-sec-h" id="research"><h2>Research view</h2><p class="mm-muted">Current series by default. Old-base series (GDP 2011-12, CPI 2012, IIP 2011-12) are kept for history; switch them on below.</p></div>
 
   <div class="mm-bar" id="filters">
     <div class="mm-seg" role="group" aria-label="Topic">
@@ -99,10 +138,11 @@
       <button class="mm-chip" type="button" data-range-btn="10y" aria-pressed="false">10Y</button>
       <button class="mm-chip" type="button" data-range-btn="all" aria-pressed="false">All</button>
     </div>
+    <label class="mm-chip mm-check" for="show-old"><input type="checkbox" id="show-old"> Show discontinued series</label>
   </div>
 
   <section class="mm-sec" data-topic="growth" id="growth">
-    <div class="mm-sec-h"><h2>Growth: GDP and GVA</h2><p class="mm-muted">Quarterly, year-on-year at constant prices. Quarters follow the Indian fiscal year (Q1 = April–June). The 2022-23 base series replaced the 2011-12 series in February 2026; the two are not comparable, so the old one is drawn faintly for history.</p></div>
+    <div class="mm-sec-h"><h2>Growth: GDP and GVA</h2><p class="mm-muted">Quarterly, year-on-year at constant prices. Quarters follow the Indian fiscal year (Q1 = April–June). The 2022-23 base series replaced the 2011-12 series in February 2026; the two are not comparable, so the old one is hidden unless you switch on discontinued series.</p></div>
     <div class="mm-grid">
       <div class="mm-card"><h3>Real GDP and GVA growth</h3><div class="mm-chart" id="ch-growth" data-draw="chart" data-chart="growth" data-source="observations"></div><p class="mm-cap">Source: MoSPI National Accounts (api.mospi.gov.in, NAS indicators 21 and 22).</p></div>
       <div class="mm-card"><h3>GVA growth by sector, latest quarter</h3><div class="mm-chart" id="ch-sectors" data-draw="sectors" data-source="observations"></div><p class="mm-cap">Source: MoSPI National Accounts, 2022-23 base, constant prices.</p></div>
@@ -110,7 +150,7 @@
   </section>
 
   <section class="mm-sec" data-topic="prices" id="prices">
-    <div class="mm-sec-h"><h2>Inflation: Consumer Price Index</h2><p class="mm-muted">All-India, combined rural and urban, year on year. The band shows RBI's 2–6% tolerance range around the 4% target. The 2012-base CPI ends in December 2025; the 2024-base CPI publishes inflation from January 2026.</p></div>
+    <div class="mm-sec-h"><h2>Inflation: Consumer Price Index</h2><p class="mm-muted">All-India, combined rural and urban, year on year. The band shows RBI's 2–6% tolerance range around the 4% target. The 2024-base CPI publishes inflation from January 2026; for earlier years switch on discontinued series to see the 2012-base CPI, which ends in December 2025.</p></div>
     <div class="mm-card"><div class="mm-chart" id="ch-cpi" data-draw="chart" data-chart="cpi" data-source="observations"></div><p class="mm-cap">Source: MoSPI CPI (getCPIIndex, base 2012; getCPIData, base 2024).</p></div>
   </section>
 
