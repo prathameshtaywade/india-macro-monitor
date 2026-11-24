@@ -176,7 +176,7 @@ WSS_URL = "https://rbi.org.in/Scripts/BS_ViewWSS.aspx"
 if RB.get("policy"):
     cur = {"repo": None, "sdf": None, "msf": None, "crr": None, "slr": None}
     steps = {k: [] for k in cur}
-    for row in RB["policy"]:                  # [effectiveDate, repo, sdf, msf, crr, slr, source?]
+    for row in sorted(RB["policy"], key=lambda row: row[0]):  # [effectiveDate, repo, sdf, msf, crr, slr, source?]
         d, repo, sdf, msf, crr, slr = row[:6]
         for k, v in zip(cur, (repo, sdf, msf, crr, slr)):
             if v is not None and v != cur[k]:

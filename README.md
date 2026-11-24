@@ -56,11 +56,12 @@ The same page runs in two places: the Claude dashboard and a static website buil
 | Risk | Guard |
 |---|---|
 | rbi.org.in changes its layout and a rate stops parsing | `fetch_rbi_home.py` replaces the saved snapshot only if every required field parsed and is in range (`pipeline/checks.py`); `validate.py` re-checks it; the page shows a missing value as `—`, never `0.00%` |
-| A new MPC decision is on rbi.org.in but not yet in the policy history | `validate.py` warns, the daily job opens a GitHub issue, and the page shows a warning beside the headline until the history is updated |
-| MoSPI returns a partial set of pages | `fetch_mospi.py` requires every announced page and the reported row total; otherwise it keeps the cached file |
-| An older WSS bulletin overwrites a revision from a newer one | every weekly value carries its issue date; `merge_rbi.py` and `build_data.py` keep the newest issue's value |
+| An RBI snapshot disagrees with the policy history | The comparison uses the rates in force on the snapshot's India date. `validate.py` warns, the daily job opens a GitHub issue, and the page displays the disagreement. |
+| A policy change has been announced with a future effective date | The page lists it as scheduled and moves it into the headline and chart on its effective India date. |
+| MoSPI returns an incomplete or repeated set of pages | `fetch_mospi.py` checks reported page numbers and row totals, and keeps the cached file when it detects a repeated or missing page. |
+| An older WSS bulletin overwrites a revision from a newer one | `merge_rbi.py` keeps the newest known issue's value and reports conflicts with saved observations whose issue date is unknown. |
 | A series disappears or is renamed | `pipeline/series_ids.txt` lists every published id; any missing or unlisted id fails validation |
-| A series moves backwards or shrinks >5% vs the last commit, out-of-range values, duplicates | `validate.py` errors |
+| A series moves backwards or shrinks >5%, or has invalid periods, out-of-range values or duplicates | `validate.py` errors. PR checks compare against the PR base commit. |
 | Stale sources (e.g. the manual RBI step not run) | `validate.py` warnings in the run summary |
 
 Errors stop publishing; the last good site stays up. If a fetch fails, the Action keeps the last good raw files (cached).
@@ -97,6 +98,10 @@ same row to `policy` in `data/raw/rbi_extract.json`. Use the effective date stat
 3. `pbpaste | python3 pipeline/merge_rbi.py -` (macOS), then commit and push `data/raw/rbi_extract.json`.
    The push triggers a rebuild and republish.
 
+If the merge reports a conflict with a saved observation whose issue date is unknown, verify the figures and
+publication dates in the source bulletins. In `data/raw/rbi_extract.json`, record the verified value and its
+issue date as `[observationDate, value, issueDate]`. This lets future imports compare revisions by date.
+
 Why a browser step: `rbidocs.rbi.org.in` (where RBI's XLSX tables live) serves its files only to a browser that
 runs its JavaScript check, and RBI's DBIE portal (`data.rbi.org.in`) uses session tokens and encrypted requests
 with no documented public API. The script only reads public files with `fetch()` and parses them with built-in
@@ -108,8 +113,8 @@ browser APIs. Automating this with a headless browser would mean getting past RB
 python3 pipeline/fetch_mospi.py          # MoSPI API, no key; NAS = 1 indicator/call, CPI-2024 max 100 rows/page
 python3 pipeline/fetch_rbi_home.py       # rbi.org.in Current Rates box
 python3 pipeline/build_data.py           # -> data/macro.json
-python3 pipeline/export_dashboard.py     # -> dashboard/observations.json, catalog.json, snapshot.json
 python3 pipeline/validate.py             # exit 1 on errors
+python3 pipeline/export_dashboard.py     # -> dashboard/observations.json, catalog.json, snapshot.json
 python3 pipeline/build_site.py           # -> site/
 python3 -m http.server -d site 8000      # preview at http://localhost:8000
 ```
