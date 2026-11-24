@@ -56,9 +56,7 @@ jobs:
         run: python3 pipeline/fetch_rbi_home.py
 
       - name: Build dataset
-        run: |
-          python3 pipeline/build_data.py
-          python3 pipeline/export_dashboard.py
+        run: python3 pipeline/build_data.py
 
       - name: Validate (blocks publishing on errors)
         id: validate
@@ -86,7 +84,9 @@ jobs:
           fi
 
       - name: Build site
-        run: python3 pipeline/build_site.py
+        run: |
+          python3 pipeline/export_dashboard.py
+          python3 pipeline/build_site.py
 
       - name: Commit updated data
         if: github.event_name != 'push'

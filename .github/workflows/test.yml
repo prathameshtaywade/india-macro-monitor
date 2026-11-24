@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -24,5 +26,11 @@ jobs:
         run: python3 -m unittest discover -s tests -v
       - name: Page render checks (Node)
         run: node tests/test_render.js
+      - name: Pull request data passes validation against the base commit
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python3 pipeline/validate.py --base-ref "$BASE_SHA"
       - name: Committed data passes validation
+        if: github.event_name != 'pull_request'
         run: python3 pipeline/validate.py

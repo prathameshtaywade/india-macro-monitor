@@ -79,18 +79,23 @@ class IncompleteFetch(Exception):
 def fetch_all(endpoint, params, limit=200, getter=None):
     """
     Read every page. Fails (IncompleteFetch) unless all pages the API announced came back non-empty and,
-    when the API reports totalRecords, the row count matches it. A partial result never replaces cached data.
+    when the API reports totalRecords, the row count matches it. Verify reported page numbers and
+    reject repeated pages even when page numbers are missing. A partial result never replaces cached data.
     """
     getter = getter or get
     rows, page, pages, total = [], 1, None, None
+    seen_pages = set()
     while True:
         d = getter(endpoint, dict(params, Format="JSON", limit=limit, page=page))
         if not isinstance(d, dict):
             raise IncompleteFetch(f"page {page}: unexpected response")
-        if d.get("error") or d.get("success") is False:
+        if d.get("error") or d.get("success") is False or d.get("statusCode") is False:
             raise IncompleteFetch(f"page {page}: {d.get('error') or d.get('message')}")
         data = d.get("data") or []
         meta = d.get("meta_data") or {}
+        reported_page = meta.get("page")
+        if reported_page is not None and str(reported_page) != str(page):
+            raise IncompleteFetch(f"requested page {page}, API reported page {reported_page}")
         if pages is None:
             pages = int(meta.get("totalPages") or 1)
             total = meta.get("totalRecords")
@@ -98,6 +103,12 @@ def fetch_all(endpoint, params, limit=200, getter=None):
             if page == 1 and pages <= 1 and not total:
                 return []                       # genuinely empty answer; main() treats it as a failure
             raise IncompleteFetch(f"page {page} of {pages} came back empty")
+        if not isinstance(data, list) or any(not isinstance(row, dict) for row in data):
+            raise IncompleteFetch(f"page {page}: expected a list of records")
+        signature = tuple(sorted(json.dumps(row, sort_keys=True) for row in data))
+        if signature in seen_pages:
+            raise IncompleteFetch(f"page {page} repeats a previously fetched page")
+        seen_pages.add(signature)
         rows += data
         if page >= pages:
             break

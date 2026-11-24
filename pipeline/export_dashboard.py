@@ -10,6 +10,8 @@ Turn data/macro.json into the three files the published dashboard reads:
 """
 import json, os, time
 
+from checks import snapshot_date
+
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 MN = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
@@ -40,7 +42,8 @@ def build(M):
                    | {"first": pts[0][2], "last": last[2], "latest": round(last[3], 4), "obs": len(pts)})
 
     H = M.get("snapshot") or {}
-    day = (H.get("fetched_utc") or "")[:10]
+    fetched = snapshot_date(H)
+    day = fetched.isoformat() if fetched else ""
     groups = [("policy", "Policy rates", "%", lambda k: k, lambda: day),
               ("ratios", "Reserve ratios", "% of NDTL", lambda k: k, lambda: day),
               ("fx", "FBIL reference rate", "₹", lambda k: k.replace("INR / ", "₹ per "), lambda: H.get("fx_as_of") or ""),

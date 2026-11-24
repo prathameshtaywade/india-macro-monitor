@@ -17,7 +17,7 @@ function tbody() {
   };
 }
 
-function load(datasets) {
+function load(datasets, now = '2026-11-24T12:00:00Z') {
   const draws = {}, calcs = {};
   const flags = [{ hidden: true }];
   const dash = {
@@ -33,10 +33,14 @@ function load(datasets) {
   };
   const d3 = { utcParse: () => (s) => new Date(s + 'T00:00:00Z'), utcFormat: () => () => '', group: () => new Map() };
   const document = { querySelectorAll: (sel) => (sel === '[data-policy-flag]' ? flags : []), getElementById: () => null };
-  const ctx = { window: {}, dash, d3, document, console, Number, Math, String, Object, Array, Map, Set, Date, isNaN, encodeURIComponent };
+  class TestDate extends Date {
+    constructor(...args) { super(...(args.length ? args : [now])); }
+  }
+  const ctx = { window: {}, dash, d3, document, console, Number, Math, String, Object, Array, Map, Set,
+    Date: TestDate, isNaN, encodeURIComponent };
   ctx.window.addEventListener = () => {};
   vm.runInNewContext(src, ctx);
-  return { draws, flags };
+  return { draws, flags, window: ctx.window };
 }
 
 const obs = (rows) => ({ status: 'ok', data: rows, meta: [] });
@@ -89,6 +93,32 @@ test('a missing live rate is not treated as a disagreement', () => {
   const { draws, flags } = load({ observations: policyObs(5.5), catalog: obs([]), snapshot: snapshot(null, 5.25) });
   draws['policy-check']();
   assert.strictEqual(flags[0].hidden, true);
+});
+
+test('a scheduled repo rate stays out of the current headline and chart until its effective India date', () => {
+  const observations = policyObs(5.5);
+  observations.data.push({ series: 'repo', period: '2026-12-01', date: '2026-12-01', label: '1 Dec 2026', value: 5.75 });
+  const datasets = { observations, catalog: obs([]), snapshot: snapshot(5.5, 5.25) };
+  const headline = { dataset: { k: 'repo', part: 'value' }, classList: { remove() {} } };
+  const note = {};
+
+  const before = load(datasets, '2026-11-30T18:29:59Z');
+  before.draws.kpi(headline);
+  before.draws['policy-check']();
+  before.draws['scheduled-policy'](note);
+  assert.strictEqual(headline.textContent, '5.50%');
+  assert.strictEqual(before.flags[0].hidden, true);
+  assert.strictEqual(before.window.MM._idx.m.get('repo').at(-1).v, 5.5);
+  assert.match(note.textContent, /Scheduled policy changes: Policy Repo Rate 5\.75% from 1 Dec 2026/);
+
+  const after = load(datasets, '2026-11-30T18:30:00Z');
+  after.draws.kpi(headline);
+  after.draws['policy-check']();
+  after.draws['scheduled-policy'](note);
+  assert.strictEqual(headline.textContent, '5.75%');
+  assert.strictEqual(after.flags[0].hidden, true, 'the earlier snapshot still agrees with the earlier in-force rate');
+  assert.strictEqual(after.window.MM._idx.m.get('repo').at(-1).v, 5.75);
+  assert.strictEqual(note.textContent, '');
 });
 
 if (failures) { console.log(`${failures} failed`); process.exit(1); }

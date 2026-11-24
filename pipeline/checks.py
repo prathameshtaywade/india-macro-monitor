@@ -2,6 +2,9 @@
 Shared data checks used by the fetchers, validate.py and the offline tests.
 Pure functions only: no network, no file writes.
 """
+import datetime as dt
+
+INDIA_TIME = dt.timezone(dt.timedelta(hours=5, minutes=30))
 
 # rbi.org.in "Current Rates" box: fields that must parse, with plausible ranges.
 SNAPSHOT_REQUIRED = {
@@ -24,22 +27,36 @@ POLICY_PAIRS = [("repo", "Policy Repo Rate"), ("sdf", "Standing Deposit Facility
                 ("msf", "Marginal Standing Facility Rate")]
 
 
+def snapshot_date(snap):
+    """Return the India calendar date on which the Current Rates box was fetched."""
+    if not isinstance(snap, dict):
+        return None
+    try:
+        fetched = dt.datetime.strptime(snap.get("fetched_utc", ""), "%Y-%m-%dT%H:%M:%SZ")
+    except (TypeError, ValueError):
+        return None
+    return fetched.replace(tzinfo=dt.timezone.utc).astimezone(INDIA_TIME).date()
+
+
 def snapshot_errors(snap):
     """Return a list of problems with a parsed rbi.org.in snapshot (empty list = usable)."""
     if not isinstance(snap, dict):
         return ["snapshot is not an object"]
     errs = []
+    if snapshot_date(snap) is None:
+        errs.append("fetched_utc is missing or invalid")
     for (group, key), (lo, hi) in SNAPSHOT_REQUIRED.items():
         v = (snap.get(group) or {}).get(key)
         if v is None:
             errs.append(f"{group}/{key} did not parse")
-        elif not (lo <= v <= hi):
+        elif type(v) not in (int, float) or not (lo <= v <= hi):
             errs.append(f"{group}/{key} = {v} outside {lo}..{hi}")
     for group, n, lo, hi in (("gsec", SNAPSHOT_MIN_GSEC, 0.5, 20), ("tbill", SNAPSHOT_MIN_TBILL, 0.5, 20)):
         vals = snap.get(group) or {}
         if len(vals) < n:
             errs.append(f"{group}: {len(vals)} values parsed, expected at least {n}")
-        errs += [f"{group}/{k} = {v} outside {lo}..{hi}" for k, v in vals.items() if v is None or not (lo <= v <= hi)]
+        errs += [f"{group}/{k} = {v} outside {lo}..{hi}" for k, v in vals.items()
+                 if type(v) not in (int, float) or not (lo <= v <= hi)]
     for k in ("fx_as_of", "gsec_as_of"):
         if not snap.get(k):
             errs.append(f"{k} did not parse")
@@ -48,18 +65,25 @@ def snapshot_errors(snap):
 
 def policy_mismatches(snap, series):
     """
-    Compare the live rbi.org.in policy rates with the last step of the policy history.
+    Compare the RBI snapshot with the policy rates effective on the date it was fetched.
     `series` is the list of series dicts from data/macro.json. Returns a list of dicts, one per disagreement.
     """
     by_id = {s["id"]: s for s in series}
+    day = snapshot_date(snap)
+    if day is None:
+        return []
+    as_of = day.isoformat()
     out = []
     for sid, key in POLICY_PAIRS:
-        live = ((snap or {}).get("policy") or {}).get(key)
+        live = (snap.get("policy") or {}).get(key)
         hist = by_id.get(sid)
-        if live is None or not hist or not hist["data"]:
+        if type(live) not in (int, float) or not hist:
             continue
-        date, val = hist["data"][-1]
-        if abs(live - val) > 1e-9:
+        effective = next((point for point in reversed(hist["data"]) if point[0] <= as_of), None)
+        if effective is None:
+            continue
+        date, val = effective
+        if type(val) in (int, float) and abs(live - val) > 1e-9:
             out.append({"series": sid, "label": key, "live": live, "history": val, "history_date": date})
     return out
 

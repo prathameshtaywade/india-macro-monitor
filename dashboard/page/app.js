@@ -5,6 +5,16 @@
   const MINUS = '−';
   const TOPIC = { 'Growth': 'growth', 'GVA by sector': 'growth', 'Prices': 'prices', 'Industry': 'industry',
     'Monetary policy': 'policy', 'Rates & yields': 'rates', 'External': 'external', 'Banking': 'banking' };
+  const POLICY_NAMES = new Map([['repo', 'Policy Repo Rate'], ['sdf', 'Standing Deposit Facility Rate'],
+    ['msf', 'Marginal Standing Facility Rate'], ['crr', 'Cash Reserve Ratio'], ['slr', 'Statutory Liquidity Ratio']]);
+  const POLICY_CORRIDOR = ['repo', 'sdf', 'msf'];
+  const indiaToday = new Intl.DateTimeFormat('en', {
+    timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const dashboardDay = ['year', 'month', 'day'].map((part) => indiaToday.find((p) => p.type === part).value).join('-');
+  const isScheduled = (row) => !!row?.date && POLICY_NAMES.has(row.series) && row.date > dashboardDay;
+  const periodLabel = (row) => row.label + (isScheduled(row) ? ' (scheduled)' : '');
+  const rateNumber = (v) => v == null || v === '' ? NaN : Number(v);
 
   // ---------- latest value per series (a calc, so every tile can be traced) ----------
   dash.calc('latest', {
@@ -14,7 +24,9 @@
     fn: (observations) => {
       const places = { gdp_growth_q: 1, gva_growth_q: 1, iip_growth: 1, forex_w: 1, forex_m: 1, scb_credit_yoy: 1, scb_dep_yoy: 1 };
       const bySeries = {};
-      for (const r of observations) (bySeries[r.series] = bySeries[r.series] || []).push(r);
+      for (const r of observations) {
+        if (!isScheduled(r)) (bySeries[r.series] = bySeries[r.series] || []).push(r);
+      }
       return Object.entries(bySeries).map(([series, rows]) => {
         rows.sort((a, b) => ((a.date || a.period) < (b.date || b.period) ? -1 : 1));
         const p = places[series] ?? 2;
@@ -56,7 +68,7 @@
     const m = new Map(), raw = new Map(); let max = null;
     for (const r of o.data) {
       (raw.get(r.series) || raw.set(r.series, []).get(r.series)).push(r);
-      if (!r.date) continue;
+      if (!r.date || isScheduled(r)) continue;
       const d = parse(r.date);
       (m.get(r.series) || m.set(r.series, []).get(r.series)).push({ d, v: +r.value, label: r.label });
       if (!max || d > max) max = d;
@@ -291,17 +303,20 @@
   });
 
   // ---------- policy history vs rbi.org.in (flag a pending history update) ----------
-  const POLICY_PAIRS = [['repo', 'Policy Repo Rate'], ['sdf', 'Standing Deposit Facility Rate'], ['msf', 'Marginal Standing Facility Rate']];
   function policyMismatches() {
-    const s = dash.data('snapshot'), L = dash.data('latest');
-    if (s.status !== 'ok' || L.status !== 'ok') return null;
+    const s = dash.data('snapshot'), I = index();
+    if (s.status !== 'ok' || !I) return null;
     const out = [];
-    for (const [sid, item] of POLICY_PAIRS) {
+    for (const sid of POLICY_CORRIDOR) {
+      const item = POLICY_NAMES.get(sid);
       const row = s.data.find((r) => r.group === 'Policy rates' && r.item === item);
-      const live = row && row.value != null && row.value !== '' ? Number(row.value) : NaN;
-      const hist = L.data.find((r) => r.series === sid);
-      if (!Number.isFinite(live) || !hist || hist.value == null) continue;
-      if (Math.abs(live - hist.value) > 1e-9) out.push({ item, live, hist: hist.value, date: hist.label });
+      const live = rateNumber(row?.value);
+      if (!row?.as_of || !Number.isFinite(live)) continue;
+      const hist = I.raw.get(sid)?.findLast((r) => r.date && r.date <= row.as_of);
+      const effective = rateNumber(hist?.value);
+      if (Number.isFinite(effective) && Math.abs(live - effective) > 1e-9) {
+        out.push({ item, live, hist: effective, date: hist.label });
+      }
     }
     return out;
   }
@@ -317,6 +332,13 @@
       ? m.map((x) => `${x.item} ${x.live.toFixed(2)}% on rbi.org.in vs ${x.hist.toFixed(2)}% in the history (last change ${x.date})`).join('; ')
       : '—';
   });
+  dash.draw('scheduled-policy', (el) => {
+    const o = dash.data('observations');
+    const pending = o.status === 'ok' ? o.data.filter(isScheduled).sort((a, b) => a.date.localeCompare(b.date)) : [];
+    el.textContent = pending.length
+      ? 'Scheduled policy changes: ' + pending.map((r) => `${POLICY_NAMES.get(r.series)} ${fmt(r.value, '%')} from ${r.label}`).join('; ')
+      : '';
+  });
 
   // ---------- snapshot ----------
   dash.draw('snap', (tb) => {
@@ -327,7 +349,7 @@
       const tr = tb.insertRow(); tr.dataset.key = encodeURIComponent(r.item);
       tr.insertCell().textContent = r.group; tr.insertCell().textContent = r.item;
       // A missing value must show as a dash, never as 0 (+null === 0 in JavaScript).
-      const num = r.value == null || r.value === '' ? NaN : Number(r.value);
+      const num = rateNumber(r.value);
       const v = tr.insertCell(); v.className = 'r';
       v.textContent = Number.isFinite(num) ? num.toFixed(r.unit === '₹' ? 4 : 2) + (String(r.unit || '').startsWith('%') ? '%' : '') : '—';
       tr.insertCell().textContent = r.as_of;
@@ -353,7 +375,10 @@
     if (!cat) { el.textContent = '—'; return; }
     const c = cat.find((r) => r.id === MM.ex) || cat[0];
     const part = el.dataset.part;
-    if (part === 'coverage') el.textContent = `${c.first} to ${c.last} · ${c.obs} observations`;
+    if (part === 'coverage') {
+      const last = index()?.raw.get(c.id)?.at(-1);
+      el.textContent = `${c.first} to ${last ? periodLabel(last) : c.last} · ${c.obs} observations`;
+    }
     else if (part === 'link') {
       el.replaceChildren();
       if (/^https:\/\//.test(c.source_url || '')) { const a = document.createElement('a'); a.href = c.source_url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = c.source_url; el.append(a); }
@@ -368,7 +393,7 @@
     const rows = (I.raw.get(c.id) || []).slice().sort((a, b) => ((a.date || a.period) < (b.date || b.period) ? 1 : -1)).slice(0, 12);
     for (const r of rows) {
       const tr = tb.insertRow(); tr.dataset.key = encodeURIComponent(r.series) + ',' + encodeURIComponent(r.period);
-      tr.insertCell().textContent = r.label;
+      tr.insertCell().textContent = periodLabel(r);
       const v = tr.insertCell(); v.className = 'r'; v.textContent = String(+r.value);
     }
   });
@@ -376,6 +401,7 @@
   // ---------- catalog ----------
   dash.draw('catalog', (tb) => {
     const cat = catalogRows();
+    const I = index();
     tb.replaceChildren();
     if (!cat) { const tr = tb.insertRow(); const td = tr.insertCell(); td.colSpan = 8; td.textContent = statusText(dash.data('catalog').status); return; }
     for (const r of cat) {
@@ -388,7 +414,8 @@
       };
       tr.insertCell().append(b);
       tr.insertCell().textContent = r.group; tr.insertCell().textContent = r.freq; tr.insertCell().textContent = r.unit;
-      tr.insertCell().textContent = r.first; tr.insertCell().textContent = r.last;
+      const last = I?.raw.get(r.id)?.at(-1);
+      tr.insertCell().textContent = r.first; tr.insertCell().textContent = last ? periodLabel(last) : r.last;
       const v = tr.insertCell(); v.className = 'r'; v.textContent = String(+r.latest);
       tr.insertCell().textContent = r.source;
     }

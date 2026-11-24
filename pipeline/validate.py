@@ -3,9 +3,9 @@
 Sanity-check data/macro.json before it is published. Exit 1 on any ERROR; WARNINGs never block.
 
 Errors
-  - the published series ids differ from pipeline/series_ids.txt (missing or unlisted ids)
-  - a core series is nearly empty, has duplicate periods, or a value outside its plausible range
-  - versus the last committed version (git HEAD): a series disappears, its latest period moves backwards,
+  - series IDs are duplicated or differ from pipeline/series_ids.txt
+  - a core series is nearly empty, or any series has invalid periods or values outside its plausible range
+  - versus the baseline version (git HEAD by default): a series disappears, its latest period moves backwards,
     or its history shrinks by more than 5%
   - the rbi.org.in snapshot is missing required fields or has out-of-range values
 Warnings
@@ -16,10 +16,17 @@ Warnings
 Run in GitHub Actions it also writes a Markdown report to $GITHUB_STEP_SUMMARY and sets the step output
 `policy_mismatch=true|false` in $GITHUB_OUTPUT.
 """
-import datetime as dt, json, os, subprocess, sys
+import argparse
+import datetime as dt
+import json
+import os
+import re
+import subprocess
+import sys
+from collections import Counter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from checks import policy_mismatches, snapshot_errors  # noqa: E402
+from checks import INDIA_TIME, policy_mismatches, snapshot_date, snapshot_errors  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 IDS_FILE = os.path.join(ROOT, "pipeline", "series_ids.txt")
@@ -44,16 +51,20 @@ def read_expected_ids(path=IDS_FILE):
 
 def end_date(period, freq):
     """Approximate calendar date at which a period ends; the series' frequency decides the format."""
+    if not isinstance(period, str):
+        return None
     try:
-        if len(period) == 10:
+        if (freq in ("Daily", "Weekly") or freq.startswith("Event")) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", period):
             return dt.date.fromisoformat(period)
-        if freq.startswith("Annual"):                               # fiscal year '2025-26'
-            return dt.date(int(period[:4]) + 1, 3, 31)
-        if len(period) == 7 and period[5] == "Q":                   # fiscal quarter '2026-Q1'
+        if freq.startswith("Annual") and re.fullmatch(r"\d{4}-\d{2}", period):
+            end_year = int(period[:4]) + 1
+            if end_year % 100 == int(period[5:]):
+                return dt.date(end_year, 3, 31)
+        if freq == "Quarterly" and re.fullmatch(r"\d{4}-Q[1-4]", period):
             y, q = int(period[:4]), int(period[6])
             y2, m = [(y, 6), (y, 9), (y, 12), (y + 1, 3)][q - 1]
             return dt.date(y2, m, 28)
-        if len(period) == 7:                                        # month '2026-10'
+        if freq in ("Monthly", "Monthly / fortnightly") and re.fullmatch(r"\d{4}-\d{2}", period):
             return dt.date(int(period[:4]), int(period[5:7]), 28)
     except ValueError:
         pass
@@ -62,9 +73,13 @@ def end_date(period, freq):
 
 def validate(cur, prev=None, today=None, expected_ids=None, core=None):
     """Return (errors, warnings, info). `prev` is the last published macro.json (or None)."""
-    today = today or dt.date.today()
+    today = today or dt.datetime.now(INDIA_TIME).date()
     errors, warnings = [], []
-    series = {s["id"]: s for s in cur.get("series", [])}
+    records = cur.get("series", [])
+    duplicate_ids = sorted(sid for sid, count in Counter(s["id"] for s in records).items() if count > 1)
+    if duplicate_ids:
+        errors.append(f"duplicate series IDs: {', '.join(duplicate_ids)}")
+    series = {s["id"]: s for s in records}
 
     if expected_ids is not None:
         missing = [i for i in expected_ids if i not in series]
@@ -79,9 +94,9 @@ def validate(cur, prev=None, today=None, expected_ids=None, core=None):
         if s and len(s["data"]) < n:
             errors.append(f"`{sid}` has {len(s['data'])} observations, expected at least {n}")
 
-    for s in series.values():
+    for s in records:
         lo, hi = RANGES.get(s["unit"], (-1e12, 1e12))
-        bad = [(p, v) for p, v in s["data"] if v is None or v != v or not (lo <= v <= hi)]
+        bad = [(p, v) for p, v in s["data"] if type(v) not in (int, float) or not (lo <= v <= hi)]
         if bad:
             errors.append(f"`{s['id']}` has {len(bad)} value(s) outside {lo}..{hi} {s['unit']}, e.g. {bad[:3]}")
         periods = [p for p, _ in s["data"]]
@@ -90,7 +105,14 @@ def validate(cur, prev=None, today=None, expected_ids=None, core=None):
             continue
         if len(periods) != len(set(periods)):
             errors.append(f"`{s['id']}` has duplicate periods")
-        last = end_date(periods[-1], s["freq"])
+        dates = [end_date(period, s["freq"]) for period in periods]
+        invalid = [p for p, d in zip(periods, dates) if d is None]
+        if invalid:
+            errors.append(f"`{s['id']}` has invalid {s['freq']} periods, e.g. {invalid[:3]}")
+            continue
+        if dates != sorted(dates):
+            errors.append(f"`{s['id']}` periods are out of chronological order")
+        last = dates[-1]
         limit = STALE_DAYS.get(s["freq"])
         if last and limit and (today - last).days > limit and "discontinued" not in s["source"]:
             warnings.append(f"`{s['id']}` latest is {periods[-1]} ({(today - last).days} days old; "
@@ -98,14 +120,11 @@ def validate(cur, prev=None, today=None, expected_ids=None, core=None):
 
     snap = cur.get("snapshot") or {}
     errors += [f"rbi.org.in snapshot: {e}" for e in snapshot_errors(snap)]
-    try:
-        fetched = dt.datetime.strptime(snap.get("fetched_utc", ""), "%Y-%m-%dT%H:%M:%SZ").date()
-        if (today - fetched).days > SNAPSHOT_STALE_DAYS:
-            warnings.append(f"rbi.org.in snapshot is from {fetched} ({(today - fetched).days} days old)")
-    except ValueError:
-        pass
+    fetched = snapshot_date(snap)
+    if fetched and (today - fetched).days > SNAPSHOT_STALE_DAYS:
+        warnings.append(f"rbi.org.in snapshot is from {fetched} ({(today - fetched).days} days old)")
 
-    mism = policy_mismatches(snap, cur.get("series", []))
+    mism = policy_mismatches(snap, records) if not errors else []
     for m in mism:
         warnings.append(f"policy history not updated: {m['label']} is {m['live']}% on rbi.org.in but "
                         f"{m['history']}% in the history (last change {m['history_date']}). Add the MPC decision "
@@ -133,9 +152,9 @@ def validate(cur, prev=None, today=None, expected_ids=None, core=None):
     return errors, warnings, info
 
 
-def previous_published():
+def previous_published(ref="HEAD"):
     try:
-        out = subprocess.run(["git", "show", "HEAD:data/macro.json"], cwd=ROOT, capture_output=True, check=True)
+        out = subprocess.run(["git", "show", f"{ref}:data/macro.json"], cwd=ROOT, capture_output=True, check=True)
         return json.loads(out.stdout)
     except Exception:
         return None
@@ -151,10 +170,16 @@ def report(errors, warnings, info, today):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--base-ref", help="Git ref containing the previous published data")
+    args = parser.parse_args()
+    prev = previous_published(args.base_ref or "HEAD")
+    if args.base_ref and prev is None:
+        parser.error(f"could not read baseline data/macro.json at {args.base_ref}")
     with open(os.path.join(ROOT, "data", "macro.json"), encoding="utf-8") as f:
         cur = json.load(f)
-    today = dt.date.today()
-    errors, warnings, info = validate(cur, previous_published(), today, read_expected_ids())
+    today = dt.datetime.now(INDIA_TIME).date()
+    errors, warnings, info = validate(cur, prev, today, read_expected_ids())
     text = report(errors, warnings, info, today)
     print(text)
     if os.environ.get("GITHUB_STEP_SUMMARY"):

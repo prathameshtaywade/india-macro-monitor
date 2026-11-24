@@ -73,6 +73,12 @@ class RbiSnapshot(unittest.TestCase):
                                          today=TODAY, expected_ids=IDS)
         self.assertTrue(any("snapshot" in e and "Standing Deposit" in e for e in errors))
 
+    def test_validator_requires_a_snapshot_timestamp(self):
+        m = small_macro()
+        del m["snapshot"]["fetched_utc"]
+        errors, _, _ = validate.validate(m, today=TODAY, expected_ids=IDS, core={})
+        self.assertTrue(any("fetched_utc" in e for e in errors))
+
     def test_export_keeps_missing_value_null_not_zero(self):
         m = small_macro(snap_from("rbi_home_box_layout_changed.html"))
         _, _, snap_rows = export_dashboard.build(m)
@@ -99,6 +105,21 @@ class PolicyHistoryVsSnapshot(unittest.TestCase):
         self.assertTrue(info["policy_mismatch"])
         self.assertTrue(any("policy history not updated" in w and "POLICY_EXTRA" in w for w in warnings))
         self.assertEqual(errors, [], "a pending MPC update warns; it must not stop the daily refresh")
+
+    def test_comparison_uses_the_india_date_of_the_snapshot(self):
+        m = small_macro()
+        m["series"][0]["data"].append(["2026-12-01", 5.75])
+        errors, _, info = validate.validate(m, today=dt.date(2026, 12, 2), expected_ids=IDS, core={})
+        self.assertEqual(errors, [])
+        self.assertFalse(info["policy_mismatch"])
+
+        m["snapshot"]["fetched_utc"] = "2026-11-30T19:00:00Z"
+        mismatches = checks.policy_mismatches(m["snapshot"], m["series"])
+        self.assertEqual([(x["history_date"], x["history"]) for x in mismatches], [("2026-12-01", 5.75)])
+        m["snapshot"]["policy"]["Policy Repo Rate"] = 5.75
+        self.assertEqual(checks.policy_mismatches(m["snapshot"], m["series"]), [])
+        _, _, snap_rows = export_dashboard.build(m)
+        self.assertEqual(snap_rows[0]["as_of"], "2026-12-01")
 
 
 class MospiPagination(unittest.TestCase):
@@ -138,6 +159,27 @@ class MospiPagination(unittest.TestCase):
             with open(cached) as f:
                 self.assertEqual(f.read(), '{"rows": ["previous good data"]}')
 
+    def test_wrong_reported_page_keeps_cached_file(self):
+        g = self.getter({1: "mospi_page1_of3.json", 2: "mospi_page1_of3.json", 3: "mospi_page3_of3.json"})
+        with tempfile.TemporaryDirectory() as d:
+            cached = os.path.join(d, "iip_2022.json")
+            with open(cached, "w") as f:
+                f.write('{"rows": ["previous good data"]}')
+            self.assertEqual(fetch_mospi.main(["iip_2022"], out_dir=d, getter=g), 1)
+            with open(cached) as f:
+                self.assertEqual(f.read(), '{"rows": ["previous good data"]}')
+
+    def test_repeated_payload_fails_without_a_reported_page_number(self):
+        def g(endpoint, params):
+            d = json.loads(fixture("mospi_page1_of3.json"))
+            del d["meta_data"]["page"]
+            if params["page"] == 2:
+                d["data"].reverse()
+            return d
+
+        with self.assertRaisesRegex(fetch_mospi.IncompleteFetch, "repeats a previously fetched page"):
+            fetch_mospi.fetch_all("/api/iip/getIipData", {}, getter=g)
+
 
 class WssRevisions(unittest.TestCase):
     """Review point 3b: an older bulletin must never overwrite a revision from a newer one."""
@@ -158,9 +200,22 @@ class WssRevisions(unittest.TestCase):
         self.assertEqual(self.value(b, "2026-10-31"), 23182499)
         self.assertEqual(self.value(b, "2026-10-15"), 22742777)
 
-    def test_untagged_legacy_points_lose_to_tagged(self):
-        legacy = {"scb_credit_wss": [["2026-10-31", 1]]}
-        self.assertEqual(self.value(merge_rbi.merge(legacy, self.new), "2026-10-31"), 23182499)
+    def test_conflicting_import_keeps_legacy_points_and_reports_the_conflict(self):
+        legacy = {"scb_credit_wss": [["2026-10-31", 23182499]]}
+        warnings = []
+        merged = merge_rbi.merge(legacy, self.old, warn=warnings.append)
+        self.assertEqual(self.value(merged, "2026-10-31"), 23182499)
+        self.assertEqual(self.value(merged, "2026-10-15"), 22742777)
+        self.assertEqual(len(warnings), 1)
+        self.assertIn("2026-10-31: kept 23182499 with unknown issue date", warnings[0])
+        self.assertIn("23180000 from 2026-11-06", warnings[0])
+
+    def test_matching_import_does_not_assign_unverified_provenance(self):
+        legacy = {"scb_credit_wss": [["2026-10-31", 23182499]]}
+        warnings = []
+        merged = merge_rbi.merge(legacy, self.new, warn=warnings.append)
+        self.assertIn(["2026-10-31", 23182499, ""], merged["scb_credit_wss"])
+        self.assertEqual(warnings, [])
 
     def test_duplicates_within_one_extract_resolve_by_issue(self):
         pts = [["2026-10-31", 23182499, "2026-11-13"], ["2026-10-31", 23180000, "2026-11-06"]]
@@ -203,6 +258,24 @@ class SeriesIds(unittest.TestCase):
         cur["series"][4]["data"].pop()
         errors, _, _ = validate.validate(cur, prev, TODAY, IDS)
         self.assertTrue(any("went backwards" in e for e in errors))
+
+    def test_duplicate_id_cannot_hide_invalid_data(self):
+        m = small_macro()
+        m["series"].insert(0, series("iip_growth", [["2026-08", 999]]))
+        errors, _, _ = validate.validate(m, today=TODAY, expected_ids=IDS, core={})
+        self.assertTrue(any("duplicate series IDs: iip_growth" in e for e in errors))
+        self.assertTrue(any("iip_growth" in e and "outside" in e for e in errors))
+
+    def test_invalid_or_unordered_periods_fail(self):
+        m = small_macro()
+        m["series"][3]["data"].append(["2026-99", 1])
+        m["series"][4]["data"].reverse()
+        errors, _, _ = validate.validate(m, today=TODAY, expected_ids=IDS, core={})
+        self.assertTrue(any("invalid Monthly periods" in e and "2026-99" in e for e in errors))
+        self.assertTrue(any("cpi_infl_combined" in e and "out of chronological order" in e for e in errors))
+        self.assertIsNone(validate.end_date("2026-Q0", "Quarterly"))
+        self.assertIsNone(validate.end_date("2026-29", "Annual (FY)"))
+        self.assertIsNone(validate.end_date("2026-04-14", "Monthly"))
 
     def test_published_dataset_matches_the_id_list(self):
         with open(os.path.join(HERE, "..", "data", "macro.json"), encoding="utf-8") as f:
