@@ -1,0 +1,32 @@
+{
+ "data": [
+  {
+   "base_year": "2022-23",
+   "year": 2026,
+   "month": "September",
+   "type": "General",
+   "category": "General",
+   "sub_category": "",
+   "index": "120.0",
+   "growth_rate": "6.7"
+  },
+  {
+   "base_year": "2022-23",
+   "year": 2026,
+   "month": "August",
+   "type": "General",
+   "category": "General",
+   "sub_category": "",
+   "index": "120.0",
+   "growth_rate": "7.8"
+  }
+ ],
+ "meta_data": {
+  "page": 1,
+  "totalRecords": 6,
+  "totalPages": 3,
+  "recordPerPage": 2
+ },
+ "msg": "Data fetched successfully",
+ "statusCode": true
+}

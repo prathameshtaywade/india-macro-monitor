@@ -11,7 +11,10 @@ Output schema (per series)
 Period strings: daily/weekly 'YYYY-MM-DD', monthly 'YYYY-MM', quarterly 'YYYY-Qn' (Indian fiscal: Q1=Apr-Jun,
 labelled by fiscal-year start, e.g. 2026-Q1 = Apr-Jun 2026), annual fiscal 'YYYY-YY'.
 """
-import json, os, time
+import json, os, sys, time
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from checks import is_weekly_key, latest_revision  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 RAW = os.path.join(ROOT, "data", "raw")
@@ -162,6 +165,10 @@ eur_long = [(ym(x["year"], x["month"]), num(x["value"])) for x in r2["rows"]
 # ---------------- RBI browser extract ----------------
 rbi_path = os.path.join(RAW, "rbi_extract.json")
 RB = json.load(open(rbi_path)) if os.path.exists(rbi_path) else {}
+# Weekly WSS points may carry an issue date; keep the newest issue's value for each date.
+for _k in list(RB):
+    if is_weekly_key(_k):
+        RB[_k] = [(d, v) for d, v, _ in latest_revision(RB[_k])]
 HB_URL = "https://www.rbi.org.in/Scripts/AnnualPublications.aspx?head=Handbook%20of%20Statistics%20on%20Indian%20Economy"
 WSS_URL = "https://rbi.org.in/Scripts/BS_ViewWSS.aspx"
 
@@ -169,7 +176,8 @@ WSS_URL = "https://rbi.org.in/Scripts/BS_ViewWSS.aspx"
 if RB.get("policy"):
     cur = {"repo": None, "sdf": None, "msf": None, "crr": None, "slr": None}
     steps = {k: [] for k in cur}
-    for d, repo, sdf, msf, crr, slr in RB["policy"]:
+    for row in RB["policy"]:                  # [effectiveDate, repo, sdf, msf, crr, slr, source?]
+        d, repo, sdf, msf, crr, slr = row[:6]
         for k, v in zip(cur, (repo, sdf, msf, crr, slr)):
             if v is not None and v != cur[k]:
                 cur[k] = v
