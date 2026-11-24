@@ -16,6 +16,7 @@ import json, os, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from checks import is_weekly_key, latest_revision  # noqa: E402
 from banking import growth_gap, incremental_cd_fytd, trailing_mean  # noqa: E402
+from funding import call_spread_bp, pricing_gap, resolve_lending, resolve_mmo, trailing_mean_obs  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 RAW = os.path.join(ROOT, "data", "raw")
@@ -277,6 +278,62 @@ for key, sid, nm, unit, note in [
 
 home_path = os.path.join(RAW, "rbi_home.json")
 HOME = json.load(open(home_path)) if os.path.exists(home_path) else {}
+
+# ---------------- Funding conditions and new-business pricing (RBI press releases) ----------------
+MMO_URL = "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Money Market Operations, daily)"
+LDR_URL = "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Lending and Deposit Rates of SCBs, monthly)"
+
+
+def _jsonl(name):
+    path = os.path.join(RAW, name)
+    if not os.path.exists(path):
+        return []
+    with open(path, encoding="utf-8") as f:
+        return [json.loads(line) for line in f if line.strip()]
+
+
+REPO_STEPS = steps["repo"] if RB.get("policy") else []
+MMO = resolve_mmo(_jsonl("rbi_mmo.jsonl"))
+if MMO:
+    mmo_meta = dict(group="Funding", freq="Daily", base="", source_url=MMO_URL,
+                    source="RBI press release 'Money Market Operations as on <date>'")
+    add(id="mmo_call", name="Call money rate, weighted average (daily)", unit="%", data=[
+        (d, r["call_rate"]) for d, r in sorted(MMO.items()) if r.get("call_rate") is not None],
+        notes="Row A.I 'Call Money'. Days with no call trades (weekends, holidays) are left out.", **mmo_meta)
+    add(id="mmo_overnight", name="Overnight money market rate, weighted average (daily)", unit="%", data=[
+        (d, r["overnight_rate"]) for d, r in sorted(MMO.items()) if r.get("overnight_rate") is not None],
+        notes="Row A 'Overnight Segment (I+II+III+IV)': call, triparty repo, market repo and repo in corporate bonds.",
+        **mmo_meta)
+    add(id="mmo_net_liq", name="RBI net liquidity, outstanding including the day's operations", unit="₹ crore",
+        data=[(d, r["net_liq_outstanding"]) for d, r in sorted(MMO.items()) if r.get("net_liq_outstanding") is not None],
+        notes="Row F. Positive = net injection by RBI, negative = net absorption. Reported on non-trading days too. "
+              "Net liquidity = Repo + MSF + SLF - Reverse Repo - SDF.", **mmo_meta)
+    spread = call_spread_bp(MMO, REPO_STEPS)
+    add(id="mmo_call_spread", name="Call money rate minus repo rate (daily)", unit="bp", data=spread,
+        notes="Call money weighted average rate minus the policy repo rate in force that day, in basis points. "
+              "Trading days only.", **mmo_meta)
+    add(id="mmo_call_spread_5d", name="Call money rate minus repo rate, 5-trading-day average", unit="bp",
+        data=trailing_mean_obs(spread, 5), notes="Average of the latest five trading days.", **mmo_meta)
+
+LDR = resolve_lending(_jsonl("rbi_lending.jsonl"))
+if LDR:
+    ldr_meta = dict(group="Pricing", freq="Monthly", base="", unit="%", source_url=LDR_URL,
+                    source="RBI press release 'Lending and Deposit Rates of Scheduled Commercial Banks' (highlights)")
+    for sid, nm, note in [
+            ("walr_fresh", "Weighted average lending rate, fresh rupee loans", "WALR on loans sanctioned in the month."),
+            ("walr_out", "Weighted average lending rate, outstanding rupee loans", "WALR on the whole loan book."),
+            ("wadtdr_fresh", "Weighted average term deposit rate, fresh deposits", "WADTDR on term deposits raised in the month."),
+            ("wadtdr_out", "Weighted average term deposit rate, outstanding deposits", "WADTDR on the whole term-deposit book."),
+            ("mclr_1y_median", "1-year MCLR, median across banks", "Usually one month later than the WALR/WADTDR in the same release.")]:
+        if LDR.get(sid):
+            add(id=sid, name=nm, data=sorted(LDR[sid].items()),
+                notes=note + " Scheduled commercial banks excluding RRBs and small finance banks.", **ldr_meta)
+    if LDR.get("walr_fresh") and LDR.get("wadtdr_fresh"):
+        add(id="pricing_gap_fresh", name="Market pricing indicator: fresh loan rate minus fresh deposit rate",
+            group="Pricing", unit="pp", freq="Monthly", base="", source_url=LDR_URL,
+            source="Derived from RBI lending and deposit rates (fresh WALR minus fresh WADTDR)",
+            data=pricing_gap(LDR["walr_fresh"], LDR["wadtdr_fresh"]),
+            notes="A market-wide pricing indicator, not a bank's margin: loan mix, funding mix and tenor all affect it.")
 
 # Keep the previous build time when no series changed, so unchanged days produce no diff.
 gen = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())

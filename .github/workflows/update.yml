@@ -55,6 +55,10 @@ jobs:
         continue-on-error: true
         run: python3 pipeline/fetch_rbi_home.py
 
+      - name: Fetch RBI money-market and lending-rate releases
+        continue-on-error: true
+        run: python3 pipeline/fetch_rbi_releases.py
+
       - name: Build dataset
         run: python3 pipeline/build_data.py
 
@@ -93,7 +97,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/macro.json data/raw/rbi_home.json dashboard/observations.json dashboard/catalog.json dashboard/snapshot.json
+          git add data/macro.json data/raw/rbi_home.json data/raw/rbi_mmo.jsonl data/raw/rbi_lending.jsonl dashboard/observations.json dashboard/catalog.json dashboard/snapshot.json
           if git diff --cached --quiet; then
             echo "No data changes."
           else

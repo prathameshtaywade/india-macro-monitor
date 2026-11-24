@@ -18,6 +18,8 @@ a browser, and d3 in the dashboard.
 | IIP | `iip_growth_old` (2011-12=100) | M | % | Apr 2012 → Mar 2026 | 4.1 | MoSPI `getIipData` |
 | Banks | `scb_gap`, `scb_gap_3m` credit growth minus deposit growth, latest and 3-month average | M | pp | Jan 2023 → Oct 2026 | 2.68 / 1.74 | Derived from Handbook T167 + WSS Table 4 |
 | Banks | `scb_inc_cd_fytd` incremental credit–deposit ratio, financial year to date | M | % | Apr 2022 → Oct 2026 | 90.1 (72.1 a year earlier) | Derived; omitted while deposits are up <0.5% since end-March |
+| Funding | `mmo_call_spread` (+`_5d`) call money rate minus repo, `mmo_net_liq` RBI net liquidity (row F), `mmo_call`, `mmo_overnight` | Daily | bp / ₹ crore / % | 31 Oct 2025 → (one year backfilled, no missing days) | | RBI "Money Market Operations" daily press release |
+| Pricing | `walr_fresh`, `walr_out`, `wadtdr_fresh`, `wadtdr_out`, `mclr_1y_median`, `pricing_gap_fresh` | Monthly | % / pp | Jan 2025 → (plus one Mar 2023 release) | Sep 2026: 8.51 / 5.61 / 2.90 pp | RBI "Lending and Deposit Rates of SCBs" monthly press release |
 | Policy | `repo`, `sdf`, `msf`, `crr`, `slr` | event | % | Apr 2008 → 7 Oct 2026 | repo 5.50 | RBI Handbook T40 + MPC resolution 7 Oct 2026 |
 | Yields | `gsec10`, `gsec5`, `gsec1` month-end | M | % | Apr 2023 → Jun 2026 | 6.74 (10Y) | RBI Handbook T178 |
 | Yields | `gsec10_w` (FBIL 10Y par), `tb91_w`, `call_w` | W | % | Jan → 13 Nov 2026 | 7.34 / 5.87 / 5.55 | RBI WSS Table 5 |
@@ -46,6 +48,11 @@ a browser, and d3 in the dashboard.
    in a row to 1.74 pp"), a 12-month chart with Dec 2025–Nov 2026 shaded (those months compare a month-end with the
    reporting Friday a year earlier), and the incremental credit–deposit ratio, financial year to date, beside the same
    point last year. The panel says plainly that the gap is not a cash shortfall.
+   Below it, two compact rows, each figure with its own observation date and a link to the full history:
+   **Funding conditions** (daily: call money rate minus the repo rate in force, its 5-trading-day average, and RBI
+   net liquidity from row F of the money-market release, shown as an amount plus "net absorption/injection") and
+   **Pricing of new business** (monthly: fresh-loan WALR, fresh term-deposit WADTDR, the difference labelled a
+   market pricing indicator, the 1-year median MCLR dated by its own month, and outstanding-book rates).
 2. **Macro summary.** The headline tiles. Changes are shown neutrally, with no good/bad colour; CPI is described
    against the 2–6% tolerance band.
 3. **Research view.** Topic and range filters, all charts, the series explorer and the full catalogue.
@@ -59,6 +66,7 @@ The same page runs in two places: the Claude dashboard and a static website buil
 
 | What | How often | Who |
 |---|---|---|
+| RBI money-market (daily) and lending-rate (monthly) releases | daily, 09:00 IST | GitHub Action `update.yml` (`pipeline/fetch_rbi_releases.py`) |
 | MoSPI series (GDP/GVA, CPI, IIP, RBI forex/FX history) | daily, 09:00 IST | GitHub Action `update.yml` |
 | rbi.org.in Current Rates (repo, FBIL rates, G-Sec yields) | daily | GitHub Action `update.yml` |
 | Validate, commit data, publish to GitHub Pages | daily, and on every push | GitHub Action `update.yml` |
@@ -91,6 +99,19 @@ python3 -m unittest discover -s tests -v     # pipeline checks
 node tests/test_render.js                    # page rendering checks
 ```
 They run on every pull request and push (`.github/workflows/test.yml`) and before each daily publish.
+
+### RBI press-release collectors
+
+`pipeline/fetch_rbi_releases.py` reads the press-release archive month by month (plain HTML on rbi.org.in, no
+browser step) and appends one parsed record per release to `data/raw/rbi_mmo.jsonl` and `rbi_lending.jsonl`.
+
+- **Append-only.** Raw lines are never edited. Releases whose observation date is within 7 days are fetched again
+  and appended only if their content changed; for each date or month the newest release wins.
+- **Self-healing.** A release that fails to parse is reported and not stored, and the daily run rechecks the current
+  and previous month, so a missed or broken day is collected on a later run.
+- **No-trade days** (weekends, holidays) have no call rate and no spread, but keep the liquidity figure RBI reports.
+- **Backfill:** `python3 pipeline/fetch_rbi_releases.py --since 2025-11 --only mmo` (one year of liquidity) and
+  `--since 2023-01 --only lending`. Resumable: re-running skips what is stored.
 
 ### Recording an MPC decision
 
