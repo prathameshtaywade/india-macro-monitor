@@ -16,7 +16,15 @@
   .mm-kv { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.15; }
   .mm-kc { font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
   .is-flat { color: var(--color-fg-muted); }
-  .mm-bar { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md) var(--cds-gap-xl); align-items: center; position: sticky; top: 0; z-index: 3; background: var(--color-bg); padding-block: var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
+  .mm-bar { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-xl); align-items: center; justify-content: space-between; }
+  .mm-bar .mm-muted { max-width: 80ch; }
+  .mm-tabs { display: flex; gap: var(--cds-gap-xs); position: sticky; top: 0; z-index: 3; background: var(--color-bg); border-bottom: 1px solid var(--color-border-line); padding-top: var(--cds-pad-sm); }
+  .mm-tab { font: inherit; font-weight: var(--cds-font-weight-medium); padding: 10px 16px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--color-fg-muted); cursor: pointer; margin-bottom: -1px; }
+  .mm-tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); }
+  .mm-tab:focus-visible { outline: 2px solid var(--color-fg); outline-offset: -2px; }
+  .mm-panel { display: grid; gap: var(--cds-gap-xl); }
+  .mm-foot { border-top: 1px solid var(--color-border-line); padding-top: var(--cds-pad-md); }
+  .mm-foot a { color: inherit; }
   .mm-seg { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); align-items: center; }
   .mm-seg > span { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-right: var(--cds-gap-xs); }
   .mm-chip { font: inherit; font-size: var(--cds-font-size-caption); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-bg); color: var(--color-fg); cursor: pointer; }
@@ -71,20 +79,25 @@
   .mm-notes ul, .mm-notes ol { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
   .mm code { font-size: .92em; }
   .mm .dash-select { max-width: 100%; }
-  @media print { .mm-bar { position: static; } .mm-sec[hidden] { display: grid !important; } }
+  @media print { .mm-tabs { display: none; } .mm-panel[hidden] { display: grid !important; } .mm-panel + .mm-panel { break-before: page; } }
 </style>
 
 <div class="mm">
   <header class="mm-head" id="top">
     <h1>India Macro Monitor</h1>
-    <p class="mm-take" id="takeaway">The RBI policy repo rate is <b class="mm-num" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</b> after a <span data-draw="repo-move">—</span> on <span data-draw="kpi" data-k="repo" data-part="label">—</span>. CPI inflation was <b class="mm-num" data-draw="kpi" data-k="cpi_infl_combined" data-part="value" data-source="latest" data-field="value" data-where="series=cpi_infl_combined">—</b> in <span data-draw="kpi" data-k="cpi_infl_combined" data-part="label">—</span>, <span data-draw="vs-band">—</span>, and real GDP grew <b class="mm-num" data-draw="kpi" data-k="gdp_growth_q" data-part="value" data-source="latest" data-field="value" data-where="series=gdp_growth_q">—</b> year on year in <span data-draw="kpi" data-k="gdp_growth_q" data-part="label">—</span>.</p>
-    <p class="mm-cap">Official statistics from MoSPI (National Accounts, CPI, IIP) and the Reserve Bank of India (Handbook of Statistics, Weekly Statistical Supplement, policy statements). Data built <span data-draw="built" data-part="obs">—</span>. Each tile shows the latest observation and its change from the one before; changes are shown neutrally, without a good or bad judgement.</p>
+    <p class="mm-cap">Official statistics from the Ministry of Statistics and Programme Implementation (MoSPI) and the Reserve Bank of India. Data built <span data-draw="built" data-part="obs">—</span>.</p>
   </header>
 
   <span data-draw="policy-check"></span>
   <p class="mm-flag" id="policy-flag" data-policy-flag hidden role="status"><b>Policy rates may be out of date.</b> RBI's website shows different rates from this dashboard's policy history: <span data-draw="policy-diff">—</span>. The history is updated by hand from the MPC resolution, so the headline repo rate and the policy chart may lag until that is done.</p>
   <p class="mm-cap" role="status" data-draw="scheduled-policy" data-source="observations"></p>
 
+  <nav class="mm-tabs" role="tablist" aria-label="Views">
+    <button class="mm-tab" type="button" role="tab" id="tabbtn-brief" aria-controls="tab-brief" aria-selected="true" data-tab-btn="brief">Banking brief</button>
+    <button class="mm-tab" type="button" role="tab" id="tabbtn-macro" aria-controls="tab-macro" aria-selected="false" data-tab-btn="macro" tabindex="-1">Macro summary</button>
+  </nav>
+
+  <div class="mm-panel" id="tab-brief" data-tab="brief" role="tabpanel" aria-labelledby="tabbtn-brief">
   <section class="mm-card mm-brief" id="brief" aria-labelledby="brief-h">
     <div class="mm-sec-h">
       <span class="mm-eyebrow">Banking brief</span>
@@ -108,7 +121,7 @@
         <p class="mm-cap" data-switch="inccd-missing" hidden>Not shown for <span data-draw="inccd" data-part="pending_label">—</span>: deposits have grown by less than 0.5% since end-March (or fallen), so the ratio would swing widely. It appears once deposit growth for the year passes that level, usually from June.</p>
       </div>
     </div>
-    <p class="mm-cap">A wider gap means credit is growing faster than deposits. It is not a cash shortfall, and on its own it does not establish tight liquidity. The September reading may also reflect half-year-end balance-sheet effects. Months from December 2025 to November 2026 (shaded) compare a month-end with the corresponding reporting Friday a year earlier, because RBI moved the reporting date to month-end in December 2025; an average does not remove that difference. Source: RBI Handbook Table 167 and Weekly Statistical Supplement Table 4; gap, average and ratio computed here.</p>
+    <p class="mm-cap">A wider gap means credit is growing faster than deposits. It is not a cash shortfall, and on its own it does not establish tight liquidity. Readings at quarter- and half-year ends (March, June, September, December) can be affected by balance-sheet effects around those dates. Months from December 2025 to November 2026 (shaded when on the chart) compare a month-end with the corresponding reporting Friday a year earlier, because RBI moved the reporting date to month-end in December 2025; an average does not remove that difference. Source: RBI Handbook Table 167 and Weekly Statistical Supplement Table 4; gap, average and ratio computed here.</p>
     <div class="mm-row" id="brief-funding">
       <div class="mm-row-h"><h3>Funding conditions</h3><span class="mm-cap">Daily · RBI money market operations · <a href="#funding">Full history</a></span></div>
       <div class="mm-stats">
@@ -130,7 +143,24 @@
 
   </section>
 
-  <div class="mm-sec-h" id="macro"><h2>Macro summary</h2></div>
+    <div class="mm-sec-h" id="brief-history"><h2>History</h2><p class="mm-muted">From April 2023 to the latest data, on the same timeline as the macro charts. The 12-month chart above shows the recent detail.</p></div>
+
+  <section class="mm-sec" id="banking">
+    <div class="mm-sec-h"><h2>Bank credit and deposits</h2><p class="mm-muted">Scheduled commercial banks, growth over the same month a year earlier. July 2023 to June 2024 is inflated by the HDFC–HDFC Bank merger. Until November 2025 the month's figure is for the last reporting Friday; from December 2025 it is the last day of the month.</p></div>
+    <div class="mm-card"><div class="mm-chart" id="ch-banking" data-draw="chart" data-chart="banking" data-source="observations"></div><p class="mm-cap">Source: RBI Handbook of Statistics (monthly bank aggregates) to its cut-off, then WSS Table 4 month-end figures; growth computed from outstanding levels.</p></div>
+  </section>
+
+  <section class="mm-sec" id="funding">
+    <div class="mm-sec-h"><h2>Funding conditions and pricing</h2><p class="mm-muted">Daily: the call money rate against the policy repo rate, and RBI's net liquidity position (row F of the daily money-market release: outstanding operations including the day's; negative means RBI is absorbing liquidity). Monthly: lending and deposit rates on fresh business and on the outstanding book, each dated by the month RBI reports it for.</p></div>
+    <div class="mm-grid">
+      <div class="mm-card"><h3>Call money rate minus repo rate, basis points</h3><div class="mm-chart" id="ch-spread" data-draw="chart" data-chart="spread" data-source="observations"></div><p class="mm-cap">Trading days only. Source: RBI Money Market Operations (daily press release), row A.I; repo rate in force that day from the policy history.</p></div>
+      <div class="mm-card"><h3>RBI net liquidity, ₹ lakh crore</h3><div class="mm-chart" id="ch-liquidity" data-draw="chart" data-chart="liquidity" data-source="observations"></div><p class="mm-cap">Positive = net injection, negative = net absorption. Reported on non-trading days too. Source: RBI Money Market Operations, row F.</p></div>
+    </div>
+    <div class="mm-card"><h3>Lending and deposit rates</h3><div class="mm-chart" id="ch-pricing" data-draw="chart" data-chart="pricing" data-source="observations"></div><p class="mm-cap">Scheduled commercial banks excluding RRBs and small finance banks. Source: RBI press release "Lending and Deposit Rates of Scheduled Commercial Banks" (highlights), monthly.</p></div>
+  </section>
+  </div>
+
+  <div class="mm-panel" id="tab-macro" data-tab="macro" role="tabpanel" aria-labelledby="tabbtn-macro" hidden>
   <section class="mm-kpis" id="headline" aria-label="Latest readings">
     <div class="mm-card" id="kpi-gdp"><span class="mm-kl">Real GDP growth, y/y</span><span class="mm-kv" data-draw="kpi" data-k="gdp_growth_q" data-part="value" data-source="latest" data-field="value" data-where="series=gdp_growth_q">—</span><span class="mm-kc" data-draw="kpi" data-k="gdp_growth_q" data-part="change" data-source="latest" data-field="change" data-where="series=gdp_growth_q">—</span><span class="mm-cap" data-draw="kpi" data-k="gdp_growth_q" data-part="label">—</span></div>
     <div class="mm-card" id="kpi-cpi"><span class="mm-kl">CPI inflation, y/y</span><span class="mm-kv" data-draw="kpi" data-k="cpi_infl_combined" data-part="value" data-source="latest" data-field="value" data-where="series=cpi_infl_combined">—</span><span class="mm-kc" data-draw="kpi" data-k="cpi_infl_combined" data-part="change" data-source="latest" data-field="change" data-where="series=cpi_infl_combined">—</span><span class="mm-cap" data-draw="kpi" data-k="cpi_infl_combined" data-part="label">—</span></div>
@@ -141,33 +171,15 @@
     <div class="mm-card" id="kpi-credit"><span class="mm-kl">Bank credit growth, y/y</span><span class="mm-kv" data-draw="kpi" data-k="scb_credit_yoy" data-part="value" data-source="latest" data-field="value" data-where="series=scb_credit_yoy">—</span><span class="mm-kc" data-draw="kpi" data-k="scb_credit_yoy" data-part="change" data-source="latest" data-field="change" data-where="series=scb_credit_yoy">—</span><span class="mm-cap">Scheduled commercial banks, <span data-draw="kpi" data-k="scb_credit_yoy" data-part="label">—</span></span></div>
     <div class="mm-card" id="kpi-inr"><span class="mm-kl">USD/INR (FBIL reference)</span><span class="mm-kv" data-draw="kpi" data-k="usdinr_w" data-part="value" data-source="latest" data-field="value" data-where="series=usdinr_w">—</span><span class="mm-kc" data-draw="kpi" data-k="usdinr_w" data-part="change" data-source="latest" data-field="change" data-where="series=usdinr_w">—</span><span class="mm-cap">Week ended <span data-draw="kpi" data-k="usdinr_w" data-part="label">—</span></span></div>
   </section>
+    <p class="mm-take" id="takeaway">The RBI policy repo rate is <b class="mm-num" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</b> after a <span data-draw="repo-move">—</span> on <span data-draw="kpi" data-k="repo" data-part="label">—</span>. CPI inflation was <b class="mm-num" data-draw="kpi" data-k="cpi_infl_combined" data-part="value" data-source="latest" data-field="value" data-where="series=cpi_infl_combined">—</b> in <span data-draw="kpi" data-k="cpi_infl_combined" data-part="label">—</span>, <span data-draw="vs-band">—</span>, and real GDP grew <b class="mm-num" data-draw="kpi" data-k="gdp_growth_q" data-part="value" data-source="latest" data-field="value" data-where="series=gdp_growth_q">—</b> year on year in <span data-draw="kpi" data-k="gdp_growth_q" data-part="label">—</span>.</p>
+    <p class="mm-cap">Each tile shows the latest observation and its change from the one before; changes are shown neutrally, without a good or bad judgement.</p>
 
-  <div class="mm-sec-h" id="research"><h2>Research view</h2><p class="mm-muted">Current series by default. Old-base series (GDP 2011-12, CPI 2012, IIP 2011-12) are kept for history; switch them on below.</p></div>
-
-  <div class="mm-bar" id="filters">
-    <div class="mm-seg" role="group" aria-label="Topic">
-      <span>Topic</span>
-      <button class="mm-chip" type="button" data-topic-btn="all" aria-pressed="true">All</button>
-      <button class="mm-chip" type="button" data-topic-btn="growth" aria-pressed="false">GDP &amp; GVA</button>
-      <button class="mm-chip" type="button" data-topic-btn="prices" aria-pressed="false">Inflation</button>
-      <button class="mm-chip" type="button" data-topic-btn="industry" aria-pressed="false">Industry</button>
-      <button class="mm-chip" type="button" data-topic-btn="policy" aria-pressed="false">Policy rates</button>
-      <button class="mm-chip" type="button" data-topic-btn="rates" aria-pressed="false">Yields</button>
-      <button class="mm-chip" type="button" data-topic-btn="external" aria-pressed="false">Forex &amp; rupee</button>
-      <button class="mm-chip" type="button" data-topic-btn="banking" aria-pressed="false">Banking</button>
-      <button class="mm-chip" type="button" data-topic-btn="funding" aria-pressed="false">Funding &amp; pricing</button>
+    <div class="mm-bar" id="macro-controls">
+      <p class="mm-muted">Charts run from April 2023 to the latest data, on one shared timeline. Current series are shown by default; old-base series (GDP 2011-12, CPI 2012, IIP 2011-12) can be added for comparison.</p>
+      <label class="mm-chip mm-check" for="show-old"><input type="checkbox" id="show-old"> Show discontinued series</label>
     </div>
-    <div class="mm-seg" role="group" aria-label="Time range">
-      <span>Range</span>
-      <button class="mm-chip" type="button" data-range-btn="2y" aria-pressed="false">2Y</button>
-      <button class="mm-chip" type="button" data-range-btn="5y" aria-pressed="true">5Y</button>
-      <button class="mm-chip" type="button" data-range-btn="10y" aria-pressed="false">10Y</button>
-      <button class="mm-chip" type="button" data-range-btn="all" aria-pressed="false">All</button>
-    </div>
-    <label class="mm-chip mm-check" for="show-old"><input type="checkbox" id="show-old"> Show discontinued series</label>
-  </div>
 
-  <section class="mm-sec" data-topic="growth" id="growth">
+  <section class="mm-sec" id="growth">
     <div class="mm-sec-h"><h2>Growth: GDP and GVA</h2><p class="mm-muted">Quarterly, year-on-year at constant prices. Quarters follow the Indian fiscal year (Q1 = April–June). The 2022-23 base series replaced the 2011-12 series in February 2026; the two are not comparable, so the old one is hidden unless you switch on discontinued series.</p></div>
     <div class="mm-grid">
       <div class="mm-card"><h3>Real GDP and GVA growth</h3><div class="mm-chart" id="ch-growth" data-draw="chart" data-chart="growth" data-source="observations"></div><p class="mm-cap">Source: MoSPI National Accounts (api.mospi.gov.in, NAS indicators 21 and 22).</p></div>
@@ -175,30 +187,30 @@
     </div>
   </section>
 
-  <section class="mm-sec" data-topic="prices" id="prices">
+  <section class="mm-sec" id="prices">
     <div class="mm-sec-h"><h2>Inflation: Consumer Price Index</h2><p class="mm-muted">All-India, combined rural and urban, year on year. The band shows RBI's 2–6% tolerance range around the 4% target. The 2024-base CPI publishes inflation from January 2026; for earlier years switch on discontinued series to see the 2012-base CPI, which ends in December 2025.</p></div>
     <div class="mm-card"><div class="mm-chart" id="ch-cpi" data-draw="chart" data-chart="cpi" data-source="observations"></div><p class="mm-cap">Source: MoSPI CPI (getCPIIndex, base 2012; getCPIData, base 2024).</p></div>
   </section>
 
-  <section class="mm-sec" data-topic="industry" id="industry">
+  <section class="mm-sec" id="industry">
     <div class="mm-sec-h"><h2>Industry: Index of Industrial Production</h2><p class="mm-muted">Monthly, year on year. New series on base 2022-23 from April 2023; old 2011-12 series to March 2026. The latest month is a quick estimate and is revised.</p></div>
     <div class="mm-card"><div class="mm-chart" id="ch-iip" data-draw="chart" data-chart="iip" data-source="observations"></div><p class="mm-cap">Source: MoSPI IIP (getIipData).</p></div>
   </section>
 
-  <section class="mm-sec" data-topic="policy" id="policy">
-    <div class="mm-sec-h"><h2>Monetary policy</h2><p class="mm-muted">Policy rates as step lines from their effective dates, with the weekly weighted average call money rate, which policy aims to keep near the repo rate. The October 2026 MPC raised the repo by 25 bp and moved its stance to "calibrated tightening".</p></div>
+  <section class="mm-sec" id="policy">
+    <div class="mm-sec-h"><h2>Monetary policy</h2><p class="mm-muted">Policy rates as step lines from their effective dates, with the weekly weighted average call money rate, which policy aims to keep near the repo rate. The latest change was a <span data-draw="repo-move">—</span> to <b class="mm-num" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</b>, effective <span data-draw="kpi" data-k="repo" data-part="label">—</span>.</p></div>
     <div class="mm-grid">
-      <div class="mm-card"><h3>Repo, SDF and MSF corridor</h3><div class="mm-chart" id="ch-policy" data-draw="chart" data-chart="policy" data-source="observations"></div><p class="mm-cap">Source: RBI Handbook 2025-26 Table 40; MPC resolution of 7 Oct 2026; WSS Table 5 for the call rate.</p></div>
+      <div class="mm-card"><h3>Repo, SDF and MSF corridor</h3><div class="mm-chart" id="ch-policy" data-draw="chart" data-chart="policy" data-source="observations"></div><p class="mm-cap">Source: RBI Handbook of Statistics (policy rates table), then MPC resolutions for later changes; WSS Table 5 for the call rate.</p></div>
       <div class="mm-card" id="current-rates"><h3>RBI current rates</h3><p class="mm-cap">From the "Current Rates" box on rbi.org.in, fetched <span data-draw="built" data-part="snap">—</span>.</p><div class="mm-tw"><table data-source="snapshot" data-row-key="item"><thead><tr><th data-field="group">Group</th><th data-field="item">Item</th><th class="r" data-field="value">Value</th><th data-field="as_of">As of</th></tr></thead><tbody data-draw="snap"></tbody></table></div></div>
     </div>
   </section>
 
-  <section class="mm-sec" data-topic="rates" id="rates">
-    <div class="mm-sec-h"><h2>Government bond yields</h2><p class="mm-muted">Month-end yields of SGL transactions by residual maturity (RBI Handbook, to June 2026), the weekly FBIL 10-year par yield and the weekly 91-day T-bill auction cut-off (WSS, from January 2026).</p></div>
-    <div class="mm-card"><div class="mm-chart" id="ch-yields" data-draw="chart" data-chart="yields" data-source="observations"></div><p class="mm-cap">Source: RBI Handbook 2025-26 Table 178; Weekly Statistical Supplement Table 5.</p></div>
+  <section class="mm-sec" id="rates">
+    <div class="mm-sec-h"><h2>Government bond yields</h2><p class="mm-muted">Month-end yields of SGL transactions by residual maturity (RBI Handbook, to its latest edition's cut-off), the weekly FBIL 10-year par yield and the weekly 91-day T-bill auction cut-off (Weekly Statistical Supplement).</p></div>
+    <div class="mm-card"><div class="mm-chart" id="ch-yields" data-draw="chart" data-chart="yields" data-source="observations"></div><p class="mm-cap">Source: RBI Handbook of Statistics (month-end G-Sec yields); Weekly Statistical Supplement Table 5.</p></div>
   </section>
 
-  <section class="mm-sec" data-topic="external" id="external">
+  <section class="mm-sec" id="external">
     <div class="mm-sec-h"><h2>Forex reserves and the rupee</h2><p class="mm-muted">Reserves are the total of foreign currency assets, gold, SDRs and the IMF reserve position. Exchange rates are RBI/FBIL reference rates in rupees per unit of foreign currency, so a rise means a weaker rupee.</p></div>
     <div class="mm-grid">
       <div class="mm-card"><h3>Foreign exchange reserves, US$ bn</h3><div class="mm-chart" id="ch-forex" data-draw="chart" data-chart="forex" data-source="observations"></div><p class="mm-cap">Source: RBI via MoSPI API (indicator 47, from 1990), Handbook Tables 210 and 215, WSS Table 2.</p></div>
@@ -206,22 +218,8 @@
     </div>
   </section>
 
-  <section class="mm-sec" data-topic="banking" id="banking">
-    <div class="mm-sec-h"><h2>Bank credit and deposits</h2><p class="mm-muted">Scheduled commercial banks, growth over the same month a year earlier. July 2023 to June 2024 is inflated by the HDFC–HDFC Bank merger. Until November 2025 the month's figure is for the last reporting Friday; from December 2025 it is the last day of the month.</p></div>
-    <div class="mm-card"><div class="mm-chart" id="ch-banking" data-draw="chart" data-chart="banking" data-source="observations"></div><p class="mm-cap">Source: RBI Handbook 2025-26 Table 167 (to March 2026) and WSS Table 4 (from April 2026); growth computed from outstanding levels.</p></div>
-  </section>
-
-  <section class="mm-sec" data-topic="funding" id="funding">
-    <div class="mm-sec-h"><h2>Funding conditions and pricing</h2><p class="mm-muted">Daily: the call money rate against the policy repo rate, and RBI's net liquidity position (row F of the daily money-market release: outstanding operations including the day's; negative means RBI is absorbing liquidity). Monthly: lending and deposit rates on fresh business and on the outstanding book, each dated by the month RBI reports it for.</p></div>
-    <div class="mm-grid">
-      <div class="mm-card"><h3>Call money rate minus repo rate, basis points</h3><div class="mm-chart" id="ch-spread" data-draw="chart" data-chart="spread" data-source="observations"></div><p class="mm-cap">Trading days only. Source: RBI Money Market Operations (daily press release), row A.I; repo rate in force that day from the policy history.</p></div>
-      <div class="mm-card"><h3>RBI net liquidity, ₹ lakh crore</h3><div class="mm-chart" id="ch-liquidity" data-draw="chart" data-chart="liquidity" data-source="observations"></div><p class="mm-cap">Positive = net injection, negative = net absorption. Reported on non-trading days too. Source: RBI Money Market Operations, row F.</p></div>
-    </div>
-    <div class="mm-card"><h3>Lending and deposit rates</h3><div class="mm-chart" id="ch-pricing" data-draw="chart" data-chart="pricing" data-source="observations"></div><p class="mm-cap">Scheduled commercial banks excluding RRBs and small finance banks. Source: RBI press release "Lending and Deposit Rates of Scheduled Commercial Banks" (highlights), monthly.</p></div>
-  </section>
-
   <section class="mm-sec" id="explore">
-    <div class="mm-sec-h"><h2>Series explorer</h2><p class="mm-muted">Pick any of the series in this dashboard to see its chart, definition, source and latest observations. The time range above applies here too.</p></div>
+    <div class="mm-sec-h"><h2>Series explorer</h2><p class="mm-muted">Pick any series to see it from April 2023, with its definition, source, full coverage and latest observations.</p></div>
     <label class="mm-seg" for="ex-pick"><span>Series</span><select class="dash-select" id="ex-pick" data-draw="picker" aria-label="Series" data-source="catalog"></select></label>
     <div class="mm-ex">
       <div class="mm-card"><div class="mm-chart" id="ch-explore" data-draw="chart" data-chart="explore" data-source="observations catalog"></div></div>
@@ -241,41 +239,10 @@
       </div>
     </div>
   </section>
+  </div>
 
-  <section class="mm-sec" id="catalog">
-    <div class="mm-sec-h"><h2>All series</h2><p class="mm-muted">Every series with its frequency, unit, coverage and latest value. The topic filter above narrows this list. Select a name to open it in the explorer.</p></div>
-    <div class="mm-tw"><table data-source="catalog" data-row-key="id"><thead><tr><th data-field="name">Series</th><th data-field="group">Topic</th><th data-field="freq">Frequency</th><th data-field="unit">Unit</th><th data-field="first">From</th><th data-field="last">To</th><th class="r" data-field="latest">Latest</th><th data-field="source">Source</th></tr></thead><tbody data-draw="catalog"></tbody></table></div>
-  </section>
-
-  <details id="methods">
-    <summary>Sources, refresh methods and known gaps</summary>
-    <div class="mm-notes">
-      <h3>Where the data comes from</h3>
-      <ul>
-        <li><b>MoSPI eSankhyiki API</b> (api.mospi.gov.in): National Accounts (GDP, GVA by sector), CPI on both the 2012 and 2024 bases, IIP on both the 2011-12 and 2022-23 bases, and two RBI tables it republishes: monthly forex reserves (from 1990) and monthly exchange rates (from 1992). Free, no key needed for reading.</li>
-        <li><b>RBI Handbook of Statistics on Indian Economy 2025-26</b> (released 31 July 2026): Table 40 policy rates and reserve ratios since 2008, Table 167 bank aggregates, Table 178 month-end G-Sec yields, Table 205 exchange rates, Tables 210 and 215 forex reserves.</li>
-        <li><b>RBI Weekly Statistical Supplement</b>, weekly issues since January 2026: Table 2 forex reserves, Table 4 bank business, Table 5 rates (repo, call rate, T-bill, 10-year FBIL yield, FBIL USD/INR).</li>
-        <li><b>RBI press release of 7 October 2026</b> (MPC resolution, October 5–7): repo raised 25 bp to 5.50%, SDF 5.25%, MSF and Bank Rate 5.75%.</li>
-        <li><b>rbi.org.in "Current Rates"</b> box for the snapshot table; each row shows its own date.</li>
-      </ul>
-      <h3>How to refresh</h3>
-      <ol>
-        <li>MoSPI series: run <code>python3 pipeline/fetch_mospi.py</code>. Standard library only. The NAS endpoint takes one indicator per call; the CPI 2024 endpoint allows at most 100 rows per page, the others 200.</li>
-        <li>RBI snapshot: run <code>python3 pipeline/fetch_rbi_home.py</code>.</li>
-        <li>RBI Handbook and WSS tables: run <code>python3 pipeline/list_wss.py</code> to list the latest WSS file ids, paste them into <code>pipeline/rbi_extract.js</code>, run that script in a browser console on rbidocs.rbi.org.in, and save its output as <code>data/raw/rbi_extract.json</code>. rbidocs serves its XLSX files only to a JavaScript-capable browser. Add any new MPC decision to the script's policy list.</li>
-        <li>Rebuild with <code>python3 pipeline/build_data.py</code>, <code>python3 pipeline/export_dashboard.py</code> and <code>python3 pipeline/validate.py</code>. On the website a scheduled GitHub Action does steps 1, 2 and 4 every day and publishes only if validation passes.</li>
-        <li>Typical release rhythm: CPI around the 12th of each month, IIP near month-end, quarterly GDP at the end of the second month after the quarter, WSS every Friday, MPC decisions every two months, a new Handbook each year.</li>
-      </ol>
-      <h3>Known gaps and caveats</h3>
-      <ul>
-        <li><b>Base-year breaks.</b> GDP growth on the 2022-23 base starts in Q1 2023-24, and it differs a lot from the old series where they overlap (Q1 2023-24: 6.6% new, 9.6% old). CPI inflation on the 2024 base starts in January 2026. Read the old and new series as separate lines, not one history.</li>
-        <li><b>Monthly RBI tables stop mid-2026.</b> Handbook data end in March 2026 (bank aggregates) or June 2026 (yields, monthly exchange rates, weekly reserves). Later points come from the weekly supplement, which carries the 10-year yield, USD/INR and reserves but not the 1-year and 5-year month-end yields.</li>
-        <li><b>Two 10-year yields.</b> The monthly Handbook figure is the yield on SGL trades at 10-year residual maturity; the weekly figure is FBIL's 10-year par yield. They track closely but are different measures.</li>
-        <li><b>Short bank history.</b> Bank credit and deposits run from January 2022 in this build. Longer history is on RBI's DBIE portal.</li>
-        <li><b>Policy rate history</b> starts in April 2008. Before May 2011 the repo rate was one end of the LAF corridor, not the single policy rate.</li>
-        <li><b>RBI DBIE (data.rbi.org.in)</b> was not used directly: its API needs session tokens and encrypted requests and has no documented public access. Its downloads are the route to longer bank and yield histories.</li>
-      </ul>
-    </div>
-  </details>
+  <footer class="mm-foot">
+    <p class="mm-cap">Data built <span data-draw="built" data-part="obs">—</span>. Sources, methods and known gaps: <a href="https://github.com/prathameshtaywade/india-macro-monitor#readme" target="_blank" rel="noopener">project README on GitHub</a>.</p>
+  </footer>
 </div>
 <script src="app.js"></script>
