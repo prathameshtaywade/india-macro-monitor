@@ -1,7 +1,7 @@
 {
-"generated_utc": "2026-11-24T23:40:48Z",
+"generated_utc": "2026-11-25T13:32:54Z",
 "snapshot": {
-"fetched_utc": "2026-11-25T03:14:25Z",
+"fetched_utc": "2026-11-25T13:32:20Z",
 "source_url": "https://www.rbi.org.in/",
 "policy": {
 "Policy Repo Rate": 5.5,
@@ -15,26 +15,26 @@
 "SLR": 18.0
 },
 "fx": {
-"INR / 1 USD": 92.7968,
-"INR / 1 GBP": 121.7905,
-"INR / 1 EUR": 102.0403,
-"INR / 100 JPY": 58.39,
-"INR / 1 AED": 25.2656
+"INR / 1 USD": 92.4895,
+"INR / 1 GBP": 120.967,
+"INR / 1 EUR": 101.128,
+"INR / 100 JPY": 58.0,
+"INR / 1 AED": 25.1818
 },
 "gsec": {
-"6.20% GS 2029": 6.901,
-"6.53% GS 2031": 7.1269,
-"6.94% GS 2036": 7.2629,
-"7.06% GS 2041": 7.4387,
-"7.63% GS 2056": 7.7409
+"6.20% GS 2029": 6.8508,
+"6.53% GS 2031": 7.0924,
+"6.94% GS 2036": 7.2105,
+"7.06% GS 2041": 7.402,
+"7.63% GS 2056": 7.6974
 },
 "tbill": {
-"91 day T-bills": 5.8602,
-"182 day T-bills": 6.53,
-"364 day T-bills": 6.63
+"91 day T-bills": 5.8846,
+"182 day T-bills": 6.5288,
+"364 day T-bills": 6.6387
 },
-"fx_as_of": "1.00pm of November 23, 2026",
-"gsec_as_of": "November 19, 2026"
+"fx_as_of": "1.00pm of November 25, 2026",
+"gsec_as_of": "November 23, 2026"
 },
 "provenance": {
 "extracted_on": "2026-11-24",
@@ -14340,6 +14340,10 @@
 [
 "2026-11-21",
 5.45
+],
+[
+"2026-11-23",
+5.74
 ]
 ],
 "notes": "Row A.I 'Call Money'. Days with no call trades (weekends, holidays) are left out.",
@@ -15493,6 +15497,10 @@
 [
 "2026-11-21",
 5.69
+],
+[
+"2026-11-23",
+5.73
 ]
 ],
 "notes": "Row A 'Overnight Segment (I+II+III+IV)': call, triparty repo, market repo and repo in corporate bonds.",
@@ -17058,6 +17066,14 @@
 [
 "2026-11-22",
 12479.26
+],
+[
+"2026-11-23",
+6401.26
+],
+[
+"2026-11-24",
+12825.26
 ]
 ],
 "notes": "Row F. Positive = net injection by RBI, negative = net absorption. Reported on non-trading days too. Net liquidity = Repo + MSF + SLF - Reverse Repo - SDF.",
@@ -18211,6 +18227,10 @@
 [
 "2026-11-21",
 -5.0
+],
+[
+"2026-11-23",
+24.0
 ]
 ],
 "notes": "Call money weighted average rate minus the policy repo rate in force that day, in basis points. Trading days only.",
@@ -19348,6 +19368,10 @@
 [
 "2026-11-21",
 -1.4
+],
+[
+"2026-11-23",
+2.0
 ]
 ],
 "notes": "Average of the latest five trading days.",

@@ -386,3 +386,5 @@
 {"call_rate": null, "call_volume": 0.0, "date": "2026-11-01", "fetched_utc": "2026-11-24T23:38:22Z", "net_liq_outstanding": -196397.13, "net_liq_today": -182442.0, "overnight_rate": null, "prid": 63900}
 {"call_rate": 5.63, "call_volume": 4045.25, "date": "2026-10-31", "fetched_utc": "2026-11-24T23:38:24Z", "net_liq_outstanding": -174074.13, "net_liq_today": -162539.0, "overnight_rate": 5.58, "prid": 63899}
 {"call_rate": 5.4, "call_volume": 2257.1, "date": "2026-10-30", "fetched_utc": "2026-11-24T23:38:25Z", "net_liq_outstanding": -137591.13, "net_liq_today": -122343.0, "overnight_rate": 5.7, "prid": 63898}
+{"call_rate": null, "call_volume": 0.0, "date": "2026-11-24", "fetched_utc": "2026-11-25T13:32:40Z", "net_liq_outstanding": 12825.26, "net_liq_today": -106248.0, "overnight_rate": null, "prid": 64036}
+{"call_rate": 5.74, "call_volume": 13306.12, "date": "2026-11-23", "fetched_utc": "2026-11-25T13:32:43Z", "net_liq_outstanding": 6401.26, "net_liq_today": -4372.0, "overnight_rate": 5.73, "prid": 64034}
