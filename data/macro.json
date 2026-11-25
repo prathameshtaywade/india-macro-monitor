@@ -1,5 +1,5 @@
 {
-"generated_utc": "2026-11-25T15:51:12Z",
+"generated_utc": "2026-11-25T16:15:46Z",
 "snapshot": {
 "fetched_utc": "2026-11-25T13:32:20Z",
 "source_url": "https://www.rbi.org.in/",
@@ -479,6 +479,978 @@
 [
 "2026-Q1",
 8.2
+]
+]
+},
+{
+"id": "gva_level_q",
+"name": "Real GVA (quarterly level)",
+"group": "Growth",
+"unit": "₹ lakh crore",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Total GVA at basic prices, constant (2022-23) prices.",
+"data": [
+[
+"2022-Q1",
+55.4982
+],
+[
+"2022-Q2",
+54.9231
+],
+[
+"2022-Q3",
+62.6023
+],
+[
+"2022-Q4",
+65.2077
+],
+[
+"2023-Q1",
+59.3491
+],
+[
+"2023-Q2",
+59.2509
+],
+[
+"2023-Q3",
+67.2587
+],
+[
+"2023-Q4",
+70.0677
+],
+[
+"2024-Q1",
+63.7761
+],
+[
+"2024-Q2",
+63.4047
+],
+[
+"2024-Q3",
+72.3766
+],
+[
+"2024-Q4",
+74.6603
+],
+[
+"2025-Q1",
+68.2112
+],
+[
+"2025-Q2",
+68.6726
+],
+[
+"2025-Q3",
+77.8683
+],
+[
+"2025-Q4",
+81.1513
+],
+[
+"2026-Q1",
+73.8245
+]
+]
+},
+{
+"id": "gva_primary_level",
+"name": "Real GVA – Primary",
+"group": "GVA by sector",
+"unit": "₹ lakh crore",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Constant (2022-23) prices. Broad sectors sum their component industries.",
+"data": [
+[
+"2022-Q1",
+11.9409
+],
+[
+"2022-Q2",
+9.9565
+],
+[
+"2022-Q3",
+15.7055
+],
+[
+"2022-Q4",
+14.9028
+],
+[
+"2023-Q1",
+12.3983
+],
+[
+"2023-Q2",
+10.1932
+],
+[
+"2023-Q3",
+15.898
+],
+[
+"2023-Q4",
+15.3395
+],
+[
+"2024-Q1",
+12.8837
+],
+[
+"2024-Q2",
+10.6279
+],
+[
+"2024-Q3",
+16.9498
+],
+[
+"2024-Q4",
+16.074
+],
+[
+"2025-Q1",
+13.5656
+],
+[
+"2025-Q2",
+11.1697
+],
+[
+"2025-Q3",
+17.2882
+],
+[
+"2025-Q4",
+16.5843
+],
+[
+"2026-Q1",
+13.962
+]
+]
+},
+{
+"id": "gva_secondary_level",
+"name": "Real GVA – Secondary",
+"group": "GVA by sector",
+"unit": "₹ lakh crore",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Constant (2022-23) prices. Broad sectors sum their component industries.",
+"data": [
+[
+"2022-Q1",
+14.0873
+],
+[
+"2022-Q2",
+14.5837
+],
+[
+"2022-Q3",
+15.3082
+],
+[
+"2022-Q4",
+17.8869
+],
+[
+"2023-Q1",
+15.0646
+],
+[
+"2023-Q2",
+16.9401
+],
+[
+"2023-Q3",
+17.2066
+],
+[
+"2023-Q4",
+19.1156
+],
+[
+"2024-Q1",
+16.4511
+],
+[
+"2024-Q2",
+17.9686
+],
+[
+"2024-Q3",
+18.7166
+],
+[
+"2024-Q4",
+20.7533
+],
+[
+"2025-Q1",
+17.4468
+],
+[
+"2025-Q2",
+19.5242
+],
+[
+"2025-Q3",
+20.1653
+],
+[
+"2025-Q4",
+22.4013
+],
+[
+"2026-Q1",
+18.948
+]
+]
+},
+{
+"id": "gva_services_level",
+"name": "Real GVA – Services (tertiary)",
+"group": "GVA by sector",
+"unit": "₹ lakh crore",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Constant (2022-23) prices. Broad sectors sum their component industries.",
+"data": [
+[
+"2022-Q1",
+29.47
+],
+[
+"2022-Q2",
+30.3829
+],
+[
+"2022-Q3",
+31.5887
+],
+[
+"2022-Q4",
+32.4179
+],
+[
+"2023-Q1",
+31.8862
+],
+[
+"2023-Q2",
+32.1176
+],
+[
+"2023-Q3",
+34.1542
+],
+[
+"2023-Q4",
+35.6125
+],
+[
+"2024-Q1",
+34.4413
+],
+[
+"2024-Q2",
+34.8083
+],
+[
+"2024-Q3",
+36.7102
+],
+[
+"2024-Q4",
+37.8329
+],
+[
+"2025-Q1",
+37.1988
+],
+[
+"2025-Q2",
+37.9786
+],
+[
+"2025-Q3",
+40.4147
+],
+[
+"2025-Q4",
+42.1657
+],
+[
+"2026-Q1",
+40.9145
+]
+]
+},
+{
+"id": "gva_agriculture_level",
+"name": "Real GVA – Agriculture, Livestock, Forestry and Fishing",
+"group": "GVA by sector",
+"unit": "₹ lakh crore",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Constant (2022-23) prices. Broad sectors sum their component industries.",
+"data": [
+[
+"2022-Q1",
+10.6872
+],
+[
+"2022-Q2",
+8.9671
+],
+[
+"2022-Q3",
+14.3943
+],
+[
+"2022-Q4",
+13.3969
+],
+[
+"2023-Q1",
+11.1729
+],
+[
+"2023-Q2",
+9.1712
+],
+[
+"2023-Q3",
+14.6027
+],
+[
+"2023-Q4",
+13.7756
+],
+[
+"2024-Q1",
+11.4655
+],
+[
+"2024-Q2",
+9.5372
+],
+[
+"2024-Q3",
+15.4413
+],
+[
+"2024-Q4",
+14.2979
+],
+[
+"2025-Q1",
+11.9709
+],
+[
+"2025-Q2",
+9.843
+],
+[
+"2025-Q3",
+15.7293
+],
+[
+"2025-Q4",
+14.8591
+],
+[
+"2026-Q1",
+12.4061
+]
+]
+},
+{
+"id": "gva_mining_level",
+"name": "Real GVA – Mining and Quarrying",
+"group": "GVA by sector",
+"unit": "₹ lakh crore",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Constant (2022-23) prices. Broad sectors sum their component industries.",
+"data": [
+[
+"2022-Q1",
+1.2537
+],
+[
+"2022-Q2",
+0.9894
+],
+[
+"2022-Q3",
+1.3111
+],
+[
+"2022-Q4",
+1.5059
+],
+[
+"2023-Q1",
+1.2254
+],
+[
+"2023-Q2",
+1.022
+],
+[
+"2023-Q3",
+1.2953
+],
+[
+"2023-Q4",
+1.5639
+],
+[
+"2024-Q1",
+1.4182
+],
+[
+"2024-Q2",
+1.0907
+],
+[
+"2024-Q3",
+1.5084
+],
+[
+"2024-Q4",
+1.7762
+],
+[
+"2025-Q1",
+1.5947
+],
+[
+"2025-Q2",
+1.3267
+],
+[
+"2025-Q3",
+1.559
+],
+[
+"2025-Q4",
+1.7252
+],
+[
+"2026-Q1",
+1.5558
+]
+]
+},
+{
+"id": "gva_manufacturing_level",
+"name": "Real GVA – Manufacturing",
+"group": "GVA by sector",
+"unit": "₹ lakh crore",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Constant (2022-23) prices. Broad sectors sum their component industries.",
+"data": [
+[
+"2022-Q1",
+7.4701
+],
+[
+"2022-Q2",
+8.1119
+],
+[
+"2022-Q3",
+8.5172
+],
+[
+"2022-Q4",
+10.7293
+],
+[
+"2023-Q1",
+7.8877
+],
+[
+"2023-Q2",
+9.5765
+],
+[
+"2023-Q3",
+9.7582
+],
+[
+"2023-Q4",
+11.3224
+],
+[
+"2024-Q1",
+8.6655
+],
+[
+"2024-Q2",
+10.2941
+],
+[
+"2024-Q3",
+10.9522
+],
+[
+"2024-Q4",
+12.4843
+],
+[
+"2025-Q1",
+9.3837
+],
+[
+"2025-Q2",
+11.3202
+],
+[
+"2025-Q3",
+11.9422
+],
+[
+"2025-Q4",
+13.475
+],
+[
+"2026-Q1",
+10.2442
+]
+]
+},
+{
+"id": "gva_utilities_level",
+"name": "Real GVA – Electricity, Gas, Water Supply & Other Utility Services",
+"group": "GVA by sector",
+"unit": "₹ lakh crore",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Constant (2022-23) prices. Broad sectors sum their component industries.",
+"data": [
+[
+"2022-Q1",
+1.5331
+],
+[
+"2022-Q2",
+1.4937
+],
+[
+"2022-Q3",
+1.3922
+],
+[
+"2022-Q4",
+1.4905
+],
+[
+"2023-Q1",
+1.6372
+],
+[
+"2023-Q2",
+1.7302
+],
+[
+"2023-Q3",
+1.5821
+],
+[
+"2023-Q4",
+1.6524
+],
+[
+"2024-Q1",
+1.7969
+],
+[
+"2024-Q2",
+1.7274
+],
+[
+"2024-Q3",
+1.5932
+],
+[
+"2024-Q4",
+1.6696
+],
+[
+"2025-Q1",
+1.7645
+],
+[
+"2025-Q2",
+1.7933
+],
+[
+"2025-Q3",
+1.6227
+],
+[
+"2025-Q4",
+1.7501
+],
+[
+"2026-Q1",
+1.9214
+]
+]
+},
+{
+"id": "gva_construction_level",
+"name": "Real GVA – Construction",
+"group": "GVA by sector",
+"unit": "₹ lakh crore",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Constant (2022-23) prices. Broad sectors sum their component industries.",
+"data": [
+[
+"2022-Q1",
+5.084
+],
+[
+"2022-Q2",
+4.9781
+],
+[
+"2022-Q3",
+5.3987
+],
+[
+"2022-Q4",
+5.6672
+],
+[
+"2023-Q1",
+5.5397
+],
+[
+"2023-Q2",
+5.6334
+],
+[
+"2023-Q3",
+5.8662
+],
+[
+"2023-Q4",
+6.1408
+],
+[
+"2024-Q1",
+5.9887
+],
+[
+"2024-Q2",
+5.947
+],
+[
+"2024-Q3",
+6.1713
+],
+[
+"2024-Q4",
+6.5995
+],
+[
+"2025-Q1",
+6.2986
+],
+[
+"2025-Q2",
+6.4107
+],
+[
+"2025-Q3",
+6.6004
+],
+[
+"2025-Q4",
+7.1762
+],
+[
+"2026-Q1",
+6.7825
+]
+]
+},
+{
+"id": "gva_trade_level",
+"name": "Real GVA – Trade, hotels, transport, communication, broadcasting and storage",
+"group": "GVA by sector",
+"unit": "₹ lakh crore",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Constant (2022-23) prices. Broad sectors sum their component industries.",
+"data": [
+[
+"2022-Q1",
+7.6741
+],
+[
+"2022-Q2",
+7.8498
+],
+[
+"2022-Q3",
+8.4208
+],
+[
+"2022-Q4",
+8.7001
+],
+[
+"2023-Q1",
+8.6059
+],
+[
+"2023-Q2",
+8.6979
+],
+[
+"2023-Q3",
+9.3408
+],
+[
+"2023-Q4",
+9.7647
+],
+[
+"2024-Q1",
+9.3023
+],
+[
+"2024-Q2",
+9.3478
+],
+[
+"2024-Q3",
+9.9637
+],
+[
+"2024-Q4",
+10.3431
+],
+[
+"2025-Q1",
+10.2096
+],
+[
+"2025-Q2",
+10.3384
+],
+[
+"2025-Q3",
+11.1264
+],
+[
+"2025-Q4",
+11.6788
+],
+[
+"2026-Q1",
+11.0752
+]
+]
+},
+{
+"id": "gva_financial_level",
+"name": "Real GVA – Financial, real estate, IT, professional services and ownership of dwellings",
+"group": "GVA by sector",
+"unit": "₹ lakh crore",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Constant (2022-23) prices. Broad sectors sum their component industries.",
+"data": [
+[
+"2022-Q1",
+14.232
+],
+[
+"2022-Q2",
+15.1166
+],
+[
+"2022-Q3",
+15.2225
+],
+[
+"2022-Q4",
+15.8807
+],
+[
+"2023-Q1",
+15.2409
+],
+[
+"2023-Q2",
+15.6757
+],
+[
+"2023-Q3",
+16.2615
+],
+[
+"2023-Q4",
+17.2892
+],
+[
+"2024-Q1",
+16.5417
+],
+[
+"2024-Q2",
+17.2487
+],
+[
+"2024-Q3",
+17.8373
+],
+[
+"2024-Q4",
+18.6275
+],
+[
+"2025-Q1",
+17.9961
+],
+[
+"2025-Q2",
+18.9568
+],
+[
+"2025-Q3",
+19.7892
+],
+[
+"2025-Q4",
+20.9178
+],
+[
+"2026-Q1",
+20.1746
+]
+]
+},
+{
+"id": "gva_public_level",
+"name": "Real GVA – Public Administration, Defence & Other Services",
+"group": "GVA by sector",
+"unit": "₹ lakh crore",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Constant (2022-23) prices. Broad sectors sum their component industries.",
+"data": [
+[
+"2022-Q1",
+7.5639
+],
+[
+"2022-Q2",
+7.4166
+],
+[
+"2022-Q3",
+7.9454
+],
+[
+"2022-Q4",
+7.8371
+],
+[
+"2023-Q1",
+8.0393
+],
+[
+"2023-Q2",
+7.744
+],
+[
+"2023-Q3",
+8.5519
+],
+[
+"2023-Q4",
+8.5586
+],
+[
+"2024-Q1",
+8.5974
+],
+[
+"2024-Q2",
+8.2117
+],
+[
+"2024-Q3",
+8.9093
+],
+[
+"2024-Q4",
+8.8623
+],
+[
+"2025-Q1",
+8.9931
+],
+[
+"2025-Q2",
+8.6834
+],
+[
+"2025-Q3",
+9.4991
+],
+[
+"2025-Q4",
+9.569
+],
+[
+"2026-Q1",
+9.6647
 ]
 ]
 },
@@ -1205,7 +2177,7 @@
 "freq": "Quarterly",
 "base": "2022-23 series",
 "source": "MoSPI – NAS",
-"source_url": "https://api.mospi.gov.in/api/nas/getNASData",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=5",
 "notes": "Constant (2022-23) prices; converted from ₹ crore.",
 "data": [
 [
@@ -2971,8 +3943,8 @@
 "freq": "Monthly",
 "base": "2022-23=100",
 "source": "MoSPI – IIP",
-"source_url": "https://api.mospi.gov.in/api/iip/getIipData",
-"notes": "",
+"source_url": "https://api.mospi.gov.in/api/iip/getIipData?base_year=2022-23&frequency=Monthly&type=General",
+"notes": "Latest month is a quick estimate.",
 "data": [
 [
 "2023-04",
@@ -3147,8 +4119,8 @@
 {
 "id": "iip_mining",
 "name": "IIP growth – Mining & Quarrying",
-"group": "Industry",
 "unit": "%",
+"group": "Industry",
 "freq": "Monthly",
 "base": "2022-23=100",
 "source": "MoSPI – IIP",
@@ -3326,10 +4298,191 @@
 ]
 },
 {
+"id": "iip_mining_index",
+"name": "IIP index – Mining & Quarrying",
+"unit": "Index (2022-23=100)",
+"group": "Industry",
+"freq": "Monthly",
+"base": "2022-23=100",
+"source": "MoSPI – IIP",
+"source_url": "https://api.mospi.gov.in/api/iip/getIipData?base_year=2022-23&frequency=Monthly&type=Sectoral",
+"notes": "",
+"data": [
+[
+"2023-04",
+97.4
+],
+[
+"2023-05",
+100.7
+],
+[
+"2023-06",
+99.9
+],
+[
+"2023-07",
+82.8
+],
+[
+"2023-08",
+82.5
+],
+[
+"2023-09",
+83.0
+],
+[
+"2023-10",
+101.6
+],
+[
+"2023-11",
+99.6
+],
+[
+"2023-12",
+112.5
+],
+[
+"2024-01",
+117.3
+],
+[
+"2024-02",
+116.9
+],
+[
+"2024-03",
+132.0
+],
+[
+"2024-04",
+109.6
+],
+[
+"2024-05",
+108.4
+],
+[
+"2024-06",
+104.6
+],
+[
+"2024-07",
+86.1
+],
+[
+"2024-08",
+78.4
+],
+[
+"2024-09",
+83.3
+],
+[
+"2024-10",
+103.0
+],
+[
+"2024-11",
+103.5
+],
+[
+"2024-12",
+116.9
+],
+[
+"2025-01",
+121.2
+],
+[
+"2025-02",
+117.5
+],
+[
+"2025-03",
+128.7
+],
+[
+"2025-04",
+110.3
+],
+[
+"2025-05",
+114.7
+],
+[
+"2025-06",
+108.9
+],
+[
+"2025-07",
+95.3
+],
+[
+"2025-08",
+90.8
+],
+[
+"2025-09",
+96.4
+],
+[
+"2025-10",
+105.9
+],
+[
+"2025-11",
+106.9
+],
+[
+"2025-12",
+117.8
+],
+[
+"2026-01",
+120.6
+],
+[
+"2026-02",
+114.7
+],
+[
+"2026-03",
+125.4
+],
+[
+"2026-04",
+106.1
+],
+[
+"2026-05",
+113.1
+],
+[
+"2026-06",
+110.6
+],
+[
+"2026-07",
+94.4
+],
+[
+"2026-08",
+86.6
+],
+[
+"2026-09",
+90.4
+]
+]
+},
+{
 "id": "iip_manufacturing",
 "name": "IIP growth – Manufacturing",
-"group": "Industry",
 "unit": "%",
+"group": "Industry",
 "freq": "Monthly",
 "base": "2022-23=100",
 "source": "MoSPI – IIP",
@@ -3507,10 +4660,191 @@
 ]
 },
 {
+"id": "iip_manufacturing_index",
+"name": "IIP index – Manufacturing",
+"unit": "Index (2022-23=100)",
+"group": "Industry",
+"freq": "Monthly",
+"base": "2022-23=100",
+"source": "MoSPI – IIP",
+"source_url": "https://api.mospi.gov.in/api/iip/getIipData?base_year=2022-23&frequency=Monthly&type=Sectoral",
+"notes": "",
+"data": [
+[
+"2023-04",
+100.1
+],
+[
+"2023-05",
+105.2
+],
+[
+"2023-06",
+104.2
+],
+[
+"2023-07",
+104.7
+],
+[
+"2023-08",
+108.5
+],
+[
+"2023-09",
+106.9
+],
+[
+"2023-10",
+106.5
+],
+[
+"2023-11",
+101.5
+],
+[
+"2023-12",
+109.6
+],
+[
+"2024-01",
+110.5
+],
+[
+"2024-02",
+109.4
+],
+[
+"2024-03",
+118.1
+],
+[
+"2024-04",
+105.8
+],
+[
+"2024-05",
+111.5
+],
+[
+"2024-06",
+111.7
+],
+[
+"2024-07",
+112.9
+],
+[
+"2024-08",
+112.2
+],
+[
+"2024-09",
+112.8
+],
+[
+"2024-10",
+113.3
+],
+[
+"2024-11",
+107.8
+],
+[
+"2024-12",
+116.6
+],
+[
+"2025-01",
+118.5
+],
+[
+"2025-02",
+112.8
+],
+[
+"2025-03",
+126.4
+],
+[
+"2025-04",
+111.9
+],
+[
+"2025-05",
+116.2
+],
+[
+"2025-06",
+114.4
+],
+[
+"2025-07",
+118.7
+],
+[
+"2025-08",
+116.2
+],
+[
+"2025-09",
+119.0
+],
+[
+"2025-10",
+112.5
+],
+[
+"2025-11",
+117.3
+],
+[
+"2025-12",
+125.6
+],
+[
+"2026-01",
+124.0
+],
+[
+"2026-02",
+119.2
+],
+[
+"2026-03",
+131.4
+],
+[
+"2026-04",
+118.7
+],
+[
+"2026-05",
+122.2
+],
+[
+"2026-06",
+125.3
+],
+[
+"2026-07",
+128.4
+],
+[
+"2026-08",
+126.2
+],
+[
+"2026-09",
+128.0
+]
+]
+},
+{
 "id": "iip_electricity",
 "name": "IIP growth – Electricity & Gas Supply",
-"group": "Industry",
 "unit": "%",
+"group": "Industry",
 "freq": "Monthly",
 "base": "2022-23=100",
 "source": "MoSPI – IIP",
@@ -3688,10 +5022,191 @@
 ]
 },
 {
+"id": "iip_electricity_index",
+"name": "IIP index – Electricity & Gas Supply",
+"unit": "Index (2022-23=100)",
+"group": "Industry",
+"freq": "Monthly",
+"base": "2022-23=100",
+"source": "MoSPI – IIP",
+"source_url": "https://api.mospi.gov.in/api/iip/getIipData?base_year=2022-23&frequency=Monthly&type=Sectoral",
+"notes": "",
+"data": [
+[
+"2023-04",
+103.8
+],
+[
+"2023-05",
+109.1
+],
+[
+"2023-06",
+110.4
+],
+[
+"2023-07",
+110.0
+],
+[
+"2023-08",
+119.0
+],
+[
+"2023-09",
+111.1
+],
+[
+"2023-10",
+110.3
+],
+[
+"2023-11",
+96.0
+],
+[
+"2023-12",
+98.9
+],
+[
+"2024-01",
+107.2
+],
+[
+"2024-02",
+101.9
+],
+[
+"2024-03",
+111.0
+],
+[
+"2024-04",
+114.1
+],
+[
+"2024-05",
+124.3
+],
+[
+"2024-06",
+120.8
+],
+[
+"2024-07",
+119.9
+],
+[
+"2024-08",
+115.0
+],
+[
+"2024-09",
+111.9
+],
+[
+"2024-10",
+113.6
+],
+[
+"2024-11",
+100.3
+],
+[
+"2024-12",
+104.9
+],
+[
+"2025-01",
+108.9
+],
+[
+"2025-02",
+105.0
+],
+[
+"2025-03",
+117.8
+],
+[
+"2025-04",
+116.3
+],
+[
+"2025-05",
+117.9
+],
+[
+"2025-06",
+118.4
+],
+[
+"2025-07",
+122.8
+],
+[
+"2025-08",
+119.2
+],
+[
+"2025-09",
+115.6
+],
+[
+"2025-10",
+105.6
+],
+[
+"2025-11",
+98.7
+],
+[
+"2025-12",
+111.1
+],
+[
+"2026-01",
+115.0
+],
+[
+"2026-02",
+107.0
+],
+[
+"2026-03",
+119.2
+],
+[
+"2026-04",
+121.7
+],
+[
+"2026-05",
+130.1
+],
+[
+"2026-06",
+131.8
+],
+[
+"2026-07",
+133.5
+],
+[
+"2026-08",
+133.9
+],
+[
+"2026-09",
+128.6
+]
+]
+},
+{
 "id": "iip_water",
 "name": "IIP growth – Water Supply, Sewerage & Waste Management",
-"group": "Industry",
 "unit": "%",
+"group": "Industry",
 "freq": "Monthly",
 "base": "2022-23=100",
 "source": "MoSPI – IIP",
@@ -3865,6 +5380,187 @@
 [
 "2026-09",
 5.8
+]
+]
+},
+{
+"id": "iip_water_index",
+"name": "IIP index – Water Supply, Sewerage & Waste Management",
+"unit": "Index (2022-23=100)",
+"group": "Industry",
+"freq": "Monthly",
+"base": "2022-23=100",
+"source": "MoSPI – IIP",
+"source_url": "https://api.mospi.gov.in/api/iip/getIipData?base_year=2022-23&frequency=Monthly&type=Sectoral",
+"notes": "",
+"data": [
+[
+"2023-04",
+109.6
+],
+[
+"2023-05",
+111.0
+],
+[
+"2023-06",
+113.1
+],
+[
+"2023-07",
+113.7
+],
+[
+"2023-08",
+115.7
+],
+[
+"2023-09",
+117.0
+],
+[
+"2023-10",
+118.6
+],
+[
+"2023-11",
+120.5
+],
+[
+"2023-12",
+121.3
+],
+[
+"2024-01",
+122.7
+],
+[
+"2024-02",
+123.7
+],
+[
+"2024-03",
+126.2
+],
+[
+"2024-04",
+126.7
+],
+[
+"2024-05",
+126.8
+],
+[
+"2024-06",
+127.2
+],
+[
+"2024-07",
+128.6
+],
+[
+"2024-08",
+129.8
+],
+[
+"2024-09",
+130.3
+],
+[
+"2024-10",
+133.2
+],
+[
+"2024-11",
+134.7
+],
+[
+"2024-12",
+135.4
+],
+[
+"2025-01",
+135.8
+],
+[
+"2025-02",
+135.8
+],
+[
+"2025-03",
+137.5
+],
+[
+"2025-04",
+137.1
+],
+[
+"2025-05",
+137.6
+],
+[
+"2025-06",
+137.3
+],
+[
+"2025-07",
+138.2
+],
+[
+"2025-08",
+138.8
+],
+[
+"2025-09",
+138.4
+],
+[
+"2025-10",
+141.2
+],
+[
+"2025-11",
+140.5
+],
+[
+"2025-12",
+141.3
+],
+[
+"2026-01",
+142.7
+],
+[
+"2026-02",
+143.4
+],
+[
+"2026-03",
+146.3
+],
+[
+"2026-04",
+146.1
+],
+[
+"2026-05",
+145.1
+],
+[
+"2026-06",
+145.7
+],
+[
+"2026-07",
+148.4
+],
+[
+"2026-08",
+147.6
+],
+[
+"2026-09",
+146.4
 ]
 ]
 },

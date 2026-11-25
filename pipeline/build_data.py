@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from checks import is_weekly_key, latest_revision  # noqa: E402
 from banking import growth_gap, incremental_cd_fytd, trailing_mean  # noqa: E402
 from funding import call_spread_bp, pricing_gap, resolve_lending, resolve_mmo, spread_verification, trailing_mean_obs  # noqa: E402
-from macro_sectors import gva_group_growth  # noqa: E402
+from macro_sectors import gva_group_growth, gva_group_levels  # noqa: E402
 from rbi_releases import BASE as RBI_RELEASE_URL  # noqa: E402
 from rbi_policy import LEDGER, policy_rows  # noqa: E402
 
@@ -123,9 +123,19 @@ add(id="gva_growth_q", name="Real GVA growth (y/y)", group="Growth", unit="%", f
     notes="GVA at basic prices, constant prices.",
     data=[(q, v["gva_total"]) for q, v in gva_rates.items() if "gva_total" in v])
 gva_base = dict(group="GVA by sector", unit="%", freq="Quarterly", base="2022-23 series")
-gva_levels = gva_observations(mospi("nas_q_2022_1")["rows"])
+gva_levels = gva_group_levels(gva_observations(mospi("nas_q_2022_1")["rows"]))
+GVA_BROAD_NAMES = {"gva_primary": "Primary", "gva_secondary": "Secondary", "gva_services": "Services (tertiary)"}
+gva_level_base = dict(unit="₹ lakh crore", freq="Quarterly", base="2022-23 series",
+                      source="MoSPI – NAS quarterly real GVA levels, indicator 1", source_url=GVA_API + "1")
+add(id="gva_level_q", name="Real GVA (quarterly level)", group="Growth", **gva_level_base,
+    notes="Total GVA at basic prices, constant (2022-23) prices.",
+    data=[(q, v["gva_total"] / 1e5) for q, v in gva_levels.items()])
+for sid, label in {**GVA_BROAD_NAMES, **GVA_NAMES}.items():
+    add(id=f"{sid}_level", name=f"Real GVA – {label}", group="GVA by sector", **gva_level_base,
+        notes="Constant (2022-23) prices. Broad sectors sum their component industries.",
+        data=[(q, v[sid] / 1e5) for q, v in gva_levels.items()])
 for sid, data in gva_group_growth(gva_levels).items():
-    label = {"gva_primary": "Primary", "gva_secondary": "Secondary", "gva_services": "Services (tertiary)"}[sid]
+    label = GVA_BROAD_NAMES[sid]
     add(id=sid, name=f"GVA growth – {label}", **gva_base,
         source="Derived from MoSPI – NAS quarterly real GVA levels, indicator 1", source_url=GVA_API + "1",
         notes="Sum of component GVA levels at constant prices, then year-on-year growth.", data=data)
@@ -134,7 +144,7 @@ for sid, label in GVA_NAMES.items():
         notes="Constant prices, y/y.", data=[(q, v[sid]) for q, v in gva_rates.items() if sid in v])
 r = mospi("nas_q_2022_5")
 add(id="gdp_level_q", name="Real GDP (quarterly level)", group="Growth", unit="₹ lakh crore", freq="Quarterly",
-    base="2022-23 series", source="MoSPI – NAS", source_url=r["endpoint"], notes="Constant (2022-23) prices; converted from ₹ crore.",
+    base="2022-23 series", source="MoSPI – NAS", source_url=GVA_API + "5", notes="Constant (2022-23) prices; converted from ₹ crore.",
     data=[(fq(x["year"], x["quarter"]), (num(x["constant_price"]) or 0) / 1e5 or None) for x in r["rows"]])
 r = mospi("nas_a_2022_22")
 add(id="gdp_growth_a", name="Real GDP growth, annual (y/y)", group="Growth", unit="%", freq="Annual (FY)",
@@ -172,13 +182,14 @@ add(id="cfpi_old", name="Consumer Food Price inflation, old 2012 series", group=
     notes="", data=[(ym(x["year"], x["month"]), num(x["inflation"])) for x in rows])
 
 # ---------------- IIP (MoSPI) ----------------
+IIP_API = MOSPI_API + "/api/iip/getIipData?base_year=2022-23&frequency=Monthly&type="
 r = mospi("iip_2022")
 add(id="iip_growth", name="IIP growth – General (y/y)", group="Industry", unit="%", freq="Monthly", base="2022-23=100",
-    source="MoSPI – Index of Industrial Production (new series)", source_url=MOSPI_API + "/api/iip/getIipData?base_year=2022-23&frequency=Monthly&type=General",
+    source="MoSPI – Index of Industrial Production (new series)", source_url=IIP_API + "General",
     notes="Latest month is a quick estimate and is revised in later releases.",
     data=[(ym(x["year"], x["month"]), num(x["growth_rate"])) for x in r["rows"]])
 add(id="iip_index", name="IIP General index", group="Industry", unit="Index (2022-23=100)", freq="Monthly", base="2022-23=100",
-    source="MoSPI – IIP", source_url=r["endpoint"], notes="",
+    source="MoSPI – IIP", source_url=IIP_API + "General", notes="Latest month is a quick estimate.",
     data=[(ym(x["year"], x["month"]), num(x["index"])) for x in r["rows"]])
 r = mospi("iip_2022_sect")
 for sid, category in [
@@ -188,10 +199,12 @@ for sid, category in [
     ("iip_water", "Water Supply, Sewerage & Waste Management"),
 ]:
     rows = [x for x in r["rows"] if x["category"] == category and not x["sub_category"]]
-    add(id=sid, name=f"IIP growth – {category}", group="Industry", unit="%",
-        freq="Monthly", base="2022-23=100", source="MoSPI – IIP",
-        source_url=r["endpoint"] + "?base_year=2022-23&frequency=Monthly&type=Sectoral", notes="",
+    sector_meta = dict(group="Industry", freq="Monthly", base="2022-23=100", source="MoSPI – IIP",
+                       source_url=IIP_API + "Sectoral", notes="")
+    add(id=sid, name=f"IIP growth – {category}", unit="%", **sector_meta,
         data=[(ym(x["year"], x["month"]), num(x["growth_rate"])) for x in rows])
+    add(id=f"{sid}_index", name=f"IIP index – {category}", unit="Index (2022-23=100)", **sector_meta,
+        data=[(ym(x["year"], x["month"]), num(x["index"])) for x in rows])
 r = mospi("iip_2011")
 add(id="iip_growth_old", name="IIP growth – General, old 2011-12 series", group="Industry", unit="%", freq="Monthly",
     base="2011-12=100", source="MoSPI – IIP (base 2011-12, discontinued after Mar 2026)", source_url=r["endpoint"] + "?base_year=2011-12",

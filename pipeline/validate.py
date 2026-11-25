@@ -44,7 +44,10 @@ RANGES = {  # unit -> (min, max)
     "pp": (-60, 60), "bp": (-500, 500), "₹ crore": (-2e7, 2e7),
 }
 # Series whose plausible range differs from their unit's default.
-SERIES_RANGES = {"scb_inc_cd_fytd": (-1000, 1000)}
+SERIES_RANGES = {
+    "scb_inc_cd_fytd": (-1000, 1000),
+    **{f"{sid}_level": (0, 2000) for sid in (*GVA_GROUPS, *GVA_COMPONENTS)},
+}
 STALE_DAYS = {"Daily": 6, "Weekly": 21, "Monthly": 75, "Monthly / fortnightly": 75, "Quarterly": 200, "Annual (FY)": 500}
 HANDBOOK_HISTORY = {"gsec10", "gsec5", "gsec1", "forex_m", "usdinr_m", "eurinr_m"}
 PRICING_SERIES = ("walr_fresh", "walr_out", "wadtdr_fresh", "wadtdr_out", "pricing_gap_fresh", "mclr_1y_median")
@@ -136,7 +139,12 @@ def validate(cur, prev=None, today=None, expected_ids=None, core=None):
             warnings.append(f"`{s['id']}` latest is {periods[-1]} ({(today - last).days} days old; "
                             f"expected ≤ {limit} for {s['freq']})")
 
-    for benchmark, components in (("gva_growth_q", (*GVA_GROUPS, *GVA_COMPONENTS)), ("iip_growth", IIP_COMPONENTS)):
+    for benchmark, components in (
+        ("gva_growth_q", (*GVA_GROUPS, *GVA_COMPONENTS)),
+        ("gva_level_q", tuple(f"{sid}_level" for sid in (*GVA_GROUPS, *GVA_COMPONENTS))),
+        ("iip_growth", IIP_COMPONENTS),
+        ("iip_index", tuple(f"{sid}_index" for sid in IIP_COMPONENTS)),
+    ):
         if benchmark not in series:
             continue
         periods = {p for p, _ in series[benchmark]["data"]}

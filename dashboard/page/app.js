@@ -8,6 +8,7 @@
   const REPORTING_MIX = { from: '2025-12-01', to: '2026-11-30', label: 'Friday comparator' };
   const parse = d3.utcParse('%Y-%m-%d');
   const MINUS = '−';
+  const IIP_UNIT = 'Index (2022-23=100)';
   const POLICY_NAMES = new Map([['repo', 'Policy Repo Rate'], ['sdf', 'Standing Deposit Facility Rate'],
     ['msf', 'Marginal Standing Facility Rate'], ['crr', 'Cash Reserve Ratio'], ['slr', 'Statutory Liquidity Ratio']]);
   const POLICY_CORRIDOR = ['repo', 'sdf', 'msf'];
@@ -25,7 +26,7 @@
     title: 'Latest value per series',
     description: 'Last and previous observation of each series, rounded as shown on the page; change = last minus previous.',
     fn: (observations) => {
-      const places = { gdp_growth_q: 1, gva_growth_q: 1, iip_growth: 1, forex_w: 1, forex_m: 1, scb_credit_yoy: 1, scb_dep_yoy: 1,
+      const places = { gdp_growth_q: 1, iip_index: 1, forex_w: 1, forex_m: 1, scb_credit_yoy: 1, scb_dep_yoy: 1,
         scb_gap: 2, scb_gap_3m: 2, scb_inc_cd_fytd: 1, mmo_call_spread: 0, mmo_call_spread_5d: 0, mmo_net_liq: 2,
         pricing_gap_fresh: 2 };
       const bySeries = {};
@@ -92,17 +93,15 @@
 
   // ---------- chart configs ----------
   const CH = {
-    growth: { unit: '%', zero: true, aria: 'Line chart of real GDP and GVA growth by quarter', series: [
-      ['gdp_growth_q', 'Real GDP, 2022-23 base'], ['gva_growth_q', 'Real GVA, 2022-23 base'],
-      ['gdp_growth_q_old', 'Real GDP, old 2011-12 base', { muted: true, dash: true, old: true }]] },
+    output: { unit: '₹ lakh crore', aria: 'Line chart of real GDP and GVA in lakh crore rupees by quarter', series: [
+      ['gdp_level_q', 'Real GDP'], ['gva_level_q', 'Real GVA']] },
     cpi: { unit: '%', zero: true, band: [2, 6], ref: 4, refLabel: '4% target', aria: 'Line chart of CPI inflation with the 2 to 6 percent band', series: [
       ['cpi_infl_old', 'Headline, 2012 base', { muted: true, old: true }], ['cpi_infl_combined', 'Headline, 2024 base']] },
     food: { unit: '%', zero: true, aria: 'Line chart of food inflation', series: [
       ['cpi_food', 'Food & beverages, 2024 base'],
       ['cfpi_old', 'Consumer Food Price Index, 2012 base', { muted: true, dash: true, old: true }]] },
-    iip: { unit: '%', zero: true, aria: 'Line chart of industrial production growth', series: [
-      ['iip_growth_old', 'IIP, old 2011-12 base', { muted: true, old: true }], ['iip_growth', 'IIP general, 2022-23 base'],
-      ['iip_manufacturing', 'Manufacturing, 2022-23 base', { dash: true }]] },
+    iip: { unit: IIP_UNIT, digits: 1, aria: 'Line chart of industrial production index levels', series: [
+      ['iip_index', 'General IIP'], ['iip_manufacturing_index', 'Manufacturing', { dash: true }]] },
     policy: { unit: '%', aria: 'Step chart of repo, SDF and MSF rates with the call money rate', series: [
       ['repo', 'Repo', { step: true }], ['sdf', 'SDF', { step: true }], ['msf', 'MSF', { step: true }],
       ['call_w', 'Call money (weekly)', { dash: true }]] },
@@ -147,7 +146,7 @@
     const year = point.d.getUTCFullYear(), month = point.d.getUTCMonth();
     const dayOfMonth = (offset, day) => new Date(Date.UTC(year, month + offset, day));
     // Allow the next expected release plus a few days for holidays and ingestion.
-    if (id === 'gdp_growth_q' || id === 'gva_growth_q') return dayOfMonth(7, 8);
+    if (['gdp_growth_q', 'gdp_level_q', 'gva_level_q'].includes(id)) return dayOfMonth(7, 8);
     if (id.startsWith('cpi_') && id !== 'cpi_infl_old') return dayOfMonth(2, 16);
     if (id.startsWith('iip_') && id !== 'iip_growth_old') return dayOfMonth(3, 5);
     if (id === 'mclr_1y_median') return dayOfMonth(2, 6);
@@ -164,7 +163,7 @@
   }
 
   const SOURCE_LABELS = {
-    gdp_growth_q: 'GDP', gva_growth_q: 'GVA', cpi_infl_combined: 'headline CPI', iip_growth: 'IIP',
+    gdp_growth_q: 'GDP', gva_level_q: 'GVA', cpi_infl_combined: 'headline CPI', iip_index: 'IIP',
     scb_gap: 'bank credit and deposits', mmo_net_liq: 'RBI liquidity', mmo_call: 'daily call money',
     walr_fresh: 'fresh lending rates', wadtdr_fresh: 'fresh deposit rates', gsec10_w: 'FBIL 10-year yield',
     forex_w: 'weekly reserves', usdinr_w: 'weekly USD/INR',
@@ -207,11 +206,12 @@
     if (!S.length) { el.append(msg('No observations since April 2023.')); return; }
     const root = d3.select(el);
     const lg = root.append('div').attr('class', 'mm-legend');
+    const digits = cfg.digits ?? (cfg.unit === 'US$ bn' ? 1 : /^(bp|₹ crore)$/.test(cfg.unit) ? 0 : 2);
     for (const s of S) {
       const it = lg.append('span').attr('class', 'mm-lg');
       it.append('i').classed('dashed', s.dash).style('background', s.color).style('border-color', s.color);
       it.append('span').text(s.name);
-      it.append('b').text(fmt(s.last.v, cfg.unit, cfg.unit === 'US$ bn' ? 1 : cfg.unit === 'bp' || cfg.unit === '₹ crore' ? 0 : 2));
+      it.append('b').text(fmt(s.last.v, cfg.unit, digits));
       it.append('span').attr('class', 'mm-muted').text(s.last.label + (s.status ? ' · ' + s.status : ''));
     }
     const first = d3.min(S, (s) => s.pts[0].d);
@@ -318,7 +318,7 @@
           const row = tip.append('div');
           row.append('span').style('color', s.color).text('● ');
           row.append('span').text(s.name + ': ');
-          row.append('b').text(fmt(p.v, cfg.unit, cfg.unit === 'US$ bn' ? 1 : cfg.unit === 'bp' || cfg.unit === '₹ crore' ? 0 : 2));
+          row.append('b').text(fmt(p.v, cfg.unit, digits));
           row.append('span').attr('class', 'mm-muted').text(' ' + (s.step ? 'from ' : '') + p.label);
         }
         rule.attr('x1', mx).attr('x2', mx).style('opacity', 1);
@@ -335,18 +335,18 @@
 
   // ---------- aligned sector breakdowns ----------
   const GVA_GROUPS = [
-    ['gva_primary', 'Primary', ['gva_agriculture', 'gva_mining']],
-    ['gva_secondary', 'Secondary', ['gva_manufacturing', 'gva_utilities', 'gva_construction']],
-    ['gva_services', 'Services (tertiary)', ['gva_trade', 'gva_financial', 'gva_public']],
+    ['gva_primary_level', 'Primary', ['gva_agriculture_level', 'gva_mining_level']],
+    ['gva_secondary_level', 'Secondary', ['gva_manufacturing_level', 'gva_utilities_level', 'gva_construction_level']],
+    ['gva_services_level', 'Services (tertiary)', ['gva_trade_level', 'gva_financial_level', 'gva_public_level']],
   ];
-  const IIP_SECTORS = ['iip_mining', 'iip_manufacturing', 'iip_electricity', 'iip_water'];
+  const IIP_SECTORS = ['iip_mining_index', 'iip_manufacturing_index', 'iip_electricity_index', 'iip_water_index'];
 
-  function sectorBreakdown(el, benchmark, benchmarkLabel, groups, details = []) {
+  function sectorBreakdown(el, { benchmark, benchmarkLabel, unit, digits, groups, details = [] }) {
     const I = index(), catalog = catalogRows();
     if (!I || !catalog) { el.replaceChildren(msg('Loading sector data…')); return; }
     const anchor = I.m.get(benchmark)?.at(-1);
     if (!anchor) { el.replaceChildren(msg('No sector data.')); return; }
-    const names = new Map(catalog.map(({ id, name }) => [id, name.replace(/^(GVA|IIP) growth – /, '')]));
+    const names = new Map(catalog.map(({ id, name }) => [id, name.replace(/^(Real GVA|IIP index) – /, '')]));
     const rowData = (id, label = names.get(id)) => ({
       label, value: I.m.get(id)?.find((point) => +point.d === +anchor.d)?.v,
     });
@@ -359,8 +359,8 @@
     const open = el.querySelector('details')?.open;
     el.replaceChildren();
     const root = d3.select(el);
-    root.append('p').attr('class', 'mm-cap').text(anchor.label + ' · Year-on-year growth');
-    root.append('p').attr('class', 'mm-benchmark').text(benchmarkLabel + ' ' + fmt(anchor.v, '%', 1));
+    root.append('p').attr('class', 'mm-cap').text(anchor.label + ' · ' + unit);
+    root.append('p').attr('class', 'mm-benchmark').text(benchmarkLabel + ' ' + anchor.v.toFixed(digits));
     const status = sourceStatus(benchmark, anchor);
     if (status) root.append('p').attr('class', 'mm-cap').text(status);
     if (rows.some(({ value }) => value == null)) {
@@ -376,7 +376,7 @@
           track.append('i').attr('class', value < 0 ? 'mm-sector-bar mm-sector-negative' : 'mm-sector-bar')
             .style('left', x(Math.min(value, 0)) + '%').style('width', Math.abs(x(value) - x(0)) + '%');
         }
-        row.append('b').text(value == null ? '—' : fmt(value, '%', 1));
+        row.append('b').text(value == null ? '—' : value.toFixed(digits));
       }
     }
     drawRows(root, overview);
@@ -390,15 +390,19 @@
     }
   }
 
-  dash.draw('sectors', (el) => sectorBreakdown(el, 'gva_growth_q', 'Total GVA', GVA_GROUPS,
-    GVA_GROUPS.map(([, title, ids]) => [title, ids])));
-  dash.draw('iip-sectors', (el) => sectorBreakdown(el, 'iip_growth', 'General IIP',
-    IIP_SECTORS.map((id) => [id])));
+  dash.draw('sectors', (el) => sectorBreakdown(el, {
+    benchmark: 'gva_level_q', benchmarkLabel: 'Total real GVA', unit: '₹ lakh crore', digits: 2, groups: GVA_GROUPS,
+    details: GVA_GROUPS.map(([, title, ids]) => [title, ids]),
+  }));
+  dash.draw('iip-sectors', (el) => sectorBreakdown(el, {
+    benchmark: 'iip_index', benchmarkLabel: 'General IIP', unit: 'Index (2022-23 = 100)', digits: 1,
+    groups: IIP_SECTORS.map((id) => [id]),
+  }));
 
   // ---------- KPI tiles and takeaway ----------
   // Changes are shown neutrally: a macro move is not good or bad for every bank, so tiles carry no colour judgement.
   const K = {
-    gdp_growth_q: { unit: '%', p: 1 }, cpi_infl_combined: { unit: '%', p: 2 }, iip_growth: { unit: '%', p: 1 },
+    gdp_growth_q: { unit: '%', p: 1 }, cpi_infl_combined: { unit: '%', p: 2 }, iip_index: { unit: IIP_UNIT, p: 1 },
     repo: { unit: '%', p: 2 }, gsec10_w: { unit: '%', p: 2 }, forex_w: { unit: 'US$ bn', p: 1 },
     scb_credit_yoy: { unit: '%', p: 1 }, scb_dep_yoy: { unit: '%', p: 1 }, usdinr_w: { unit: '₹ per US$', p: 2 },
     scb_gap: { unit: 'pp', p: 2 }, scb_gap_3m: { unit: 'pp', p: 2 },
@@ -429,7 +433,7 @@
       if (r.change == null) { el.textContent = '—'; return; }
       const d = r.change, sign = d > 0 ? '+' : d < 0 ? MINUS : '±';
       const a = Math.abs(d).toFixed(c.p);
-      const amt = c.unit === '%' || c.unit === 'pp' ? a + ' pp' : c.unit === 'bp' ? a + ' bp' : c.unit === '₹ crore'
+      const amt = c.unit === '%' || c.unit === 'pp' ? a + ' pp' : c.unit === 'bp' ? a + ' bp' : c.unit === IIP_UNIT ? a + ' index points' : c.unit === '₹ crore'
         ? '₹' + Math.abs(d).toLocaleString('en-IN', { maximumFractionDigits: c.p }) + ' crore' : c.unit === 'US$ bn' ? '$' + a + ' bn' : '₹' + a;
       el.textContent = (k === 'repo' ? sign + amt + ', from ' + fmt(r.prev, '%', 2) + ' on ' : sign + amt + ' vs ') + r.prev_label;
       el.classList.add('is-flat');
