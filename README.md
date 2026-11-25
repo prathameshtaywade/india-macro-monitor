@@ -123,9 +123,15 @@ browser step) and appends one parsed record per release to `data/raw/rbi_mmo.jso
 
 ### Recording an MPC decision
 
-Add `[effectiveDate, repo, sdf, msf, crr, slr, 'source']` to `POLICY_EXTRA` in `pipeline/rbi_extract.js` and the
-same row to `policy` in `data/raw/rbi_extract.json`. Use the effective date stated in the MPC resolution
-(normally the announcement date, "with immediate effect") and cite the press release.
+The refresh checks RBI's repo snapshot against the dated history. If they disagree, it looks for an official
+Liquidity Adjustment Facility rate-change circular and records the effective date, rates and source URL in
+`data/raw/rbi_policy_circulars.json` when the evidence agrees. While verification is pending, the dashboard
+keeps the call money rate and net liquidity visible and withholds the affected daily and five-day spreads.
+Historical spreads through the last verified period remain available.
+
+If the circular needs manual review, add `[effectiveDate, repo, sdf, msf, crr, slr, 'source']` to
+`POLICY_EXTRA` in `pipeline/rbi_extract.js` and to `policy` in `data/raw/rbi_extract.json`. Use the effective
+date in RBI's decision and cite the source. The next build recalculates the spreads.
 
 ### One-time GitHub setup
 

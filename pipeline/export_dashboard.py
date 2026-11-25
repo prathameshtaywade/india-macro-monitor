@@ -38,9 +38,9 @@ def build(M):
             d, lab = place(p, s["freq"])
             pts.append((p, d, lab, v))
             obs.append({"series": s["id"], "period": p, "label": lab, "date": d, "value": round(v, 4)})
-        last = pts[-1]
+        first, last = (pts[0], pts[-1]) if pts else ((None,) * 4, (None,) * 4)
         cat.append({k: s.get(k, "") for k in ["id", "name", "group", "unit", "freq", "base", "source", "source_url", "notes"]}
-                   | {"first": pts[0][2], "last": last[2], "latest": round(last[3], 4), "obs": len(pts)})
+                   | {"first": first[2], "last": last[2], "latest": round(last[3], 4) if pts else None, "obs": len(pts)})
 
     H = M.get("snapshot") or {}
     fetched = snapshot_date(H)
@@ -67,6 +67,9 @@ def main():
             {"label": "Built (UTC)", "value": M["generated_utc"]},
             {"label": "MoSPI API", "value": "https://api.mospi.gov.in (NAS, CPI, IIP, RBI tables)"},
             {"label": "RBI", "value": "Handbook of Statistics (Tables 40, 167, 178, 205, 210, 215) + Weekly Statistical Supplement + MPC resolutions"}]
+    pending = (M.get("funding_repo") or {}).get("pending_from")
+    if pending:
+        meta.append({"label": "Repo spread pending from", "value": pending})
     out = os.path.join(ROOT, "dashboard")
     os.makedirs(out, exist_ok=True)
     dump = lambda obj, f: json.dump(obj, open(os.path.join(out, f), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))

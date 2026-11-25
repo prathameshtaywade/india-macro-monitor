@@ -8,7 +8,7 @@ on:
   workflow_dispatch: {}
   push:
     branches: [main]
-    paths: ["pipeline/**", "web/**", "dashboard/page/**", "tests/**", "data/raw/rbi_extract.json", ".github/workflows/update.yml"]
+    paths: ["pipeline/**", "web/**", "dashboard/page/**", "tests/**", "data/raw/rbi_extract.json", "data/raw/rbi_policy_circulars.json", ".github/workflows/update.yml"]
 
 permissions:
   contents: write
@@ -55,6 +55,10 @@ jobs:
         continue-on-error: true
         run: python3 pipeline/fetch_rbi_home.py
 
+      - name: Verify RBI repo-rate changes from official circulars
+        continue-on-error: true
+        run: python3 pipeline/rbi_policy.py
+
       - name: Fetch RBI money-market and lending-rate releases
         continue-on-error: true
         run: python3 pipeline/fetch_rbi_releases.py
@@ -74,7 +78,7 @@ jobs:
           TITLE="Policy rates changed on rbi.org.in: record the MPC decision"
           if [ -z "$(gh issue list --state open --search "$TITLE in:title" --json number --jq '.[].number')" ]; then
             {
-              echo "rbi.org.in shows policy rates that differ from the policy history, so the headline repo rate and the policy chart lag. The dashboard shows a warning until this is fixed."
+              echo "RBI's current rates and the policy history need reconciliation. If the repo rate is unresolved, the banking brief withholds the call–repo spread until its effective date is verified."
               echo
               echo "1. Find the MPC resolution on https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx and note the **effective date** it states."
               echo "2. Add \`[effectiveDate, repo, sdf, msf, crr, slr, 'source']\` to \`POLICY_EXTRA\` in \`pipeline/rbi_extract.js\`, and the same row to \`policy\` in \`data/raw/rbi_extract.json\`."
@@ -97,7 +101,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/macro.json data/raw/rbi_home.json data/raw/rbi_mmo.jsonl data/raw/rbi_lending.jsonl dashboard/observations.json dashboard/catalog.json dashboard/snapshot.json
+          git add data/macro.json data/raw/rbi_home.json data/raw/rbi_policy_circulars.json data/raw/rbi_mmo.jsonl data/raw/rbi_lending.jsonl dashboard/observations.json dashboard/catalog.json dashboard/snapshot.json
           if git diff --cached --quiet; then
             echo "No data changes."
           else

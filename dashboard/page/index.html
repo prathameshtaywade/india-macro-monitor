@@ -53,7 +53,7 @@
   @media (max-width: 760px) { .mm-ex { grid-template-columns: minmax(0, 1fr); } }
   .mm-flag { border: 1px solid var(--color-warn); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); line-height: 1.5; max-width: 80ch; }
   .mm-flag b { color: var(--color-warn); }
-  [data-draw="scheduled-policy"]:empty { display: none; }
+  [data-draw="scheduled-policy"]:empty, [data-draw="funding-status"]:empty { display: none; }
   .mm-eyebrow { font-size: var(--cds-font-size-caption); letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); }
   .mm-brief { gap: var(--cds-gap-lg); }
   .mm-brief-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--cds-gap-md); }
@@ -124,7 +124,9 @@
     <p class="mm-cap">A wider gap means credit is growing faster than deposits. It is not a cash shortfall, and on its own it does not establish tight liquidity. Readings at quarter- and half-year ends (March, June, September, December) can be affected by balance-sheet effects around those dates. Months from December 2025 to November 2026 (shaded when on the chart) compare a month-end with the corresponding reporting Friday a year earlier, because RBI moved the reporting date to month-end in December 2025; an average does not remove that difference. Source: RBI Handbook Table 167 and Weekly Statistical Supplement Table 4; gap, average and ratio computed here.</p>
     <div class="mm-row" id="brief-funding">
       <div class="mm-row-h"><h3>Funding conditions</h3><span class="mm-cap">Daily · RBI money market operations · <a href="#funding">Full history</a></span></div>
+      <p class="mm-cap" data-draw="funding-status" data-source="observations" role="status"></p>
       <div class="mm-stats">
+        <div class="mm-stat"><span class="mm-kl">Call money rate</span><span class="mm-sv" data-draw="kpi" data-k="mmo_call" data-part="value" data-source="latest" data-field="value" data-where="series=mmo_call">—</span><span class="mm-cap" data-draw="kpi" data-k="mmo_call" data-part="label">—</span></div>
         <div class="mm-stat"><span class="mm-kl">Call money rate minus repo rate</span><span class="mm-sv" data-draw="kpi" data-k="mmo_call_spread" data-part="value" data-source="latest" data-field="value" data-where="series=mmo_call_spread">—</span><span class="mm-cap">on <span data-draw="kpi" data-k="mmo_call_spread" data-part="label">—</span></span></div>
         <div class="mm-stat"><span class="mm-kl">Same, 5-trading-day average</span><span class="mm-sv" data-draw="kpi" data-k="mmo_call_spread_5d" data-part="value" data-source="latest" data-field="value" data-where="series=mmo_call_spread_5d">—</span><span class="mm-cap">5 trading days to <span data-draw="kpi" data-k="mmo_call_spread_5d" data-part="label">—</span></span></div>
         <div class="mm-stat"><span class="mm-kl">RBI net liquidity, outstanding incl. the day's operations</span><span class="mm-sv" data-draw="kpi" data-k="mmo_net_liq" data-part="value" data-source="latest" data-field="value" data-where="series=mmo_net_liq">—</span><span class="mm-cap"><span data-draw="liq-dir">—</span> on <span data-draw="kpi" data-k="mmo_net_liq" data-part="label">—</span></span></div>
