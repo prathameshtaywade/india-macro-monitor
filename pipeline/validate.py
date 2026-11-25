@@ -28,6 +28,7 @@ from collections import Counter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from checks import INDIA_TIME, policy_mismatches, snapshot_date, snapshot_errors  # noqa: E402
 from funding import CALL_SPREAD_IDS  # noqa: E402
+from macro_sectors import GVA_COMPONENTS, GVA_GROUPS, IIP_COMPONENTS  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 IDS_FILE = os.path.join(ROOT, "pipeline", "series_ids.txt")
@@ -45,6 +46,8 @@ RANGES = {  # unit -> (min, max)
 # Series whose plausible range differs from their unit's default.
 SERIES_RANGES = {"scb_inc_cd_fytd": (-1000, 1000)}
 STALE_DAYS = {"Daily": 6, "Weekly": 21, "Monthly": 75, "Monthly / fortnightly": 75, "Quarterly": 200, "Annual (FY)": 500}
+HANDBOOK_HISTORY = {"gsec10", "gsec5", "gsec1", "forex_m", "usdinr_m", "eurinr_m"}
+PRICING_SERIES = ("walr_fresh", "walr_out", "wadtdr_fresh", "wadtdr_out", "pricing_gap_fresh", "mclr_1y_median")
 SNAPSHOT_STALE_DAYS = 4
 
 
@@ -129,9 +132,30 @@ def validate(cur, prev=None, today=None, expected_ids=None, core=None):
             errors.append(f"`{s['id']}` periods are out of chronological order")
         last = dates[-1]
         limit = STALE_DAYS.get(s["freq"])
-        if last and limit and (today - last).days > limit and "discontinued" not in s["source"]:
+        if last and limit and (today - last).days > limit and s["id"] not in HANDBOOK_HISTORY and "discontinued" not in s["source"]:
             warnings.append(f"`{s['id']}` latest is {periods[-1]} ({(today - last).days} days old; "
                             f"expected ≤ {limit} for {s['freq']})")
+
+    for benchmark, components in (("gva_growth_q", (*GVA_GROUPS, *GVA_COMPONENTS)), ("iip_growth", IIP_COMPONENTS)):
+        if benchmark not in series:
+            continue
+        periods = {p for p, _ in series[benchmark]["data"]}
+        for sid in components:
+            if sid not in series:
+                continue  # Required series IDs are checked above.
+            present = {p for p, _ in series[sid]["data"]}
+            if present != periods:
+                errors.append(f"`{sid}` periods differ from `{benchmark}`: "
+                              f"missing {sorted(periods - present)}, extra {sorted(present - periods)}")
+
+    for sid in PRICING_SERIES:
+        dates = [end_date(p, "Monthly") for p, _ in series.get(sid, {}).get("data", [])]
+        if any(day is None for day in dates):
+            continue
+        for first, second in zip(dates, dates[1:]):
+            gap = (second.year - first.year) * 12 + second.month - first.month
+            if gap > 1:
+                warnings.append(f"`{sid}` has {gap - 1} missing month(s) between {first:%Y-%m} and {second:%Y-%m}")
 
     snap = cur.get("snapshot") or {}
     errors += [f"rbi.org.in snapshot: {e}" for e in snapshot_errors(snap)]

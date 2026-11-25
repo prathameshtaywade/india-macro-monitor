@@ -1,5 +1,5 @@
 {
-"generated_utc": "2026-11-25T13:32:54Z",
+"generated_utc": "2026-11-25T15:51:12Z",
 "snapshot": {
 "fetched_utc": "2026-11-25T13:32:20Z",
 "source_url": "https://www.rbi.org.in/",
@@ -425,7 +425,7 @@
 "freq": "Quarterly",
 "base": "2022-23 series",
 "source": "MoSPI – NAS",
-"source_url": "https://api.mospi.gov.in/api/nas/getNASData",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=21",
 "notes": "GVA at basic prices, constant prices.",
 "data": [
 [
@@ -483,14 +483,209 @@
 ]
 },
 {
+"id": "gva_primary",
+"name": "GVA growth – Primary",
+"group": "GVA by sector",
+"unit": "%",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "Derived from MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Sum of component GVA levels at constant prices, then year-on-year growth.",
+"data": [
+[
+"2023-Q1",
+3.8
+],
+[
+"2023-Q2",
+2.4
+],
+[
+"2023-Q3",
+1.2
+],
+[
+"2023-Q4",
+2.9
+],
+[
+"2024-Q1",
+3.9
+],
+[
+"2024-Q2",
+4.3
+],
+[
+"2024-Q3",
+6.6
+],
+[
+"2024-Q4",
+4.8
+],
+[
+"2025-Q1",
+5.3
+],
+[
+"2025-Q2",
+5.1
+],
+[
+"2025-Q3",
+2.0
+],
+[
+"2025-Q4",
+3.2
+],
+[
+"2026-Q1",
+2.9
+]
+]
+},
+{
+"id": "gva_secondary",
+"name": "GVA growth – Secondary",
+"group": "GVA by sector",
+"unit": "%",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "Derived from MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Sum of component GVA levels at constant prices, then year-on-year growth.",
+"data": [
+[
+"2023-Q1",
+6.9
+],
+[
+"2023-Q2",
+16.2
+],
+[
+"2023-Q3",
+12.4
+],
+[
+"2023-Q4",
+6.9
+],
+[
+"2024-Q1",
+9.2
+],
+[
+"2024-Q2",
+6.1
+],
+[
+"2024-Q3",
+8.8
+],
+[
+"2024-Q4",
+8.6
+],
+[
+"2025-Q1",
+6.1
+],
+[
+"2025-Q2",
+8.7
+],
+[
+"2025-Q3",
+7.7
+],
+[
+"2025-Q4",
+7.9
+],
+[
+"2026-Q1",
+8.6
+]
+]
+},
+{
+"id": "gva_services",
+"name": "GVA growth – Services (tertiary)",
+"group": "GVA by sector",
+"unit": "%",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "Derived from MoSPI – NAS quarterly real GVA levels, indicator 1",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=1",
+"notes": "Sum of component GVA levels at constant prices, then year-on-year growth.",
+"data": [
+[
+"2023-Q1",
+8.2
+],
+[
+"2023-Q2",
+5.7
+],
+[
+"2023-Q3",
+8.1
+],
+[
+"2023-Q4",
+9.9
+],
+[
+"2024-Q1",
+8.0
+],
+[
+"2024-Q2",
+8.4
+],
+[
+"2024-Q3",
+7.5
+],
+[
+"2024-Q4",
+6.2
+],
+[
+"2025-Q1",
+8.0
+],
+[
+"2025-Q2",
+9.1
+],
+[
+"2025-Q3",
+10.1
+],
+[
+"2025-Q4",
+11.5
+],
+[
+"2026-Q1",
+10.0
+]
+]
+},
+{
 "id": "gva_agriculture",
-"name": "GVA growth – Agriculture",
+"name": "GVA growth – Agriculture, Livestock, Forestry and Fishing",
 "group": "GVA by sector",
 "unit": "%",
 "freq": "Quarterly",
 "base": "2022-23 series",
 "source": "MoSPI – NAS",
-"source_url": "https://api.mospi.gov.in/api/nas/getNASData",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=21",
 "notes": "Constant prices, y/y.",
 "data": [
 [
@@ -549,13 +744,13 @@
 },
 {
 "id": "gva_mining",
-"name": "GVA growth – Mining",
+"name": "GVA growth – Mining and Quarrying",
 "group": "GVA by sector",
 "unit": "%",
 "freq": "Quarterly",
 "base": "2022-23 series",
 "source": "MoSPI – NAS",
-"source_url": "https://api.mospi.gov.in/api/nas/getNASData",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=21",
 "notes": "Constant prices, y/y.",
 "data": [
 [
@@ -620,7 +815,7 @@
 "freq": "Quarterly",
 "base": "2022-23 series",
 "source": "MoSPI – NAS",
-"source_url": "https://api.mospi.gov.in/api/nas/getNASData",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=21",
 "notes": "Constant prices, y/y.",
 "data": [
 [
@@ -679,13 +874,13 @@
 },
 {
 "id": "gva_utilities",
-"name": "GVA growth – Utilities",
+"name": "GVA growth – Electricity, Gas, Water Supply & Other Utility Services",
 "group": "GVA by sector",
 "unit": "%",
 "freq": "Quarterly",
 "base": "2022-23 series",
 "source": "MoSPI – NAS",
-"source_url": "https://api.mospi.gov.in/api/nas/getNASData",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=21",
 "notes": "Constant prices, y/y.",
 "data": [
 [
@@ -750,7 +945,7 @@
 "freq": "Quarterly",
 "base": "2022-23 series",
 "source": "MoSPI – NAS",
-"source_url": "https://api.mospi.gov.in/api/nas/getNASData",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=21",
 "notes": "Constant prices, y/y.",
 "data": [
 [
@@ -809,13 +1004,13 @@
 },
 {
 "id": "gva_trade",
-"name": "GVA growth – Trade, hotels, transport",
+"name": "GVA growth – Trade, hotels, transport, communication, broadcasting and storage",
 "group": "GVA by sector",
 "unit": "%",
 "freq": "Quarterly",
 "base": "2022-23 series",
 "source": "MoSPI – NAS",
-"source_url": "https://api.mospi.gov.in/api/nas/getNASData",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=21",
 "notes": "Constant prices, y/y.",
 "data": [
 [
@@ -874,13 +1069,13 @@
 },
 {
 "id": "gva_financial",
-"name": "GVA growth – Financial & real estate",
+"name": "GVA growth – Financial, real estate, IT, professional services and ownership of dwellings",
 "group": "GVA by sector",
 "unit": "%",
 "freq": "Quarterly",
 "base": "2022-23 series",
 "source": "MoSPI – NAS",
-"source_url": "https://api.mospi.gov.in/api/nas/getNASData",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=21",
 "notes": "Constant prices, y/y.",
 "data": [
 [
@@ -939,13 +1134,13 @@
 },
 {
 "id": "gva_public",
-"name": "GVA growth – Public admin & other",
+"name": "GVA growth – Public Administration, Defence & Other Services",
 "group": "GVA by sector",
 "unit": "%",
 "freq": "Quarterly",
 "base": "2022-23 series",
 "source": "MoSPI – NAS",
-"source_url": "https://api.mospi.gov.in/api/nas/getNASData",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=21",
 "notes": "Constant prices, y/y.",
 "data": [
 [
@@ -2951,13 +3146,13 @@
 },
 {
 "id": "iip_mining",
-"name": "IIP growth – Mining",
+"name": "IIP growth – Mining & Quarrying",
 "group": "Industry",
 "unit": "%",
 "freq": "Monthly",
 "base": "2022-23=100",
 "source": "MoSPI – IIP",
-"source_url": "https://api.mospi.gov.in/api/iip/getIipData?type=Sectoral",
+"source_url": "https://api.mospi.gov.in/api/iip/getIipData?base_year=2022-23&frequency=Monthly&type=Sectoral",
 "notes": "",
 "data": [
 [
@@ -3138,7 +3333,7 @@
 "freq": "Monthly",
 "base": "2022-23=100",
 "source": "MoSPI – IIP",
-"source_url": "https://api.mospi.gov.in/api/iip/getIipData?type=Sectoral",
+"source_url": "https://api.mospi.gov.in/api/iip/getIipData?base_year=2022-23&frequency=Monthly&type=Sectoral",
 "notes": "",
 "data": [
 [
@@ -3313,13 +3508,13 @@
 },
 {
 "id": "iip_electricity",
-"name": "IIP growth – Electricity",
+"name": "IIP growth – Electricity & Gas Supply",
 "group": "Industry",
 "unit": "%",
 "freq": "Monthly",
 "base": "2022-23=100",
 "source": "MoSPI – IIP",
-"source_url": "https://api.mospi.gov.in/api/iip/getIipData?type=Sectoral",
+"source_url": "https://api.mospi.gov.in/api/iip/getIipData?base_year=2022-23&frequency=Monthly&type=Sectoral",
 "notes": "",
 "data": [
 [
@@ -3489,6 +3684,187 @@
 [
 "2026-09",
 11.2
+]
+]
+},
+{
+"id": "iip_water",
+"name": "IIP growth – Water Supply, Sewerage & Waste Management",
+"group": "Industry",
+"unit": "%",
+"freq": "Monthly",
+"base": "2022-23=100",
+"source": "MoSPI – IIP",
+"source_url": "https://api.mospi.gov.in/api/iip/getIipData?base_year=2022-23&frequency=Monthly&type=Sectoral",
+"notes": "",
+"data": [
+[
+"2023-04",
+9.6
+],
+[
+"2023-05",
+11.0
+],
+[
+"2023-06",
+13.1
+],
+[
+"2023-07",
+13.7
+],
+[
+"2023-08",
+15.7
+],
+[
+"2023-09",
+17.0
+],
+[
+"2023-10",
+18.6
+],
+[
+"2023-11",
+20.5
+],
+[
+"2023-12",
+21.3
+],
+[
+"2024-01",
+22.7
+],
+[
+"2024-02",
+23.7
+],
+[
+"2024-03",
+26.2
+],
+[
+"2024-04",
+15.6
+],
+[
+"2024-05",
+14.2
+],
+[
+"2024-06",
+12.5
+],
+[
+"2024-07",
+13.1
+],
+[
+"2024-08",
+12.2
+],
+[
+"2024-09",
+11.4
+],
+[
+"2024-10",
+12.3
+],
+[
+"2024-11",
+11.8
+],
+[
+"2024-12",
+11.6
+],
+[
+"2025-01",
+10.7
+],
+[
+"2025-02",
+9.8
+],
+[
+"2025-03",
+9.0
+],
+[
+"2025-04",
+8.2
+],
+[
+"2025-05",
+8.5
+],
+[
+"2025-06",
+7.9
+],
+[
+"2025-07",
+7.5
+],
+[
+"2025-08",
+6.9
+],
+[
+"2025-09",
+6.2
+],
+[
+"2025-10",
+6.0
+],
+[
+"2025-11",
+4.3
+],
+[
+"2025-12",
+4.4
+],
+[
+"2026-01",
+5.1
+],
+[
+"2026-02",
+5.6
+],
+[
+"2026-03",
+6.4
+],
+[
+"2026-04",
+6.6
+],
+[
+"2026-05",
+5.5
+],
+[
+"2026-06",
+6.1
+],
+[
+"2026-07",
+7.4
+],
+[
+"2026-08",
+6.3
+],
+[
+"2026-09",
+5.8
 ]
 ]
 },
@@ -5380,8 +5756,8 @@
 "unit": "% p.a.",
 "freq": "Weekly",
 "base": "",
-"source": "RBI – Weekly Statistical Supplement, Table 4 'Ratios and Rates'",
-"source_url": "https://rbi.org.in/Scripts/BS_ViewWSS.aspx",
+"source": "RBI – Weekly Statistical Supplement, Table 5 'Ratios and Rates'",
+"source_url": "https://www.rbi.org.in/Scripts/WSSViewDetail.aspx?TYPE=Section&PARAM1=4",
 "notes": "Benchmark 10-year yield as reported in WSS (FBIL).",
 "data": [
 [
@@ -12661,7 +13037,7 @@
 "freq": "Weekly",
 "base": "",
 "source": "RBI – Weekly Statistical Supplement, Table 5 'Ratios and Rates'",
-"source_url": "https://rbi.org.in/Scripts/BS_ViewWSS.aspx",
+"source_url": "https://www.rbi.org.in/Scripts/WSSViewDetail.aspx?TYPE=Section&PARAM1=4",
 "notes": "Rate on the last trading day of the week, per WSS Table 5.",
 "data": [
 [
@@ -12846,7 +13222,7 @@
 "freq": "Weekly",
 "base": "",
 "source": "RBI – Weekly Statistical Supplement, Table 5 'Ratios and Rates'",
-"source_url": "https://rbi.org.in/Scripts/BS_ViewWSS.aspx",
+"source_url": "https://www.rbi.org.in/Scripts/WSSViewDetail.aspx?TYPE=Section&PARAM1=4",
 "notes": "Operating target of monetary policy.",
 "data": [
 [
@@ -13031,7 +13407,7 @@
 "freq": "Weekly",
 "base": "",
 "source": "RBI – Weekly Statistical Supplement, Table 5 'Ratios and Rates'",
-"source_url": "https://rbi.org.in/Scripts/BS_ViewWSS.aspx",
+"source_url": "https://www.rbi.org.in/Scripts/WSSViewDetail.aspx?TYPE=Section&PARAM1=4",
 "notes": "Cut-off yield in the week's auction; gaps where no auction.",
 "data": [
 [
@@ -14350,7 +14726,7 @@
 "group": "Funding",
 "freq": "Daily",
 "base": "",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Money Market Operations, daily)",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64036",
 "source": "RBI press release 'Money Market Operations as on <date>'"
 },
 {
@@ -15507,7 +15883,7 @@
 "group": "Funding",
 "freq": "Daily",
 "base": "",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Money Market Operations, daily)",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64036",
 "source": "RBI press release 'Money Market Operations as on <date>'"
 },
 {
@@ -17080,7 +17456,7 @@
 "group": "Funding",
 "freq": "Daily",
 "base": "",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Money Market Operations, daily)",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64036",
 "source": "RBI press release 'Money Market Operations as on <date>'"
 },
 {
@@ -18237,7 +18613,7 @@
 "group": "Funding",
 "freq": "Daily",
 "base": "",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Money Market Operations, daily)",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64036",
 "source": "RBI press release 'Money Market Operations as on <date>'"
 },
 {
@@ -19378,7 +19754,7 @@
 "group": "Funding",
 "freq": "Daily",
 "base": "",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Money Market Operations, daily)",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64036",
 "source": "RBI press release 'Money Market Operations as on <date>'"
 },
 {
@@ -19392,6 +19768,82 @@
 [
 "2023-03",
 9.32
+],
+[
+"2023-04",
+9.08
+],
+[
+"2023-05",
+9.27
+],
+[
+"2023-06",
+9.2
+],
+[
+"2023-07",
+9.44
+],
+[
+"2023-08",
+9.47
+],
+[
+"2023-09",
+9.38
+],
+[
+"2023-10",
+9.5
+],
+[
+"2023-11",
+9.41
+],
+[
+"2023-12",
+9.32
+],
+[
+"2024-01",
+9.43
+],
+[
+"2024-02",
+9.36
+],
+[
+"2024-03",
+9.37
+],
+[
+"2024-04",
+9.55
+],
+[
+"2024-05",
+9.45
+],
+[
+"2024-06",
+9.32
+],
+[
+"2024-07",
+9.4
+],
+[
+"2024-08",
+9.41
+],
+[
+"2024-09",
+9.37
+],
+[
+"2024-10",
+9.54
 ],
 [
 "2024-11",
@@ -19491,7 +19943,7 @@
 "freq": "Monthly",
 "base": "",
 "unit": "%",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Lending and Deposit Rates of SCBs, monthly)",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63894",
 "source": "RBI press release 'Lending and Deposit Rates of Scheduled Commercial Banks' (highlights)"
 },
 {
@@ -19505,6 +19957,82 @@
 [
 "2023-03",
 9.72
+],
+[
+"2023-04",
+9.76
+],
+[
+"2023-05",
+9.78
+],
+[
+"2023-06",
+9.82
+],
+[
+"2023-07",
+9.84
+],
+[
+"2023-08",
+9.84
+],
+[
+"2023-09",
+9.83
+],
+[
+"2023-10",
+9.84
+],
+[
+"2023-11",
+9.83
+],
+[
+"2023-12",
+9.83
+],
+[
+"2024-01",
+9.85
+],
+[
+"2024-02",
+9.83
+],
+[
+"2024-03",
+9.85
+],
+[
+"2024-04",
+9.83
+],
+[
+"2024-05",
+9.88
+],
+[
+"2024-06",
+9.91
+],
+[
+"2024-07",
+9.91
+],
+[
+"2024-08",
+9.91
+],
+[
+"2024-09",
+9.9
+],
+[
+"2024-10",
+9.9
 ],
 [
 "2024-11",
@@ -19604,7 +20132,7 @@
 "freq": "Monthly",
 "base": "",
 "unit": "%",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Lending and Deposit Rates of SCBs, monthly)",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63894",
 "source": "RBI press release 'Lending and Deposit Rates of Scheduled Commercial Banks' (highlights)"
 },
 {
@@ -19618,6 +20146,82 @@
 [
 "2023-03",
 6.48
+],
+[
+"2023-04",
+6.36
+],
+[
+"2023-05",
+6.32
+],
+[
+"2023-06",
+6.34
+],
+[
+"2023-07",
+6.35
+],
+[
+"2023-08",
+6.33
+],
+[
+"2023-09",
+6.32
+],
+[
+"2023-10",
+6.31
+],
+[
+"2023-11",
+6.34
+],
+[
+"2023-12",
+6.49
+],
+[
+"2024-01",
+6.43
+],
+[
+"2024-02",
+6.44
+],
+[
+"2024-03",
+6.62
+],
+[
+"2024-04",
+6.48
+],
+[
+"2024-05",
+6.47
+],
+[
+"2024-06",
+6.46
+],
+[
+"2024-07",
+6.48
+],
+[
+"2024-08",
+6.46
+],
+[
+"2024-09",
+6.54
+],
+[
+"2024-10",
+6.44
 ],
 [
 "2024-11",
@@ -19717,7 +20321,7 @@
 "freq": "Monthly",
 "base": "",
 "unit": "%",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Lending and Deposit Rates of SCBs, monthly)",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63894",
 "source": "RBI press release 'Lending and Deposit Rates of Scheduled Commercial Banks' (highlights)"
 },
 {
@@ -19731,6 +20335,82 @@
 [
 "2023-03",
 6.16
+],
+[
+"2023-04",
+6.28
+],
+[
+"2023-05",
+6.37
+],
+[
+"2023-06",
+6.47
+],
+[
+"2023-07",
+6.54
+],
+[
+"2023-08",
+6.6
+],
+[
+"2023-09",
+6.69
+],
+[
+"2023-10",
+6.75
+],
+[
+"2023-11",
+6.78
+],
+[
+"2023-12",
+6.83
+],
+[
+"2024-01",
+6.84
+],
+[
+"2024-02",
+6.86
+],
+[
+"2024-03",
+6.89
+],
+[
+"2024-04",
+6.91
+],
+[
+"2024-05",
+6.93
+],
+[
+"2024-06",
+6.91
+],
+[
+"2024-07",
+6.92
+],
+[
+"2024-08",
+6.93
+],
+[
+"2024-09",
+6.95
+],
+[
+"2024-10",
+6.96
 ],
 [
 "2024-11",
@@ -19830,7 +20510,7 @@
 "freq": "Monthly",
 "base": "",
 "unit": "%",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Lending and Deposit Rates of SCBs, monthly)",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63894",
 "source": "RBI press release 'Lending and Deposit Rates of Scheduled Commercial Banks' (highlights)"
 },
 {
@@ -19844,6 +20524,86 @@
 [
 "2023-04",
 8.6
+],
+[
+"2023-05",
+8.6
+],
+[
+"2023-06",
+8.65
+],
+[
+"2023-07",
+8.63
+],
+[
+"2023-08",
+8.6
+],
+[
+"2023-09",
+8.7
+],
+[
+"2023-10",
+8.7
+],
+[
+"2023-11",
+8.7
+],
+[
+"2023-12",
+8.75
+],
+[
+"2024-01",
+8.8
+],
+[
+"2024-02",
+8.8
+],
+[
+"2024-03",
+8.8
+],
+[
+"2024-04",
+8.85
+],
+[
+"2024-05",
+8.79
+],
+[
+"2024-06",
+8.85
+],
+[
+"2024-07",
+8.85
+],
+[
+"2024-08",
+8.9
+],
+[
+"2024-09",
+8.95
+],
+[
+"2024-10",
+8.95
+],
+[
+"2024-11",
+9.0
+],
+[
+"2024-12",
+9.0
 ],
 [
 "2025-01",
@@ -19939,7 +20699,7 @@
 "freq": "Monthly",
 "base": "",
 "unit": "%",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Lending and Deposit Rates of SCBs, monthly)",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63894",
 "source": "RBI press release 'Lending and Deposit Rates of Scheduled Commercial Banks' (highlights)"
 },
 {
@@ -19949,7 +20709,7 @@
 "unit": "pp",
 "freq": "Monthly",
 "base": "",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Lending and Deposit Rates of SCBs, monthly)",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63894",
 "source": "Derived from RBI lending and deposit rates (fresh WALR minus fresh WADTDR)",
 "data": [
 [
@@ -19959,6 +20719,82 @@
 [
 "2023-03",
 2.84
+],
+[
+"2023-04",
+2.72
+],
+[
+"2023-05",
+2.95
+],
+[
+"2023-06",
+2.86
+],
+[
+"2023-07",
+3.09
+],
+[
+"2023-08",
+3.14
+],
+[
+"2023-09",
+3.06
+],
+[
+"2023-10",
+3.19
+],
+[
+"2023-11",
+3.07
+],
+[
+"2023-12",
+2.83
+],
+[
+"2024-01",
+3.0
+],
+[
+"2024-02",
+2.92
+],
+[
+"2024-03",
+2.75
+],
+[
+"2024-04",
+3.07
+],
+[
+"2024-05",
+2.98
+],
+[
+"2024-06",
+2.86
+],
+[
+"2024-07",
+2.92
+],
+[
+"2024-08",
+2.95
+],
+[
+"2024-09",
+2.83
+],
+[
+"2024-10",
+3.1
 ],
 [
 "2024-11",

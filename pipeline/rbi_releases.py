@@ -9,6 +9,7 @@ Listing: the press-release archive is a month-by-month form post on BS_PressRele
 Pure parsing functions take HTML text, so they can be tested against saved fixtures without the network.
 """
 import html as _html
+import datetime as dt
 import os
 import re
 import ssl
@@ -147,13 +148,17 @@ def parse_mmo(page, prid=None):
 LENDING_METRICS = [
     ("walr_out", r"WALR\)? on outstanding rupee loans"),
     ("walr_fresh", r"WALR\)? on fresh rupee loans"),
-    ("mclr_1y_median", r"1-Year median Marginal Cost of [Ff]unds?[- ]based Lending Rate"),
+    ("mclr_1y_median", r"1-Year median Marginal Cost of Funds?[- ]based Lending Rate"),
     ("wadtdr_out", r"WADTDR\)? on outstanding rupee term deposits"),
     ("wadtdr_fresh", r"WADTDR\)? on fresh rupee term deposits"),
 ]
 # Wordings seen 2023-2026: "9.40 per cent as at end-November 2024", "(9.54 per cent in October 2024)",
 # "from 9.84 in August 2023" (no "per cent"), "6.33 per August 2023" (typo in the release).
 PAIR = re.compile(r"(\d+\.\d+)(?: per cent)?(?: (?:in|at|as at|per))? (?:end-)?([A-Z][a-z]+) (\d{4})")
+UNCHANGED_AFTER_DATE = re.compile(
+    r"unchanged in ([A-Z][a-z]+) (\d{4}) at (\d+\.\d+) per cent"
+    r"(?: from that of ([A-Z][a-z]+)(?: (\d{4}))?)?"
+)
 
 
 def parse_lending(page, prid=None):
@@ -171,10 +176,23 @@ def parse_lending(page, prid=None):
     sentences = re.split(r"\|", hi)
     obs = {}
     for key, pat in LENDING_METRICS:
-        sent = next((s for s in sentences if re.search(pat, s)), None)
+        sent = next((s for s in sentences if re.search(pat, s, re.I)), None)
         if not sent:
             raise ParseError(f"{key}: highlight sentence not found")
         pairs = [(f"{y}-{MON_IDX[mo]:02d}", float(v)) for v, mo, y in PAIR.findall(sent) if mo in MON_IDX]
+        reversed_pair = UNCHANGED_AFTER_DATE.search(sent)
+        if reversed_pair:
+            month, year, value, earlier_month, earlier_year = reversed_pair.groups()
+            if month not in MON_IDX:
+                raise ParseError(f"{key}: unrecognized observation month")
+            current = dt.date(int(year), MON_IDX[month], 1)
+            pairs.append((current.isoformat()[:7], float(value)))
+            if earlier_month in MON_IDX:
+                prior_year = int(earlier_year) if earlier_year else current.year - (MON_IDX[earlier_month] > current.month)
+                earlier = dt.date(prior_year, MON_IDX[earlier_month], 1)
+                if earlier >= current:
+                    raise ParseError(f"{key}: invalid comparison month")
+                pairs.append((earlier.isoformat()[:7], float(value)))
         if not pairs:
             raise ParseError(f"{key}: no 'per cent in <month>' value")
         # "remained unchanged at X per cent in Sep compared to Aug": the earlier month has the same value.

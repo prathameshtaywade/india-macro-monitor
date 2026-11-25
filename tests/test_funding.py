@@ -60,6 +60,19 @@ class LendingRelease(unittest.TestCase):
         self.assertEqual(o["walr_fresh"], {"2024-10": 9.54, "2024-11": 9.40})
         self.assertEqual(o["mclr_1y_median"], {"2024-12": 9.0})
 
+    def test_unchanged_wording_with_the_observation_month_first(self):
+        rates = self.obs("ldr_2024-11.html")
+        self.assertEqual(rates["walr_out"], {"2024-09": 9.90, "2024-10": 9.90})
+        self.assertEqual(rates["walr_fresh"], {"2024-09": 9.37, "2024-10": 9.54})
+
+    def test_unchanged_wording_infers_the_preceding_year_for_december(self):
+        page = fixture("ldr_2024-11.html").replace(
+            "unchanged in October 2024 at 9.90 per cent from that of September 2024",
+            "unchanged in January 2025 at 9.90 per cent from that of December",
+        )
+        prices = R.parse_lending(page)["obs"]
+        self.assertEqual(dict(prices["walr_out"]), {"2024-12": 9.90, "2025-01": 9.90})
+
     def test_2023_wording_without_per_cent(self):
         o = self.obs("ldr_2023-10.html")
         self.assertEqual(o["walr_out"], {"2023-08": 9.84, "2023-09": 9.83})

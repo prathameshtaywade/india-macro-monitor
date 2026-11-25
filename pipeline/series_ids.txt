@@ -4,6 +4,9 @@ gdp_growth_q
 gdp_growth_q_nominal
 gdp_growth_q_old
 gva_growth_q
+gva_primary
+gva_secondary
+gva_services
 gva_agriculture
 gva_mining
 gva_manufacturing
@@ -26,6 +29,7 @@ iip_index
 iip_mining
 iip_manufacturing
 iip_electricity
+iip_water
 iip_growth_old
 repo
 sdf
