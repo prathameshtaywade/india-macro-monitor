@@ -48,6 +48,25 @@ class FixedPageText(unittest.TestCase):
         for phrase in ("this month", "this week", "currently", "the latest MPC", "Handbook 2025-26", "Handbook 2026-27"):
             self.assertNotIn(phrase, text)
 
+    def test_two_tabs_brief_first_and_macro_opens_with_the_tiles(self):
+        with open(PAGE, encoding="utf-8") as f:
+            h = f.read()
+        tabs = re.findall(r'data-tab="([a-z]+)"', h)
+        self.assertEqual(tabs, ["brief", "macro"])
+        macro = h[h.index('data-tab="macro"'):]
+        first = re.search(r"<(section|div|p)\b[^>]*>", macro[macro.index(">") + 1:])
+        self.assertIn('id="headline"', first.group(0), "the Macro summary tab must start with the tiles")
+        brief = h[h.index('data-tab="brief"'):h.index('data-tab="macro"')]
+        for part in ('id="brief"', 'id="brief-funding"', 'id="brief-pricing"', 'id="banking"', 'id="funding"'):
+            self.assertIn(part, brief)
+
+    def test_catalogue_and_methods_are_not_on_the_page(self):
+        with open(PAGE, encoding="utf-8") as f:
+            h = f.read()
+        self.assertNotIn('id="catalog"', h)
+        self.assertNotIn("<details", h)
+        self.assertIn("github.com/prathameshtaywade/india-macro-monitor#readme", h)
+
     def test_no_time_range_control(self):
         with open(PAGE, encoding="utf-8") as f:
             self.assertNotIn("data-range-btn", f.read())

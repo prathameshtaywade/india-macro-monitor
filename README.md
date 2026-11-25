@@ -43,21 +43,29 @@ a browser, and d3 in the dashboard.
 
 ## Page layout
 
-1. **Banking brief: "Bank credit and deposit growth".** Latest gap and its 3-month average with equal prominence,
-   a sentence generated from the data (e.g. "widened to 2.68 pp, while its 3-month average narrowed for the 3rd month
-   in a row to 1.74 pp"), a 12-month chart with Dec 2025–Nov 2026 shaded (those months compare a month-end with the
-   reporting Friday a year earlier), and the incremental credit–deposit ratio, financial year to date, beside the same
-   point last year. The panel says plainly that the gap is not a cash shortfall.
-   Below it, two compact rows, each figure with its own observation date and a link to the full history:
-   **Funding conditions** (daily: call money rate minus the repo rate in force, its 5-trading-day average, and RBI
-   net liquidity from row F of the money-market release, shown as an amount plus "net absorption/injection") and
-   **Pricing of new business** (monthly: fresh-loan WALR, fresh term-deposit WADTDR, the difference labelled a
-   market pricing indicator, the 1-year median MCLR dated by its own month, and outstanding-book rates).
-2. **Macro summary.** The headline tiles. Changes are shown neutrally, with no good/bad colour; CPI is described
-   against the 2–6% tolerance band.
-3. **Research view.** Topic and range filters, all charts, the series explorer and the full catalogue.
-   Old-base series (GDP 2011-12, CPI 2012, IIP 2011-12) are off by default behind "Show discontinued series".
-   The two 10-year yields are labelled by definition (month-end SGL trades vs FBIL par yield, weekly).
+Two tabs, each with its own link (`#brief`, `#macro`); a link to any chart opens the tab that holds it.
+Every history chart starts in **April 2023** on one shared timeline; older data stays in the files.
+
+1. **Banking brief** (opens by default)
+   - **Bank credit and deposit growth:** the latest credit-minus-deposit gap and its 3-month average with equal
+     prominence, a sentence generated from the data, a 12-month chart (Dec 2025–Nov 2026 shaded: those months compare
+     a month-end with the reporting Friday a year earlier), and the incremental credit–deposit ratio, financial year
+     to date, beside the same point last year. The panel says the gap is not a cash shortfall.
+   - **Funding conditions** (daily): call money rate minus the repo rate in force, its 5-trading-day average, and RBI
+     net liquidity (row F), shown as an amount plus "net absorption/injection".
+   - **Pricing of new business** (monthly): fresh-loan WALR, fresh term-deposit WADTDR, their difference labelled a
+     market pricing indicator, the 1-year median MCLR dated by its own month, and outstanding-book rates.
+   - **History:** bank credit and deposit growth, call spread, net liquidity, lending and deposit rates.
+2. **Macro summary** (starts with the tiles)
+   - Eight tiles with neutral changes (no good/bad colour), then a sentence on repo, CPI against the 2–6% band, and GDP.
+   - Charts: GDP and GVA, GVA by sector, CPI, IIP, policy rates, yields, forex reserves, rupee. Old-base series are
+     off by default behind "Show discontinued series"; the two 10-year yields are labelled by definition.
+   - Series explorer for any series, including those without a chart of their own.
+3. **Footer:** data build date and a link to this README for sources, methods and known gaps (the page itself no
+   longer carries the catalogue table or the methods section).
+
+Fixed page text may not mention a month or year unless it is a listed permanent fact (`tests/test_page_text.py`);
+anything that describes the current situation is drawn from the data.
 
 ## Website and automation
 

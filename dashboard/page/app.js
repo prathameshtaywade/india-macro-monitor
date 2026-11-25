@@ -1,16 +1,13 @@
 // India Macro Monitor — drawings for the dashboard page.
 (function () {
   const MM = (window.MM = window.MM || { topic: 'all', ex: 'cpi_infl_combined', showOld: false });
-  // One shared timeline for the research charts, so dates line up down the page. Older data stays in the files.
-  const WINDOW_YEARS = 5;
+  // One shared timeline for every history chart, so dates line up across both tabs. Older data stays in the files.
+  const CHART_START = '2023-04-01';
   // RBI moved the bank reporting date to month-end in Dec 2025; until Nov 2026 y/y growth compares a
   // month-end with the corresponding reporting Friday a year earlier. Shaded on the brief chart.
   const REPORTING_MIX = { from: '2025-12-01', to: '2026-11-30', label: 'Friday comparator' };
   const parse = d3.utcParse('%Y-%m-%d');
   const MINUS = '−';
-  const TOPIC = { 'Growth': 'growth', 'GVA by sector': 'growth', 'Prices': 'prices', 'Industry': 'industry',
-    'Monetary policy': 'policy', 'Rates & yields': 'rates', 'External': 'external', 'Banking': 'banking',
-    'Funding': 'funding', 'Pricing': 'funding' };
   const POLICY_NAMES = new Map([['repo', 'Policy Repo Rate'], ['sdf', 'Standing Deposit Facility Rate'],
     ['msf', 'Marginal Standing Facility Rate'], ['crr', 'Cash Reserve Ratio'], ['slr', 'Statutory Liquidity Ratio']]);
   const POLICY_CORRIDOR = ['repo', 'sdf', 'msf'];
@@ -117,9 +114,9 @@
     brief: { unit: 'pp', zero: true, months: 12, dots: true, shade: REPORTING_MIX,
       aria: 'Line chart of credit growth minus deposit growth over the last 12 months, latest month and 3-month average', series: [
       ['scb_gap', 'Latest month'], ['scb_gap_3m', '3-month average']] },
-    spread: { unit: 'bp', zero: true, months: 12, aria: 'Line chart of the call money rate minus the repo rate, daily and 5-trading-day average', series: [
+    spread: { unit: 'bp', zero: true, aria: 'Line chart of the call money rate minus the repo rate, daily and 5-trading-day average', series: [
       ['mmo_call_spread', 'Daily'], ['mmo_call_spread_5d', '5-trading-day average']] },
-    liquidity: { unit: '₹ crore', zero: true, months: 12, aria: 'Line chart of RBI net liquidity injection or absorption', series: [
+    liquidity: { unit: '₹ crore', zero: true, aria: 'Line chart of RBI net liquidity injection or absorption', series: [
       ['mmo_net_liq', 'Net liquidity (+ injection, − absorption)']] },
     pricing: { unit: '%', aria: 'Line chart of lending and deposit rates on fresh business and the outstanding book', series: [
       ['walr_fresh', 'Lending rate, fresh loans'], ['wadtdr_fresh', 'Term-deposit rate, fresh'], ['walr_out', 'Lending rate, outstanding', { dash: true }],
@@ -143,7 +140,7 @@
       ? d3.max(cfg.series, ([id]) => { const a = I.m.get(id); return a && a.length ? a[a.length - 1].d : null; }) || I.max
       : I.max;
     const t0 = cfg.months ? d3.utcDay.offset(d3.utcMonth.offset(end, -(cfg.months - 1)), -5)
-      : d3.utcYear.offset(I.max, -WINDOW_YEARS);
+      : parse(CHART_START);
     const colors = dash.colors; let ci = 0;
     const S = [];
     for (const [id, name, opt = {}] of cfg.series) {
@@ -160,7 +157,7 @@
         color: opt.muted ? 'var(--cds-chart-muted)' : colors[ci++ % colors.length] });
     }
     el.replaceChildren();
-    if (!S.length) { el.append(msg('No observations in the last five years.')); return; }
+    if (!S.length) { el.append(msg('No observations since April 2023.')); return; }
     const root = d3.select(el);
     const lg = root.append('div').attr('class', 'mm-legend');
     for (const s of S) {
@@ -212,7 +209,15 @@
       gBand.append('text').attr('x', W - m.r).attr('y', y(cfg.ref) - 4).attr('text-anchor', 'end').text(cfg.refLabel || '');
     }
     const nT = Math.max(2, Math.floor((W - m.l - m.r) / 90));
-    gX.attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(nT).tickSizeOuter(0));
+    const xAxis = d3.axisBottom(x).tickSizeOuter(0);
+    if (cfg.months) xAxis.ticks(nT);
+    else {
+      // Label the shared start date so every chart visibly begins at the same point.
+      const auto = x.ticks(nT).filter((d) => d - t0 > 150 * 864e5);
+      const fmtAuto = x.tickFormat(nT);
+      xAxis.tickValues([t0, ...auto]).tickFormat((d) => (+d === +t0 ? d3.utcFormat('%b %Y')(d) : fmtAuto(d)));
+    }
+    gX.attr('transform', `translate(0,${H - m.b})`).call(xAxis);
     gX.select('.domain').style('stroke', 'var(--cds-chart-axis)');
     gX.selectAll('line').style('stroke', 'var(--cds-chart-axis)');
     for (const s of S) {
@@ -523,41 +528,48 @@
     }
   });
 
-  // ---------- catalog ----------
-  dash.draw('catalog', (tb) => {
-    const cat = catalogRows();
-    const I = index();
-    tb.replaceChildren();
-    if (!cat) { const tr = tb.insertRow(); const td = tr.insertCell(); td.colSpan = 8; td.textContent = statusText(dash.data('catalog').status); return; }
-    for (const r of cat) {
-      if (MM.topic !== 'all' && TOPIC[r.group] !== MM.topic) continue;
-      const tr = tb.insertRow(); tr.dataset.key = encodeURIComponent(r.id);
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'mm-row-btn'; b.textContent = r.name;
-      b.onclick = () => {
-        MM.ex = r.id; dash.draw('picker'); dash.draw('chart'); dash.draw('ex'); dash.draw('ex-rows');
-        document.getElementById('explore')?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-      };
-      tr.insertCell().append(b);
-      tr.insertCell().textContent = r.group; tr.insertCell().textContent = r.freq; tr.insertCell().textContent = r.unit;
-      const last = I?.raw.get(r.id)?.at(-1);
-      tr.insertCell().textContent = r.first; tr.insertCell().textContent = last ? periodLabel(last) : r.last;
-      const v = tr.insertCell(); v.className = 'r'; v.textContent = String(+r.latest);
-      tr.insertCell().textContent = r.source;
-    }
-  });
 
   // ---------- controls (listen; set aria-pressed / hidden only) ----------
-  for (const b of document.querySelectorAll('[data-topic-btn]')) {
-    b.addEventListener('click', () => {
-      MM.topic = b.dataset.topicBtn;
-      for (const o of document.querySelectorAll('[data-topic-btn]')) o.setAttribute('aria-pressed', String(o === b));
-      for (const s of document.querySelectorAll('.mm-sec[data-topic]')) s.hidden = MM.topic !== 'all' && s.dataset.topic !== MM.topic;
-      dash.draw('catalog');
-    });
-  }
   for (const cb of document.querySelectorAll('#show-old')) {
     cb.checked = !!MM.showOld;
     cb.addEventListener('change', () => { MM.showOld = cb.checked; dash.draw('chart'); });
   }
-  window.addEventListener('beforeprint', () => { for (const s of document.querySelectorAll('.mm-sec[data-topic]')) s.hidden = false; });
+  // ---------- tabs: Banking brief | Macro summary ----------
+  // Each tab has its own link (#brief, #macro); a link to any element inside a tab opens that tab.
+  const TABS = ['brief', 'macro'];
+  function showTab(name) {
+    for (const p of document.querySelectorAll('[data-tab]')) { const hide = p.dataset.tab !== name; if (p.hidden !== hide) p.hidden = hide; }
+    for (const b of document.querySelectorAll('[data-tab-btn]')) {
+      const on = b.dataset.tabBtn === name;
+      b.setAttribute('aria-selected', String(on));
+      b.setAttribute('tabindex', on ? '0' : '-1');
+    }
+  }
+  function route() {
+    const hash = typeof location !== 'undefined' ? location.hash || '' : '';
+    const id = decodeURIComponent(hash.slice(1));
+    if (TABS.includes(id)) { showTab(id); return; }
+    const target = id ? document.getElementById(id) : null;
+    const panel = target && target.closest('[data-tab]');
+    showTab(panel ? panel.dataset.tab : 'brief');
+    if (panel) requestAnimationFrame(() => target.scrollIntoView());
+  }
+  const tabButtons = [...document.querySelectorAll('[data-tab-btn]')];
+  tabButtons.forEach((b, i) => {
+    b.addEventListener('click', () => {
+      showTab(b.dataset.tabBtn);
+      if (dash.setLink) dash.setLink(b.dataset.tabBtn);
+      try { if (location.hash !== '#' + b.dataset.tabBtn) history.replaceState(null, '', '#' + b.dataset.tabBtn); } catch (e) { /* sandboxed */ }
+    });
+    b.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const next = tabButtons[(i + (e.key === 'ArrowRight' ? 1 : tabButtons.length - 1)) % tabButtons.length];
+      next.focus(); next.click();
+    });
+  });
+  window.addEventListener('hashchange', route);
+  route();
+  // Print both tabs, then restore the one in view.
+  window.addEventListener('beforeprint', () => { for (const p of document.querySelectorAll('[data-tab]')) p.hidden = false; });
+  window.addEventListener('afterprint', route);
 })();
