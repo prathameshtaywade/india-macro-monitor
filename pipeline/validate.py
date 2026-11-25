@@ -27,6 +27,7 @@ from collections import Counter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from checks import INDIA_TIME, policy_mismatches, snapshot_date, snapshot_errors  # noqa: E402
+from funding import CALL_SPREAD_IDS  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 IDS_FILE = os.path.join(ROOT, "pipeline", "series_ids.txt")
@@ -83,6 +84,14 @@ def validate(cur, prev=None, today=None, expected_ids=None, core=None):
     if duplicate_ids:
         errors.append(f"duplicate series IDs: {', '.join(duplicate_ids)}")
     series = {s["id"]: s for s in records}
+    funding_repo = cur.get("funding_repo") or {}
+    pending_from = funding_repo.get("pending_from")
+    if pending_from is not None:
+        if end_date(pending_from, "Daily") is None:
+            errors.append("invalid repo spread verification date")
+            pending_from = None
+        else:
+            warnings.append(f"call–repo spreads pending RBI verification from {pending_from}")
 
     if expected_ids is not None:
         missing = [i for i in expected_ids if i not in series]
@@ -104,7 +113,8 @@ def validate(cur, prev=None, today=None, expected_ids=None, core=None):
             errors.append(f"`{s['id']}` has {len(bad)} value(s) outside {lo}..{hi} {s['unit']}, e.g. {bad[:3]}")
         periods = [p for p, _ in s["data"]]
         if not periods:
-            errors.append(f"`{s['id']}` has no observations")
+            if not pending_from or s["id"] not in CALL_SPREAD_IDS:
+                errors.append(f"`{s['id']}` has no observations")
             continue
         if len(periods) != len(set(periods)):
             errors.append(f"`{s['id']}` has duplicate periods")
@@ -113,6 +123,8 @@ def validate(cur, prev=None, today=None, expected_ids=None, core=None):
         if invalid:
             errors.append(f"`{s['id']}` has invalid {s['freq']} periods, e.g. {invalid[:3]}")
             continue
+        if pending_from and s["id"] in CALL_SPREAD_IDS and any(p >= pending_from for p in periods):
+            errors.append(f"`{s['id']}` contains observations from the pending verification period")
         if dates != sorted(dates):
             errors.append(f"`{s['id']}` periods are out of chronological order")
         last = dates[-1]
@@ -141,17 +153,25 @@ def validate(cur, prev=None, today=None, expected_ids=None, core=None):
             errors.append(f"series published last time are missing now: {', '.join(gone)}")
         for sid, ps in pser.items():
             s = series.get(sid)
-            if not s or not s["data"] or not ps["data"]:
+            if not s:
                 continue
-            a, b = end_date(ps["data"][-1][0], ps["freq"]), end_date(s["data"][-1][0], s["freq"])
+            baseline = ps["data"]
+            if pending_from and sid in CALL_SPREAD_IDS:
+                baseline = [point for point in baseline if point[0] < pending_from]
+            if not baseline:
+                continue
+            if not s["data"]:
+                errors.append(f"`{sid}` lost its published history")
+                continue
+            a, b = end_date(baseline[-1][0], ps["freq"]), end_date(s["data"][-1][0], s["freq"])
             if a and b and b < a:
-                errors.append(f"`{sid}` latest period went backwards: {ps['data'][-1][0]} → {s['data'][-1][0]}")
-            if len(s["data"]) < 0.95 * len(ps["data"]):
-                errors.append(f"`{sid}` shrank from {len(ps['data'])} to {len(s['data'])} observations")
-            if s["data"][-1] != ps["data"][-1]:
+                errors.append(f"`{sid}` latest period went backwards: {baseline[-1][0]} → {s['data'][-1][0]}")
+            if len(s["data"]) < 0.95 * len(baseline):
+                errors.append(f"`{sid}` shrank from {len(baseline)} to {len(s['data'])} observations")
+            if s["data"][-1] != baseline[-1]:
                 changed.append(sid)
     info = {"series": len(series), "observations": sum(len(s["data"]) for s in series.values()),
-            "changed": changed, "policy_mismatch": bool(mism)}
+            "changed": changed, "policy_mismatch": bool(mism or funding_repo.get("mismatch"))}
     return errors, warnings, info
 
 

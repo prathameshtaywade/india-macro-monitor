@@ -323,15 +323,26 @@
     repo: { unit: '%', p: 2 }, gsec10_w: { unit: '%', p: 2 }, forex_w: { unit: 'US$ bn', p: 1 },
     scb_credit_yoy: { unit: '%', p: 1 }, scb_dep_yoy: { unit: '%', p: 1 }, usdinr_w: { unit: '₹ per US$', p: 2 },
     scb_gap: { unit: 'pp', p: 2 }, scb_gap_3m: { unit: 'pp', p: 2 },
-    mmo_call_spread: { unit: 'bp', p: 0 }, mmo_call_spread_5d: { unit: 'bp', p: 0 }, mmo_net_liq: { unit: '₹ crore', p: 0, abs: true },
+    mmo_call: { unit: '%', p: 2 }, mmo_call_spread: { unit: 'bp', p: 0 },
+    mmo_call_spread_5d: { unit: 'bp', p: 0 }, mmo_net_liq: { unit: '₹ crore', p: 0, abs: true },
     walr_fresh: { unit: '%', p: 2 }, wadtdr_fresh: { unit: '%', p: 2 }, walr_out: { unit: '%', p: 2 }, wadtdr_out: { unit: '%', p: 2 },
     mclr_1y_median: { unit: '%', p: 2 }, pricing_gap_fresh: { unit: 'pp', p: 2 },
   };
+  function pendingSpread() {
+    return (dash.data('observations').meta || []).find((item) => item.label === 'Repo spread pending from')?.value;
+  }
+  dash.draw('funding-status', (el) => {
+    el.textContent = pendingSpread() ? 'Call–repo spreads are pending RBI rate verification.' : '';
+  });
   function latest(k) { const L = dash.data('latest'); return L.status === 'ok' ? L.data.find((r) => r.series === k) : null; }
   dash.draw('kpi', (el) => {
     const k = el.dataset.k, part = el.dataset.part, c = K[k];
     const r = latest(k);
     el.classList.remove('is-flat');
+    if ((k === 'mmo_call_spread' || k === 'mmo_call_spread_5d') && pendingSpread()) {
+      el.textContent = '—';
+      return;
+    }
     if (!r) { el.textContent = statusText(dash.data('latest').status); return; }
     if (part === 'value') el.textContent = c.unit === 'US$ bn' ? r.value.toFixed(c.p) : fmt(c.abs ? Math.abs(r.value) : r.value, c.unit, c.p);
     else if (part === 'label') el.textContent = r.label;
@@ -507,7 +518,7 @@
     const part = el.dataset.part;
     if (part === 'coverage') {
       const last = index()?.raw.get(c.id)?.at(-1);
-      el.textContent = `${c.first} to ${last ? periodLabel(last) : c.last} · ${c.obs} observations`;
+      el.textContent = c.obs ? `${c.first} to ${last ? periodLabel(last) : c.last} · ${c.obs} observations` : 'No verified observations';
     }
     else if (part === 'link') {
       el.replaceChildren();

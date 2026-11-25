@@ -51,6 +51,12 @@
 "wss": "RBI Weekly Statistical Supplement Tables 2 (forex reserves), 4 (SCB business), 5 (ratios & rates); issues 2 Jan 2026 - 20 Nov 2026",
 "policy_2026_10_07": "RBI press release prid=63742 (7 Oct 2026): MPC resolution Oct 5-7 2026, repo +25 bp to 5.50%, SDF 5.25%, MSF/Bank Rate 5.75%"
 },
+"funding_repo": {
+"verified_on": "2026-11-24",
+"cutoff": "2026-11-25",
+"mismatch": null,
+"pending_from": null
+},
 "series": [
 {
 "id": "gdp_growth_q",

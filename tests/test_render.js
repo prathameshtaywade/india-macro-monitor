@@ -211,6 +211,29 @@ test('call-repo spread is shown in basis points', () => {
   assert.strictEqual(c.textContent, '−13 bp vs 19 Nov 2026');
 });
 
+test('a pending repo rate hides the headline spreads and keeps the observed call rate', () => {
+  const rows = ['mmo_call_spread', 'mmo_call_spread_5d', 'mmo_call', 'mmo_net_liq'].map((series, i) => ({
+    series, period: '2026-11-20', label: '20 Nov 2026', date: '2026-11-20', value: [-23, 3, 5.27, -54474.74][i],
+  }));
+  const data = obs(rows);
+  data.meta.push({ label: 'Repo spread pending from', value: '2026-11-21' });
+  const { draws } = load({ observations: data, catalog: obs([]), snapshot: snapshot(5.75, 5.5) });
+  for (const k of ['mmo_call_spread', 'mmo_call_spread_5d']) {
+    const tile = el({ k, part: 'value' });
+    draws.kpi(tile);
+    assert.strictEqual(tile.textContent, '—');
+  }
+  const call = el({ k: 'mmo_call', part: 'value' });
+  draws.kpi(call);
+  assert.strictEqual(call.textContent, '5.27%');
+  const liquidity = el({ k: 'mmo_net_liq', part: 'value' });
+  draws.kpi(liquidity);
+  assert.strictEqual(liquidity.textContent, '₹54,475 crore');
+  const warning = el();
+  draws['funding-status'](warning);
+  assert.match(warning.textContent, /pending RBI rate verification/);
+});
+
 test('each pricing figure carries its own month', () => {
   const rows = [monthRow('walr_fresh', '2026-09', 8.51), monthRow('mclr_1y_median', '2026-10', 8.55)];
   const { draws } = load({ observations: obs(rows), catalog: obs([]), snapshot: snapshot(5.5, 5.25) });

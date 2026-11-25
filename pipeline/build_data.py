@@ -16,7 +16,8 @@ import json, os, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from checks import is_weekly_key, latest_revision  # noqa: E402
 from banking import growth_gap, incremental_cd_fytd, trailing_mean  # noqa: E402
-from funding import call_spread_bp, pricing_gap, resolve_lending, resolve_mmo, trailing_mean_obs  # noqa: E402
+from funding import call_spread_bp, pricing_gap, resolve_lending, resolve_mmo, spread_verification, trailing_mean_obs  # noqa: E402
+from rbi_policy import LEDGER, policy_rows  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 RAW = os.path.join(ROOT, "data", "raw")
@@ -55,9 +56,9 @@ def clean(pts):
 S = []
 
 
-def add(**kw):
+def add(*, keep_empty=False, **kw):
     kw["data"] = clean(kw["data"])
-    if kw["data"]:
+    if kw["data"] or keep_empty:
         S.append(kw)
 
 
@@ -175,10 +176,11 @@ HB_URL = "https://www.rbi.org.in/Scripts/AnnualPublications.aspx?head=Handbook%2
 WSS_URL = "https://rbi.org.in/Scripts/BS_ViewWSS.aspx"
 
 # Policy rates: step series from effective dates
-if RB.get("policy"):
+policy = policy_rows(RB, json.loads(LEDGER.read_text(encoding="utf-8")) if LEDGER.exists() else [])
+if policy:
     cur = {"repo": None, "sdf": None, "msf": None, "crr": None, "slr": None}
     steps = {k: [] for k in cur}
-    for row in sorted(RB["policy"], key=lambda row: row[0]):  # [effectiveDate, repo, sdf, msf, crr, slr, source?]
+    for row in policy:  # [effectiveDate, repo, sdf, msf, crr, slr, source?]
         d, repo, sdf, msf, crr, slr = row[:6]
         for k, v in zip(cur, (repo, sdf, msf, crr, slr)):
             if v is not None and v != cur[k]:
@@ -278,6 +280,12 @@ for key, sid, nm, unit, note in [
 
 home_path = os.path.join(RAW, "rbi_home.json")
 HOME = json.load(open(home_path)) if os.path.exists(home_path) else {}
+macro_path = os.path.join(ROOT, "data", "macro.json")
+try:
+    with open(macro_path, encoding="utf-8") as f:
+        previous = json.load(f)
+except (OSError, ValueError):
+    previous = {}
 
 # ---------------- Funding conditions and new-business pricing (RBI press releases) ----------------
 MMO_URL = "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Money Market Operations, daily)"
@@ -292,8 +300,12 @@ def _jsonl(name):
         return [json.loads(line) for line in f if line.strip()]
 
 
-REPO_STEPS = steps["repo"] if RB.get("policy") else []
+REPO_STEPS = steps["repo"] if policy else []
 MMO = resolve_mmo(_jsonl("rbi_mmo.jsonl"))
+funding_repo = spread_verification(REPO_STEPS, HOME, previous)
+cutoff = funding_repo["cutoff"]
+pending = bool(funding_repo["mismatch"]) or any(d >= cutoff and r.get("call_rate") is not None for d, r in MMO.items())
+funding_repo["pending_from"] = cutoff if pending else None
 if MMO:
     mmo_meta = dict(group="Funding", freq="Daily", base="", source_url=MMO_URL,
                     source="RBI press release 'Money Market Operations as on <date>'")
@@ -308,11 +320,11 @@ if MMO:
         data=[(d, r["net_liq_outstanding"]) for d, r in sorted(MMO.items()) if r.get("net_liq_outstanding") is not None],
         notes="Row F. Positive = net injection by RBI, negative = net absorption. Reported on non-trading days too. "
               "Net liquidity = Repo + MSF + SLF - Reverse Repo - SDF.", **mmo_meta)
-    spread = call_spread_bp(MMO, REPO_STEPS)
-    add(id="mmo_call_spread", name="Call money rate minus repo rate (daily)", unit="bp", data=spread,
+    spread = call_spread_bp(MMO, REPO_STEPS, cutoff)
+    add(id="mmo_call_spread", name="Call money rate minus repo rate (daily)", unit="bp", data=spread, keep_empty=pending,
         notes="Call money weighted average rate minus the policy repo rate in force that day, in basis points. "
               "Trading days only.", **mmo_meta)
-    add(id="mmo_call_spread_5d", name="Call money rate minus repo rate, 5-trading-day average", unit="bp",
+    add(id="mmo_call_spread_5d", name="Call money rate minus repo rate, 5-trading-day average", unit="bp", keep_empty=pending,
         data=trailing_mean_obs(spread, 5), notes="Average of the latest five trading days.", **mmo_meta)
 
 LDR = resolve_lending(_jsonl("rbi_lending.jsonl"))
@@ -337,14 +349,13 @@ if LDR:
 
 # Keep the previous build time when no series changed, so unchanged days produce no diff.
 gen = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-macro_path = os.path.join(ROOT, "data", "macro.json")
-try:
-    prev = json.load(open(macro_path, encoding="utf-8"))
-    if prev.get("series") == json.loads(json.dumps(S, ensure_ascii=False)):
-        gen = prev.get("generated_utc", gen)
-except (OSError, ValueError):
-    pass
-out = {"generated_utc": gen, "snapshot": HOME, "provenance": RB.get("provenance", {}), "series": S}
+if previous.get("series") == json.loads(json.dumps(S, ensure_ascii=False)):
+    gen = previous.get("generated_utc", gen)
+out = {"generated_utc": gen, "snapshot": HOME, "provenance": RB.get("provenance", {}),
+       "funding_repo": funding_repo, "series": S}
 json.dump(out, open(macro_path, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
 for s in S:
-    print(f"{s['id']:22s} {len(s['data']):5d}  {s['data'][0][0]:>10s} → {s['data'][-1][0]:<10s} last={s['data'][-1][1]}")
+    if s["data"]:
+        print(f"{s['id']:22s} {len(s['data']):5d}  {s['data'][0][0]:>10s} → {s['data'][-1][0]:<10s} last={s['data'][-1][1]}")
+    else:
+        print(f"{s['id']:22s}     0  pending RBI repo-rate verification")
