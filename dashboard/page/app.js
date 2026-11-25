@@ -1,6 +1,8 @@
 // India Macro Monitor — drawings for the dashboard page.
 (function () {
-  const MM = (window.MM = window.MM || { range: '5y', topic: 'all', ex: 'cpi_infl_combined', showOld: false });
+  const MM = (window.MM = window.MM || { topic: 'all', ex: 'cpi_infl_combined', showOld: false });
+  // One shared timeline for the research charts, so dates line up down the page. Older data stays in the files.
+  const WINDOW_YEARS = 5;
   // RBI moved the bank reporting date to month-end in Dec 2025; until Nov 2026 y/y growth compares a
   // month-end with the corresponding reporting Friday a year earlier. Shaded on the brief chart.
   const REPORTING_MIX = { from: '2025-12-01', to: '2026-11-30', label: 'Friday comparator' };
@@ -115,9 +117,9 @@
     brief: { unit: 'pp', zero: true, months: 12, dots: true, shade: REPORTING_MIX,
       aria: 'Line chart of credit growth minus deposit growth over the last 12 months, latest month and 3-month average', series: [
       ['scb_gap', 'Latest month'], ['scb_gap_3m', '3-month average']] },
-    spread: { unit: 'bp', zero: true, aria: 'Line chart of the call money rate minus the repo rate, daily and 5-trading-day average', series: [
+    spread: { unit: 'bp', zero: true, months: 12, aria: 'Line chart of the call money rate minus the repo rate, daily and 5-trading-day average', series: [
       ['mmo_call_spread', 'Daily'], ['mmo_call_spread_5d', '5-trading-day average']] },
-    liquidity: { unit: '₹ crore', zero: true, aria: 'Line chart of RBI net liquidity injection or absorption', series: [
+    liquidity: { unit: '₹ crore', zero: true, months: 12, aria: 'Line chart of RBI net liquidity injection or absorption', series: [
       ['mmo_net_liq', 'Net liquidity (+ injection, − absorption)']] },
     pricing: { unit: '%', aria: 'Line chart of lending and deposit rates on fresh business and the outstanding book', series: [
       ['walr_fresh', 'Lending rate, fresh loans'], ['wadtdr_fresh', 'Term-deposit rate, fresh'], ['walr_out', 'Lending rate, outstanding', { dash: true }],
@@ -140,9 +142,8 @@
     const end = cfg.months
       ? d3.max(cfg.series, ([id]) => { const a = I.m.get(id); return a && a.length ? a[a.length - 1].d : null; }) || I.max
       : I.max;
-    const yrs = { '2y': 2, '5y': 5, '10y': 10 }[MM.range];
     const t0 = cfg.months ? d3.utcDay.offset(d3.utcMonth.offset(end, -(cfg.months - 1)), -5)
-      : yrs ? d3.utcYear.offset(I.max, -yrs) : null;
+      : d3.utcYear.offset(I.max, -WINDOW_YEARS);
     const colors = dash.colors; let ci = 0;
     const S = [];
     for (const [id, name, opt = {}] of cfg.series) {
@@ -159,7 +160,7 @@
         color: opt.muted ? 'var(--cds-chart-muted)' : colors[ci++ % colors.length] });
     }
     el.replaceChildren();
-    if (!S.length) { el.append(msg('No observations in this period. Choose a longer range.')); return; }
+    if (!S.length) { el.append(msg('No observations in the last five years.')); return; }
     const root = d3.select(el);
     const lg = root.append('div').attr('class', 'mm-legend');
     for (const s of S) {
@@ -168,6 +169,11 @@
       it.append('span').text(s.name);
       it.append('b').text(fmt(s.last.v, cfg.unit, cfg.unit === 'US$ bn' ? 1 : cfg.unit === 'bp' || cfg.unit === '₹ crore' ? 0 : 2));
       it.append('span').attr('class', 'mm-muted').text(s.last.label);
+    }
+    const first = d3.min(S, (s) => s.pts[0].d);
+    if (!cfg.months && first - t0 > 60 * 864e5) {
+      const firstSeries = S.find((s) => s.pts[0].d.getTime() === first.getTime());
+      root.append('p').attr('class', 'mm-cap').text('Data from ' + firstSeries.pts[0].label + ' (the series starts there).');
     }
     const W = Math.max(260, el.clientWidth), H = 240;
     const svg = root.append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`)
@@ -547,13 +553,6 @@
       for (const o of document.querySelectorAll('[data-topic-btn]')) o.setAttribute('aria-pressed', String(o === b));
       for (const s of document.querySelectorAll('.mm-sec[data-topic]')) s.hidden = MM.topic !== 'all' && s.dataset.topic !== MM.topic;
       dash.draw('catalog');
-    });
-  }
-  for (const b of document.querySelectorAll('[data-range-btn]')) {
-    b.addEventListener('click', () => {
-      MM.range = b.dataset.rangeBtn;
-      for (const o of document.querySelectorAll('[data-range-btn]')) o.setAttribute('aria-pressed', String(o === b));
-      dash.draw('chart');
     });
   }
   for (const cb of document.querySelectorAll('#show-old')) {
