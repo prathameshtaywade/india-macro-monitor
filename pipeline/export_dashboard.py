@@ -5,9 +5,11 @@ Turn data/macro.json into the three files the published dashboard reads:
   dashboard/catalog.json       {rows:[{id, name, group, unit, freq, base, source, source_url, notes, first, last, latest, obs}]}
   dashboard/snapshot.json      {rows:[{item, group, value, unit, as_of}]}   (RBI homepage "Current Rates")
 `date` is an ISO day used to place the point on a time axis:
-  daily/weekly/event -> the date itself; monthly -> 15th; fiscal quarter 'YYYY-Qn' -> middle month of the quarter;
+  daily/weekly/event -> the date itself; monthly -> 15th or the last day for month-end observations;
+  fiscal quarter 'YYYY-Qn' -> middle month of the quarter;
   fiscal year 'YYYY-YY' -> 31 March at the end of that year (the label keeps "FY YYYY-YY").
 """
+from calendar import monthrange
 import json, os, sys, time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -15,9 +17,10 @@ from checks import snapshot_date  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 MN = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
+MONTH_END_SERIES = {"forex_m", "gsec10", "gsec5", "gsec1"}
 
 
-def place(p, freq):
+def place(p, freq, month_end=False):
     if len(p) == 10:                                   # daily / weekly / event date
         return p, f"{int(p[8:])} {MN[int(p[5:7]) - 1]} {p[:4]}"
     if len(p) == 7 and p[5] == "Q":                    # Indian fiscal quarter: 2026-Q1 = Apr-Jun 2026
@@ -26,7 +29,9 @@ def place(p, freq):
         return f"{my}-{mm:02d}-15", f"Q{q} {y}-{str(y + 1)[2:]}"
     if freq.startswith("Annual"):                      # fiscal year '2025-26' -> plotted at its end, 31 March 2026
         return f"{int(p[:4]) + 1}-03-31", f"FY {p}"
-    return f"{p}-15", f"{MN[int(p[5:7]) - 1]} {p[:4]}"  # month
+    year, month = map(int, p.split("-"))
+    day = monthrange(year, month)[1] if month_end else 15
+    return f"{p}-{day:02d}", f"{MN[month - 1]} {year}"
 
 
 def build(M):
@@ -35,7 +40,7 @@ def build(M):
     for s in M["series"]:
         pts = []
         for p, v in s["data"]:
-            d, lab = place(p, s["freq"])
+            d, lab = place(p, s["freq"], month_end=s["id"] in MONTH_END_SERIES)
             pts.append((p, d, lab, v))
             obs.append({"series": s["id"], "period": p, "label": lab, "date": d, "value": round(v, 4)})
         first, last = (pts[0], pts[-1]) if pts else ((None,) * 4, (None,) * 4)

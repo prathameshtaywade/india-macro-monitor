@@ -1,6 +1,6 @@
 # India Macro Monitor — data pipeline
 
-Source-backed Indian macro dataset (47 series) built only from official **MoSPI** and **RBI** sources, plus the
+Source-backed Indian macro dataset built only from official **MoSPI** and **RBI** sources, plus the
 interactive dashboard that reads it. Data first built **24 Nov 2026**; the table below is that snapshot. Free/open tooling only: Python 3 standard library,
 a browser, and d3 in the dashboard.
 
@@ -10,16 +10,16 @@ a browser, and d3 in the dashboard.
 |---|---|---|---|---|---|---|
 | GDP | `gdp_growth_q` real GDP growth y/y (2022-23 base) | Q (fiscal) | % | Q1 2023-24 → Q1 2026-27 | 7.8 | MoSPI NAS API, indicator 22 |
 | GDP | `gdp_growth_q_old` (2011-12 base, discontinued) | Q | % | Q1 2012-13 → Q2 2025-26 | 8.2 | MoSPI NAS API |
-| GVA | `gva_growth_q` + 8 sector series | Q | % | Q1 2023-24 → Q1 2026-27 | 8.2 (total) | MoSPI NAS API, indicator 21 |
+| GVA | `gva_growth_q` + 3 broad-sector and 8 industry series | Q | % | Q1 2023-24 → Q1 2026-27 | 8.2 (total), 10.0 (services) | MoSPI NAS API, indicators 1 and 21 |
 | GDP | `gdp_level_q`, `gdp_growth_a` (charted at 31 March of each FY), nominal growth | Q / FY | ₹ lakh cr / % | 2022-23 → | | MoSPI NAS API |
 | CPI | `cpi_infl_combined/rural/urban`, `cpi_food`, `cpi_index` (2024=100) | M | % / index | Jan 2026 → Oct 2026 (index from Jan 2025) | 6.09 | MoSPI `getCPIData` |
 | CPI | `cpi_infl_old`, `cfpi_old` (2012=100, discontinued) | M | % | Jan 2014 → Dec 2025 | 1.33 | MoSPI `getCPIIndex` |
-| IIP | `iip_growth`, `iip_index`, mining/manufacturing/electricity (2022-23=100) | M | % | Apr 2023 → Sep 2026 | 6.7 | MoSPI `getIipData` |
+| IIP | `iip_growth`, `iip_index`, all four sectors (2022-23=100) | M | % | Apr 2023 → Sep 2026 | 6.7 | MoSPI `getIipData` |
 | IIP | `iip_growth_old` (2011-12=100) | M | % | Apr 2012 → Mar 2026 | 4.1 | MoSPI `getIipData` |
 | Banks | `scb_gap`, `scb_gap_3m` credit growth minus deposit growth, latest and 3-month average | M | pp | Jan 2023 → Oct 2026 | 2.68 / 1.74 | Derived from Handbook T167 + WSS Table 4 |
 | Banks | `scb_inc_cd_fytd` incremental credit–deposit ratio, financial year to date | M | % | Apr 2022 → Oct 2026 | 90.1 (72.1 a year earlier) | Derived; omitted while deposits are up <0.5% since end-March |
 | Funding | `mmo_call_spread` (+`_5d`) call money rate minus repo, `mmo_net_liq` RBI net liquidity (row F), `mmo_call`, `mmo_overnight` | Daily | bp / ₹ crore / % | 31 Oct 2025 → (one year backfilled, no missing days) | | RBI "Money Market Operations" daily press release |
-| Pricing | `walr_fresh`, `walr_out`, `wadtdr_fresh`, `wadtdr_out`, `mclr_1y_median`, `pricing_gap_fresh` | Monthly | % / pp | Jan 2025 → (plus one Mar 2023 release) | Sep 2026: 8.51 / 5.61 / 2.90 pp | RBI "Lending and Deposit Rates of SCBs" monthly press release |
+| Pricing | `walr_fresh`, `walr_out`, `wadtdr_fresh`, `wadtdr_out`, `mclr_1y_median`, `pricing_gap_fresh` | Monthly | % / pp | Feb 2023 → for lending/deposit rates, Mar 2023 → for MCLR | Sep 2026: 8.51 / 5.61 / 2.90 pp | RBI "Lending and Deposit Rates of SCBs" monthly press release |
 | Policy | `repo`, `sdf`, `msf`, `crr`, `slr` | event | % | Apr 2008 → 7 Oct 2026 | repo 5.50 | RBI Handbook T40 + MPC resolution 7 Oct 2026 |
 | Yields | `gsec10`, `gsec5`, `gsec1` month-end | M | % | Apr 2023 → Jun 2026 | 6.74 (10Y) | RBI Handbook T178 |
 | Yields | `gsec10_w` (FBIL 10Y par), `tb91_w`, `call_w` | W | % | Jan → 13 Nov 2026 | 7.34 / 5.87 / 5.55 | RBI WSS Table 5 |
@@ -58,10 +58,15 @@ Every history chart starts in **April 2023** on one shared timeline; older data 
    - **History:** bank credit and deposit growth, call spread, net liquidity, lending and deposit rates.
 2. **Macro summary** (starts with the tiles)
    - Eight tiles with neutral changes (no good/bad colour), then a sentence on repo, CPI against the 2–6% band, and GDP.
-   - Charts: GDP and GVA, GVA by sector, CPI, IIP, policy rates, yields, forex reserves, rupee. Old-base series are
-     off by default behind "Show discontinued series"; the two 10-year yields are labelled by definition.
+   - GVA uses one quarter for the benchmark, the primary, secondary and services groups, and the industry detail.
+     Broad-sector growth is year-on-year growth of summed constant-price levels. The underlying eight industries
+     must reconcile to total GVA within source rounding.
+   - The CPI tolerance band applies to the headline chart. Food inflation has its own chart. The IIP breakdown
+     includes all four sectors and shows General IIP separately. Old-base series are off by default.
+   - Weekly benchmark yields and historical traded yields have separate charts, as do USD/INR and EUR/INR.
+     Period labels and expected update windows distinguish live feeds from historical Handbook series.
    - Series explorer for any series, including those without a chart of their own.
-3. **Footer:** data build date and a link to this README for sources, methods and known gaps (the page itself no
+3. **Footer:** when published series last changed and a link to this README for sources, methods and known gaps (the page itself no
    longer carries the catalogue table or the methods section).
 
 Fixed page text may not mention a month or year unless it is a listed permanent fact (`tests/test_page_text.py`);

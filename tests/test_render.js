@@ -242,5 +242,20 @@ test('each pricing figure carries its own month', () => {
   assert.deepStrictEqual([a.textContent, b.textContent], ['Sep 2026', 'Oct 2026']);
 });
 
+test('freshness notice is tied to the next expected release', () => {
+  const observations = obs([
+    monthRow('cpi_infl_combined', '2026-10', 6.09),
+    { series: 'gsec10_w', period: '2026-11-13', label: '13 Nov 2026', date: '2026-11-13', value: 7.34 },
+  ]);
+  const datasets = { observations, catalog: obs([]) };
+  const e = el({ series: 'cpi_infl_combined gsec10_w' });
+  load(datasets, '2026-11-25T12:00:00Z').draws.freshness(e);
+  assert.strictEqual(e.textContent, '');
+  load(datasets, '2026-12-05T12:00:00Z').draws.freshness(e);
+  assert.strictEqual(e.textContent, 'Past expected update window: FBIL 10-year yield.');
+  load(datasets, '2026-12-17T12:00:00Z').draws.freshness(e);
+  assert.strictEqual(e.textContent, 'Past expected update window: headline CPI, FBIL 10-year yield.');
+});
+
 if (failures) { console.log(`${failures} failed`); process.exit(1); }
 console.log('all render checks passed');

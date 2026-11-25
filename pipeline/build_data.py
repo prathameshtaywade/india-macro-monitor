@@ -17,6 +17,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from checks import is_weekly_key, latest_revision  # noqa: E402
 from banking import growth_gap, incremental_cd_fytd, trailing_mean  # noqa: E402
 from funding import call_spread_bp, pricing_gap, resolve_lending, resolve_mmo, spread_verification, trailing_mean_obs  # noqa: E402
+from macro_sectors import gva_group_growth  # noqa: E402
+from rbi_releases import BASE as RBI_RELEASE_URL  # noqa: E402
 from rbi_policy import LEDGER, policy_rows  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
@@ -80,22 +82,56 @@ add(id="gdp_growth_q_old", name="Real GDP growth (y/y), old 2011-12 series", gro
     notes="Long history; not strictly comparable with the 2022-23 base series.",
     data=[(fq(x["year"], x["quarter"]), num(x["constant_price"])) for x in r["rows"]])
 r = mospi("nas_q_2022_21")
-tot = [x for x in r["rows"] if x.get("industry") == "Total Gross Value Added"]
+GVA_INDUSTRIES = {
+    "gva_agriculture": "Agriculture, Livestock, Forestry and Fishing",
+    "gva_mining": "Mining and Quarrying",
+    "gva_manufacturing": "Manufacturing",
+    "gva_utilities": "Electricity, Gas, Water Supply & Other Utility Services",
+    "gva_construction": "Construction",
+    "gva_trade": "Trade, Hotels, Transport, Communication & Services Related to Broadcasting",
+    "gva_financial": "Financial, Real Estate & Professional Services",
+    "gva_public": "Public Administration, Defence & Other Services",
+}
+GVA_NAMES = {
+    **GVA_INDUSTRIES,
+    "gva_trade": "Trade, hotels, transport, communication, broadcasting and storage",
+    "gva_financial": "Financial, real estate, IT, professional services and ownership of dwellings",
+}
+GVA_IDS = {name: sid for sid, name in GVA_INDUSTRIES.items()}
+GVA_IDS["Total Gross Value Added"] = "gva_total"
+
+
+def gva_observations(rows):
+    periods = {}
+    for row in rows:
+        sid = GVA_IDS.get(row.get("industry"))
+        value = num(row["constant_price"])
+        if sid is None or value is None or row.get("subindustry") or row.get("institutional_sector"):
+            continue
+        quarter = fq(row["year"], row["quarter"])
+        values = periods.setdefault(quarter, {})
+        if sid in values and values[sid] != value:
+            raise ValueError(f"{quarter}: conflicting MoSPI values for {sid}")
+        values[sid] = value
+    return periods
+
+
+gva_rates = gva_observations(r["rows"])
+GVA_API = MOSPI_API + "/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code="
 add(id="gva_growth_q", name="Real GVA growth (y/y)", group="Growth", unit="%", freq="Quarterly",
-    base="2022-23 series", source="MoSPI – NAS", source_url=r["endpoint"],
+    base="2022-23 series", source="MoSPI – NAS", source_url=GVA_API + "21",
     notes="GVA at basic prices, constant prices.",
-    data=[(fq(x["year"], x["quarter"]), num(x["constant_price"])) for x in tot])
-SECT = {"Agriculture, Livestock, Forestry and Fishing": "Agriculture", "Mining and Quarrying": "Mining",
-        "Manufacturing": "Manufacturing", "Electricity, Gas, Water Supply & Other Utility Services": "Utilities",
-        "Construction": "Construction",
-        "Trade, Hotels, Transport, Communication & Services Related to Broadcasting": "Trade, hotels, transport",
-        "Financial, Real Estate & Professional Services": "Financial & real estate",
-        "Public Administration, Defence & Other Services": "Public admin & other"}
-for ind, short in SECT.items():
-    rows = [x for x in r["rows"] if x.get("industry") == ind and not x.get("subindustry")]
-    add(id="gva_" + short.split()[0].lower().strip(","), name=f"GVA growth – {short}", group="GVA by sector", unit="%",
-        freq="Quarterly", base="2022-23 series", source="MoSPI – NAS", source_url=r["endpoint"], notes="Constant prices, y/y.",
-        data=[(fq(x["year"], x["quarter"]), num(x["constant_price"])) for x in rows])
+    data=[(q, v["gva_total"]) for q, v in gva_rates.items() if "gva_total" in v])
+gva_base = dict(group="GVA by sector", unit="%", freq="Quarterly", base="2022-23 series")
+gva_levels = gva_observations(mospi("nas_q_2022_1")["rows"])
+for sid, data in gva_group_growth(gva_levels).items():
+    label = {"gva_primary": "Primary", "gva_secondary": "Secondary", "gva_services": "Services (tertiary)"}[sid]
+    add(id=sid, name=f"GVA growth – {label}", **gva_base,
+        source="Derived from MoSPI – NAS quarterly real GVA levels, indicator 1", source_url=GVA_API + "1",
+        notes="Sum of component GVA levels at constant prices, then year-on-year growth.", data=data)
+for sid, label in GVA_NAMES.items():
+    add(id=sid, name=f"GVA growth – {label}", **gva_base, source="MoSPI – NAS", source_url=GVA_API + "21",
+        notes="Constant prices, y/y.", data=[(q, v[sid]) for q, v in gva_rates.items() if sid in v])
 r = mospi("nas_q_2022_5")
 add(id="gdp_level_q", name="Real GDP (quarterly level)", group="Growth", unit="₹ lakh crore", freq="Quarterly",
     base="2022-23 series", source="MoSPI – NAS", source_url=r["endpoint"], notes="Constant (2022-23) prices; converted from ₹ crore.",
@@ -145,10 +181,16 @@ add(id="iip_index", name="IIP General index", group="Industry", unit="Index (202
     source="MoSPI – IIP", source_url=r["endpoint"], notes="",
     data=[(ym(x["year"], x["month"]), num(x["index"])) for x in r["rows"]])
 r = mospi("iip_2022_sect")
-for cat, short in [("Mining & Quarrying", "Mining"), ("Manufacturing", "Manufacturing"), ("Electricity", "Electricity")]:
-    rows = [x for x in r["rows"] if x["category"].startswith(cat) and not x["sub_category"]]
-    add(id="iip_" + short.lower(), name=f"IIP growth – {short}", group="Industry", unit="%", freq="Monthly", base="2022-23=100",
-        source="MoSPI – IIP", source_url=r["endpoint"] + "?type=Sectoral", notes="",
+for sid, category in [
+    ("iip_mining", "Mining & Quarrying"),
+    ("iip_manufacturing", "Manufacturing"),
+    ("iip_electricity", "Electricity & Gas Supply"),
+    ("iip_water", "Water Supply, Sewerage & Waste Management"),
+]:
+    rows = [x for x in r["rows"] if x["category"] == category and not x["sub_category"]]
+    add(id=sid, name=f"IIP growth – {category}", group="Industry", unit="%",
+        freq="Monthly", base="2022-23=100", source="MoSPI – IIP",
+        source_url=r["endpoint"] + "?base_year=2022-23&frequency=Monthly&type=Sectoral", notes="",
         data=[(ym(x["year"], x["month"]), num(x["growth_rate"])) for x in rows])
 r = mospi("iip_2011")
 add(id="iip_growth_old", name="IIP growth – General, old 2011-12 series", group="Industry", unit="%", freq="Monthly",
@@ -174,6 +216,7 @@ for _k in list(RB):
         RB[_k] = [(d, v) for d, v, _ in latest_revision(RB[_k])]
 HB_URL = "https://www.rbi.org.in/Scripts/AnnualPublications.aspx?head=Handbook%20of%20Statistics%20on%20Indian%20Economy"
 WSS_URL = "https://rbi.org.in/Scripts/BS_ViewWSS.aspx"
+WSS_RATES_URL = "https://www.rbi.org.in/Scripts/WSSViewDetail.aspx?TYPE=Section&PARAM1=4"
 
 # Policy rates: step series from effective dates
 policy = policy_rows(RB, json.loads(LEDGER.read_text(encoding="utf-8")) if LEDGER.exists() else [])
@@ -205,7 +248,7 @@ for k, nm, ten in [("gsec10", "10-year G-Sec yield, month-end SGL trades", 10), 
             notes=f"Yield for {ten}-year residual maturity from RBI's SGL transaction data.", data=RB[k])
 if RB.get("gsec10_weekly"):
     add(id="gsec10_w", name="10-year G-Sec FBIL par yield (weekly)", group="Rates & yields", unit="% p.a.", freq="Weekly",
-        base="", source="RBI – Weekly Statistical Supplement, Table 4 'Ratios and Rates'", source_url=WSS_URL,
+        base="", source="RBI – Weekly Statistical Supplement, Table 5 'Ratios and Rates'", source_url=WSS_RATES_URL,
         notes="Benchmark 10-year yield as reported in WSS (FBIL).", data=RB["gsec10_weekly"])
 
 fxw = list(RB.get("forex_w", [])) + list(RB.get("forex_w_wss", []))
@@ -275,7 +318,7 @@ for key, sid, nm, unit, note in [
         ("tb91_weekly", "tb91_w", "91-day T-bill primary yield (weekly)", "%", "Cut-off yield in the week's auction; gaps where no auction.")]:
     if RB.get(key):
         add(id=sid, name=nm, group="External" if sid.startswith("usd") else "Rates & yields", unit=unit, freq="Weekly",
-            base="", source="RBI – Weekly Statistical Supplement, Table 5 'Ratios and Rates'", source_url=WSS_URL,
+            base="", source="RBI – Weekly Statistical Supplement, Table 5 'Ratios and Rates'", source_url=WSS_RATES_URL,
             notes=note, data=RB[key])
 
 home_path = os.path.join(RAW, "rbi_home.json")
@@ -288,10 +331,6 @@ except (OSError, ValueError):
     previous = {}
 
 # ---------------- Funding conditions and new-business pricing (RBI press releases) ----------------
-MMO_URL = "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Money Market Operations, daily)"
-LDR_URL = "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx (Lending and Deposit Rates of SCBs, monthly)"
-
-
 def _jsonl(name):
     path = os.path.join(RAW, name)
     if not os.path.exists(path):
@@ -300,14 +339,20 @@ def _jsonl(name):
         return [json.loads(line) for line in f if line.strip()]
 
 
+def latest_release_url(records):
+    prids = [record["prid"] for record in records if type(record.get("prid")) is int]
+    return f"{RBI_RELEASE_URL}?prid={max(prids)}" if prids else RBI_RELEASE_URL
+
+
 REPO_STEPS = steps["repo"] if policy else []
-MMO = resolve_mmo(_jsonl("rbi_mmo.jsonl"))
+mmo_releases = _jsonl("rbi_mmo.jsonl")
+MMO = resolve_mmo(mmo_releases)
 funding_repo = spread_verification(REPO_STEPS, HOME, previous)
 cutoff = funding_repo["cutoff"]
 pending = bool(funding_repo["mismatch"]) or any(d >= cutoff and r.get("call_rate") is not None for d, r in MMO.items())
 funding_repo["pending_from"] = cutoff if pending else None
 if MMO:
-    mmo_meta = dict(group="Funding", freq="Daily", base="", source_url=MMO_URL,
+    mmo_meta = dict(group="Funding", freq="Daily", base="", source_url=latest_release_url(mmo_releases),
                     source="RBI press release 'Money Market Operations as on <date>'")
     add(id="mmo_call", name="Call money rate, weighted average (daily)", unit="%", data=[
         (d, r["call_rate"]) for d, r in sorted(MMO.items()) if r.get("call_rate") is not None],
@@ -327,9 +372,11 @@ if MMO:
     add(id="mmo_call_spread_5d", name="Call money rate minus repo rate, 5-trading-day average", unit="bp", keep_empty=pending,
         data=trailing_mean_obs(spread, 5), notes="Average of the latest five trading days.", **mmo_meta)
 
-LDR = resolve_lending(_jsonl("rbi_lending.jsonl"))
+lending_releases = _jsonl("rbi_lending.jsonl")
+LDR = resolve_lending(lending_releases)
 if LDR:
-    ldr_meta = dict(group="Pricing", freq="Monthly", base="", unit="%", source_url=LDR_URL,
+    lending_url = latest_release_url(lending_releases)
+    ldr_meta = dict(group="Pricing", freq="Monthly", base="", unit="%", source_url=lending_url,
                     source="RBI press release 'Lending and Deposit Rates of Scheduled Commercial Banks' (highlights)")
     for sid, nm, note in [
             ("walr_fresh", "Weighted average lending rate, fresh rupee loans", "WALR on loans sanctioned in the month."),
@@ -342,7 +389,7 @@ if LDR:
                 notes=note + " Scheduled commercial banks excluding RRBs and small finance banks.", **ldr_meta)
     if LDR.get("walr_fresh") and LDR.get("wadtdr_fresh"):
         add(id="pricing_gap_fresh", name="Market pricing indicator: fresh loan rate minus fresh deposit rate",
-            group="Pricing", unit="pp", freq="Monthly", base="", source_url=LDR_URL,
+            group="Pricing", unit="pp", freq="Monthly", base="", source_url=lending_url,
             source="Derived from RBI lending and deposit rates (fresh WALR minus fresh WADTDR)",
             data=pricing_gap(LDR["walr_fresh"], LDR["wadtdr_fresh"]),
             notes="A market-wide pricing indicator, not a bank's margin: loan mix, funding mix and tenor all affect it.")

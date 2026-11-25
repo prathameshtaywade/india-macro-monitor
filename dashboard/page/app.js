@@ -96,21 +96,26 @@
       ['gdp_growth_q', 'Real GDP, 2022-23 base'], ['gva_growth_q', 'Real GVA, 2022-23 base'],
       ['gdp_growth_q_old', 'Real GDP, old 2011-12 base', { muted: true, dash: true, old: true }]] },
     cpi: { unit: '%', zero: true, band: [2, 6], ref: 4, refLabel: '4% target', aria: 'Line chart of CPI inflation with the 2 to 6 percent band', series: [
-      ['cpi_infl_old', 'Headline, 2012 base', { muted: true, old: true }], ['cpi_infl_combined', 'Headline, 2024 base'],
-      ['cfpi_old', 'Food (CFPI), 2012 base', { muted: true, dash: true, old: true }], ['cpi_food', 'Food & beverages, 2024 base', { dash: true }]] },
+      ['cpi_infl_old', 'Headline, 2012 base', { muted: true, old: true }], ['cpi_infl_combined', 'Headline, 2024 base']] },
+    food: { unit: '%', zero: true, aria: 'Line chart of food inflation', series: [
+      ['cpi_food', 'Food & beverages, 2024 base'],
+      ['cfpi_old', 'Consumer Food Price Index, 2012 base', { muted: true, dash: true, old: true }]] },
     iip: { unit: '%', zero: true, aria: 'Line chart of industrial production growth', series: [
       ['iip_growth_old', 'IIP, old 2011-12 base', { muted: true, old: true }], ['iip_growth', 'IIP general, 2022-23 base'],
       ['iip_manufacturing', 'Manufacturing, 2022-23 base', { dash: true }]] },
     policy: { unit: '%', aria: 'Step chart of repo, SDF and MSF rates with the call money rate', series: [
       ['repo', 'Repo', { step: true }], ['sdf', 'SDF', { step: true }], ['msf', 'MSF', { step: true }],
       ['call_w', 'Call money (weekly)', { dash: true }]] },
-    yields: { unit: '%', aria: 'Line chart of government bond yields', series: [
-      ['gsec10', '10-year, month-end SGL trades'], ['gsec10_w', '10-year FBIL par yield, weekly'], ['gsec5', '5-year, month-end SGL trades'],
-      ['gsec1', '1-year, month-end SGL trades'],
-      ['tb91_w', '91-day T-bill', { dash: true }]] },
-    forex: { unit: 'US$ bn', aria: 'Line chart of foreign exchange reserves', series: [['forex_m', 'Month-end'], ['forex_w', 'Weekly']] },
-    fx: { unit: '₹ per US$', aria: 'Line chart of rupee exchange rates', series: [
-      ['usdinr_m', 'USD/INR monthly average'], ['usdinr_w', 'USD/INR weekly'], ['eurinr_m', 'EUR/INR monthly average', { muted: true }]] },
+    yields: { unit: '%', aria: 'Line chart of weekly government yields', series: [
+      ['gsec10_w', '10-year FBIL par yield'], ['tb91_w', '91-day T-bill auction cut-off', { dash: true }]] },
+    'yields-history': { unit: '%', aria: 'Line chart of historical month-end traded yields', series: [
+      ['gsec10', '10-year'], ['gsec5', '5-year'], ['gsec1', '1-year']] },
+    forex: { unit: 'US$ bn', aria: 'Line chart of foreign exchange reserves', series: [
+      ['forex_w', 'Weekly'], ['forex_m', 'Month-end history', { muted: true, dash: true }]] },
+    fx: { unit: '₹ per US$', aria: 'Line chart of rupees per US dollar', series: [
+      ['usdinr_w', 'USD/INR, week-end reference rate'], ['usdinr_m', 'USD/INR, monthly average', { muted: true, dash: true }]] },
+    'fx-eur': { unit: '₹ per €', aria: 'Line chart of rupees per euro', series: [
+      ['eurinr_m', 'EUR/INR, monthly average']] },
     brief: { unit: 'pp', zero: true, months: 12, dots: true, shade: REPORTING_MIX,
       aria: 'Line chart of credit growth minus deposit growth over the last 12 months, latest month and 3-month average', series: [
       ['scb_gap', 'Latest month'], ['scb_gap_3m', '3-month average']] },
@@ -131,6 +136,46 @@
     return { unit: c.unit, aria: 'Line chart of ' + c.name, series: [[c.id, c.name, { step: /^Event/.test(c.freq) }]] };
   }
 
+  const ARCHIVE_SERIES = new Set(['gsec10', 'gsec5', 'gsec1', 'forex_m', 'usdinr_m', 'eurinr_m']);
+  const WSS_SERIES = new Set(['forex_w', 'gsec10_w', 'usdinr_w', 'call_w', 'tb91_w']);
+  const PRICING_SERIES = new Set(['walr_fresh', 'walr_out', 'wadtdr_fresh', 'wadtdr_out', 'pricing_gap_fresh', 'mclr_1y_median']);
+  const BANK_SERIES = new Set(['scb_credit', 'scb_dep', 'scb_credit_yoy', 'scb_dep_yoy', 'scb_gap', 'scb_gap_3m']);
+  const CADENCE_DAYS = { Daily: 4, Weekly: 10, Monthly: 45, Quarterly: 110, 'Annual (FY)': 410 };
+  const DAY_MS = 864e5;
+
+  function sourceDueDate(id, point) {
+    const year = point.d.getUTCFullYear(), month = point.d.getUTCMonth();
+    const dayOfMonth = (offset, day) => new Date(Date.UTC(year, month + offset, day));
+    // Allow the next expected release plus a few days for holidays and ingestion.
+    if (id === 'gdp_growth_q' || id === 'gva_growth_q') return dayOfMonth(7, 8);
+    if (id.startsWith('cpi_') && id !== 'cpi_infl_old') return dayOfMonth(2, 16);
+    if (id.startsWith('iip_') && id !== 'iip_growth_old') return dayOfMonth(3, 5);
+    if (id === 'mclr_1y_median') return dayOfMonth(2, 6);
+    if (PRICING_SERIES.has(id) || BANK_SERIES.has(id)) return dayOfMonth(3, 6);
+    if (WSS_SERIES.has(id)) return new Date(+point.d + 17 * DAY_MS);
+    if (id === 'mmo_net_liq' || id === 'mmo_call' || id === 'mmo_overnight') return new Date(+point.d + 7 * DAY_MS);
+    return null;
+  }
+
+  function sourceStatus(id, point) {
+    if (ARCHIVE_SERIES.has(id)) return 'Historical series';
+    const due = point && sourceDueDate(id, point);
+    return due && parse(dashboardDay) >= due ? 'Past expected update window' : '';
+  }
+
+  const SOURCE_LABELS = {
+    gdp_growth_q: 'GDP', gva_growth_q: 'GVA', cpi_infl_combined: 'headline CPI', iip_growth: 'IIP',
+    scb_gap: 'bank credit and deposits', mmo_net_liq: 'RBI liquidity', mmo_call: 'daily call money',
+    walr_fresh: 'fresh lending rates', wadtdr_fresh: 'fresh deposit rates', gsec10_w: 'FBIL 10-year yield',
+    forex_w: 'weekly reserves', usdinr_w: 'weekly USD/INR',
+  };
+  dash.draw('freshness', (el) => {
+    const I = index();
+    const labels = (el.dataset.series || '').split(' ').filter((id) =>
+      sourceStatus(id, I?.m.get(id)?.at(-1)) === 'Past expected update window').map((id) => SOURCE_LABELS[id]);
+    el.textContent = labels.length ? 'Past expected update window: ' + labels.join(', ') + '.' : '';
+  });
+
   function lineChart(el, cfg) {
     const I = index();
     const o = dash.data('observations');
@@ -142,6 +187,7 @@
     const t0 = cfg.months ? d3.utcDay.offset(d3.utcMonth.offset(end, -(cfg.months - 1)), -5)
       : parse(CHART_START);
     const colors = dash.colors; let ci = 0;
+    const catalog = new Map((catalogRows() || []).map((series) => [series.id, series]));
     const S = [];
     for (const [id, name, opt = {}] of cfg.series) {
       if (opt.old && !MM.showOld) continue;            // discontinued series are opt-in
@@ -154,6 +200,7 @@
       }
       if (!pts.length) continue;
       S.push({ id, name, pts, step: !!opt.step, dash: !!opt.dash, last: a[a.length - 1],
+        cadence: CADENCE_DAYS[catalog.get(id)?.freq], status: sourceStatus(id, a.at(-1)),
         color: opt.muted ? 'var(--cds-chart-muted)' : colors[ci++ % colors.length] });
     }
     el.replaceChildren();
@@ -165,12 +212,12 @@
       it.append('i').classed('dashed', s.dash).style('background', s.color).style('border-color', s.color);
       it.append('span').text(s.name);
       it.append('b').text(fmt(s.last.v, cfg.unit, cfg.unit === 'US$ bn' ? 1 : cfg.unit === 'bp' || cfg.unit === '₹ crore' ? 0 : 2));
-      it.append('span').attr('class', 'mm-muted').text(s.last.label);
+      it.append('span').attr('class', 'mm-muted').text(s.last.label + (s.status ? ' · ' + s.status : ''));
     }
     const first = d3.min(S, (s) => s.pts[0].d);
     if (!cfg.months && first - t0 > 60 * 864e5) {
       const firstSeries = S.find((s) => s.pts[0].d.getTime() === first.getTime());
-      root.append('p').attr('class', 'mm-cap').text('Data from ' + firstSeries.pts[0].label + ' (the series starts there).');
+      root.append('p').attr('class', 'mm-cap').text('First reading shown: ' + firstSeries.pts[0].label + '.');
     }
     const W = Math.max(260, el.clientWidth), H = 240;
     const svg = root.append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`)
@@ -224,10 +271,12 @@
       // Break the line where observations are missing for much longer than the series' usual spacing,
       // so a gap in the source is not drawn as if values moved in a straight line across it.
       let drawn = s.pts;
-      if (!s.step && s.pts.length > 2) {
-        const med = d3.median(d3.pairs(s.pts), ([a, b]) => b.d - a.d) || 0;
+      if (!s.step && s.cadence) {
         drawn = [];
-        s.pts.forEach((p, i) => { if (i && med && p.d - s.pts[i - 1].d > 3 * med) drawn.push({ d: p.d, v: null }); drawn.push(p); });
+        s.pts.forEach((p, i) => {
+          if (i && p.d - s.pts[i - 1].d > s.cadence * DAY_MS) drawn.push({ d: p.d, v: null });
+          drawn.push(p);
+        });
       }
       const line = d3.line().defined((p) => p.v != null).x((p) => x(p.d)).y((p) => y(p.v))
         .curve(s.step ? d3.curveStepAfter : d3.curveLinear);
@@ -254,10 +303,12 @@
         for (const s of S) {
           const real = s.step ? s.pts.slice(0, -1) : s.pts;
           let p;
-          if (s.step) { const i = bis.right(real, dt) - 1; p = real[Math.max(0, i)]; }
+          if (s.step) { const i = bis.right(real, dt) - 1; p = real[i]; }
           else {
-            const i = bis.center(real, dt); p = real[i];
-            if (!p || Math.abs(p.d - dt) > 100 * 864e5) p = null;
+            const day = new Date(Math.round(+dt / DAY_MS) * DAY_MS);
+            p = real[bis.center(real, day)];
+            const tolerance = (s.cadence || 2) * DAY_MS / 2;
+            if (!p || day < real[0].d || day > real.at(-1).d || Math.abs(p.d - day) > tolerance) p = null;
           }
           if (p) lines.push([s, p]);
         }
@@ -282,39 +333,67 @@
     lineChart(el, key === 'explore' ? exploreCfg() : CH[key]);
   });
 
-  // ---------- GVA by sector bars ----------
-  const SECT = [['gva_agriculture', 'Agriculture'], ['gva_mining', 'Mining'], ['gva_manufacturing', 'Manufacturing'],
-    ['gva_utilities', 'Electricity, gas, water'], ['gva_construction', 'Construction'], ['gva_trade', 'Trade, hotels, transport'],
-    ['gva_financial', 'Financial & real estate'], ['gva_public', 'Public admin & other'], ['gva_growth_q', 'Total GVA']];
-  dash.draw('sectors', (el) => {
-    const I = index();
-    if (!I) { el.replaceChildren(msg(statusText(dash.data('observations').status))); return; }
-    const rows = SECT.map(([id, name]) => { const a = I.m.get(id) || []; const p = a[a.length - 1]; return p ? { id, name, v: p.v, label: p.label } : null; })
-      .filter(Boolean).sort((a, b) => b.v - a.v);
+  // ---------- aligned sector breakdowns ----------
+  const GVA_GROUPS = [
+    ['gva_primary', 'Primary', ['gva_agriculture', 'gva_mining']],
+    ['gva_secondary', 'Secondary', ['gva_manufacturing', 'gva_utilities', 'gva_construction']],
+    ['gva_services', 'Services (tertiary)', ['gva_trade', 'gva_financial', 'gva_public']],
+  ];
+  const IIP_SECTORS = ['iip_mining', 'iip_manufacturing', 'iip_electricity', 'iip_water'];
+
+  function sectorBreakdown(el, benchmark, benchmarkLabel, groups, details = []) {
+    const I = index(), catalog = catalogRows();
+    if (!I || !catalog) { el.replaceChildren(msg('Loading sector data…')); return; }
+    const anchor = I.m.get(benchmark)?.at(-1);
+    if (!anchor) { el.replaceChildren(msg('No sector data.')); return; }
+    const names = new Map(catalog.map(({ id, name }) => [id, name.replace(/^(GVA|IIP) growth – /, '')]));
+    const rowData = (id, label = names.get(id)) => ({
+      label, value: I.m.get(id)?.find((point) => +point.d === +anchor.d)?.v,
+    });
+    const overview = groups.map(([id, title]) => rowData(id, title));
+    const industries = details.map(([title, ids]) => [title, ids.map((id) => rowData(id))]);
+    const rows = overview.concat(industries.flatMap(([, rows]) => rows));
+    const values = [0, ...rows.flatMap(({ value }) => value == null ? [] : [value])];
+    const x = d3.scaleLinear().domain(d3.extent(values)).range([0, 100]);
+    // Keep the disclosure state when a resize redraws the charts.
+    const open = el.querySelector('details')?.open;
     el.replaceChildren();
-    if (!rows.length) { el.append(msg('No sector data.')); return; }
     const root = d3.select(el);
-    root.append('p').attr('class', 'mm-cap').text('Real GVA growth, y/y, ' + rows[0].label);
-    const W = Math.max(260, el.clientWidth), bh = 22, H = rows.length * bh + 10;
-    const svg = root.append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`)
-      .attr('role', 'img').attr('aria-label', 'Bar chart of GVA growth by sector in the latest quarter');
-    const lab = svg.append('g').selectAll('text').data(rows).join('text').text((d) => d.name);
-    const lw = d3.max(lab.nodes(), (n) => n.getComputedTextLength()) || 80;
-    const vlab = svg.append('g').selectAll('text').data(rows).join('text').text((d) => fmt(d.v, '%', 1));
-    const vw = d3.max(vlab.nodes(), (n) => n.getComputedTextLength()) || 30;
-    const ext = d3.extent([0, ...rows.map((d) => d.v)]);
-    const x = d3.scaleLinear().domain(ext).range([lw + 12 + (ext[0] < 0 ? vw + 6 : 0), W - vw - 8]);
-    const yy = (i) => 4 + i * bh;
-    lab.attr('x', lw).attr('y', (d, i) => yy(i) + bh / 2 - 2).attr('dy', '0.32em').attr('text-anchor', 'end')
-      .style('font-weight', (d) => (d.id === 'gva_growth_q' ? 600 : null));
-    svg.append('g').selectAll('rect').data(rows).join('rect')
-      .attr('x', (d) => x(Math.min(0, d.v))).attr('width', (d) => Math.abs(x(d.v) - x(0)))
-      .attr('y', (d, i) => yy(i) + 3).attr('height', bh - 8).attr('rx', 2)
-      .style('fill', (d) => (d.id === 'gva_growth_q' ? 'var(--color-fg)' : d.v < 0 ? 'var(--cds-chart-muted)' : dash.colors[0]));
-    vlab.attr('x', (d) => (d.v < 0 ? x(d.v) - 4 : x(d.v) + 4)).attr('y', (d, i) => yy(i) + bh / 2 - 2).attr('dy', '0.32em')
-      .attr('text-anchor', (d) => (d.v < 0 ? 'end' : 'start'));
-    svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', 0).attr('y2', H).style('stroke', 'var(--cds-chart-axis)');
-  });
+    root.append('p').attr('class', 'mm-cap').text(anchor.label + ' · Year-on-year growth');
+    root.append('p').attr('class', 'mm-benchmark').text(benchmarkLabel + ' ' + fmt(anchor.v, '%', 1));
+    const status = sourceStatus(benchmark, anchor);
+    if (status) root.append('p').attr('class', 'mm-cap').text(status);
+    if (rows.some(({ value }) => value == null)) {
+      root.append('p').attr('class', 'mm-cap').text('Some sectors have no reading for this period.');
+    }
+    function drawRows(parent, data) {
+      for (const { label, value } of data) {
+        const row = parent.append('div').attr('class', 'mm-sector-row');
+        row.append('span').text(label);
+        const track = row.append('span').attr('class', 'mm-sector-track').attr('aria-hidden', 'true');
+        track.append('i').attr('class', 'mm-sector-zero').style('left', x(0) + '%');
+        if (value != null) {
+          track.append('i').attr('class', value < 0 ? 'mm-sector-bar mm-sector-negative' : 'mm-sector-bar')
+            .style('left', x(Math.min(value, 0)) + '%').style('width', Math.abs(x(value) - x(0)) + '%');
+        }
+        row.append('b').text(value == null ? '—' : fmt(value, '%', 1));
+      }
+    }
+    drawRows(root, overview);
+    if (industries.length) {
+      const disclosure = root.append('details').attr('class', 'mm-sector-details').property('open', !!open);
+      disclosure.append('summary').text('Industry breakdown');
+      for (const [title, data] of industries) {
+        disclosure.append('h4').text(title);
+        drawRows(disclosure, data);
+      }
+    }
+  }
+
+  dash.draw('sectors', (el) => sectorBreakdown(el, 'gva_growth_q', 'Total GVA', GVA_GROUPS,
+    GVA_GROUPS.map(([, title, ids]) => [title, ids])));
+  dash.draw('iip-sectors', (el) => sectorBreakdown(el, 'iip_growth', 'General IIP',
+    IIP_SECTORS.map((id) => [id])));
 
   // ---------- KPI tiles and takeaway ----------
   // Changes are shown neutrally: a macro move is not good or bad for every bank, so tiles carry no colour judgement.
@@ -518,7 +597,9 @@
     const part = el.dataset.part;
     if (part === 'coverage') {
       const last = index()?.raw.get(c.id)?.at(-1);
+      const status = sourceStatus(c.id, index()?.m.get(c.id)?.at(-1));
       el.textContent = c.obs ? `${c.first} to ${last ? periodLabel(last) : c.last} · ${c.obs} observations` : 'No verified observations';
+      if (status) el.textContent += ' · ' + status;
     }
     else if (part === 'link') {
       el.replaceChildren();

@@ -53,7 +53,18 @@
   @media (max-width: 760px) { .mm-ex { grid-template-columns: minmax(0, 1fr); } }
   .mm-flag { border: 1px solid var(--color-warn); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); line-height: 1.5; max-width: 80ch; }
   .mm-flag b { color: var(--color-warn); }
-  [data-draw="scheduled-policy"]:empty, [data-draw="funding-status"]:empty { display: none; }
+  [data-draw="scheduled-policy"]:empty, [data-draw="funding-status"]:empty, [data-draw="freshness"]:empty { display: none; }
+  .mm-benchmark { font-size: var(--cds-font-size-body); font-weight: 600; margin: 4px 0 8px; }
+  .mm-sector-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(48px, 33%) 3.7em;
+    gap: 8px; align-items: center; padding: 4px 0; font-size: var(--cds-font-size-caption); }
+  .mm-sector-row b { text-align: right; font-variant-numeric: tabular-nums; }
+  .mm-sector-track { position: relative; display: block; min-height: 14px; border-radius: 2px; background: var(--cds-chart-grid); }
+  .mm-sector-zero { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--cds-chart-axis); }
+  .mm-sector-bar { position: absolute; top: 3px; bottom: 3px; border-radius: 2px; background: var(--c1); }
+  .mm-sector-negative { background: var(--cds-chart-muted); }
+  .mm-sector-details { margin-top: 10px; }
+  .mm-sector-details summary { cursor: pointer; font-size: var(--cds-font-size-caption); }
+  .mm-sector-details h4 { margin: 10px 0 2px; font-size: var(--cds-font-size-caption); }
   .mm-eyebrow { font-size: var(--cds-font-size-caption); letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); }
   .mm-brief { gap: var(--cds-gap-lg); }
   .mm-brief-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--cds-gap-md); }
@@ -85,7 +96,7 @@
 <div class="mm">
   <header class="mm-head" id="top">
     <h1>India Macro Monitor</h1>
-    <p class="mm-cap">Official statistics from the Ministry of Statistics and Programme Implementation (MoSPI) and the Reserve Bank of India. Data built <span data-draw="built" data-part="obs">—</span>.</p>
+    <p class="mm-cap">Official statistics from the Ministry of Statistics and Programme Implementation (MoSPI) and the Reserve Bank of India. Published series updated <span data-draw="built" data-part="obs">—</span>.</p>
   </header>
 
   <span data-draw="policy-check"></span>
@@ -98,6 +109,7 @@
   </nav>
 
   <div class="mm-panel" id="tab-brief" data-tab="brief" role="tabpanel" aria-labelledby="tabbtn-brief">
+  <p class="mm-cap" role="status" data-draw="freshness" data-series="scb_gap mmo_call mmo_net_liq walr_fresh wadtdr_fresh"></p>
   <section class="mm-card mm-brief" id="brief" aria-labelledby="brief-h">
     <div class="mm-sec-h">
       <span class="mm-eyebrow">Banking brief</span>
@@ -173,6 +185,7 @@
     <div class="mm-card" id="kpi-credit"><span class="mm-kl">Bank credit growth, y/y</span><span class="mm-kv" data-draw="kpi" data-k="scb_credit_yoy" data-part="value" data-source="latest" data-field="value" data-where="series=scb_credit_yoy">—</span><span class="mm-kc" data-draw="kpi" data-k="scb_credit_yoy" data-part="change" data-source="latest" data-field="change" data-where="series=scb_credit_yoy">—</span><span class="mm-cap">Scheduled commercial banks, <span data-draw="kpi" data-k="scb_credit_yoy" data-part="label">—</span></span></div>
     <div class="mm-card" id="kpi-inr"><span class="mm-kl">USD/INR (FBIL reference)</span><span class="mm-kv" data-draw="kpi" data-k="usdinr_w" data-part="value" data-source="latest" data-field="value" data-where="series=usdinr_w">—</span><span class="mm-kc" data-draw="kpi" data-k="usdinr_w" data-part="change" data-source="latest" data-field="change" data-where="series=usdinr_w">—</span><span class="mm-cap">Week ended <span data-draw="kpi" data-k="usdinr_w" data-part="label">—</span></span></div>
   </section>
+    <p class="mm-cap" role="status" data-draw="freshness" data-series="gdp_growth_q gva_growth_q cpi_infl_combined iip_growth gsec10_w forex_w usdinr_w"></p>
     <p class="mm-take" id="takeaway">The RBI policy repo rate is <b class="mm-num" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</b> after a <span data-draw="repo-move">—</span> on <span data-draw="kpi" data-k="repo" data-part="label">—</span>. CPI inflation was <b class="mm-num" data-draw="kpi" data-k="cpi_infl_combined" data-part="value" data-source="latest" data-field="value" data-where="series=cpi_infl_combined">—</b> in <span data-draw="kpi" data-k="cpi_infl_combined" data-part="label">—</span>, <span data-draw="vs-band">—</span>, and real GDP grew <b class="mm-num" data-draw="kpi" data-k="gdp_growth_q" data-part="value" data-source="latest" data-field="value" data-where="series=gdp_growth_q">—</b> year on year in <span data-draw="kpi" data-k="gdp_growth_q" data-part="label">—</span>.</p>
     <p class="mm-cap">Each tile shows the latest observation and its change from the one before; changes are shown neutrally, without a good or bad judgement.</p>
 
@@ -185,18 +198,24 @@
     <div class="mm-sec-h"><h2>Growth: GDP and GVA</h2><p class="mm-muted">Quarterly, year-on-year at constant prices. Quarters follow the Indian fiscal year (Q1 = April–June). The 2022-23 base series replaced the 2011-12 series in February 2026; the two are not comparable, so the old one is hidden unless you switch on discontinued series.</p></div>
     <div class="mm-grid">
       <div class="mm-card"><h3>Real GDP and GVA growth</h3><div class="mm-chart" id="ch-growth" data-draw="chart" data-chart="growth" data-source="observations"></div><p class="mm-cap">Source: MoSPI National Accounts (api.mospi.gov.in, NAS indicators 21 and 22).</p></div>
-      <div class="mm-card"><h3>GVA growth by sector, latest quarter</h3><div class="mm-chart" id="ch-sectors" data-draw="sectors" data-source="observations"></div><p class="mm-cap">Source: MoSPI National Accounts, 2022-23 base, constant prices.</p></div>
+      <div class="mm-card"><h3>Real GVA growth by sector</h3><div class="mm-chart" id="ch-sectors" data-draw="sectors" data-source="observations catalog"></div><p class="mm-cap">MoSPI National Accounts, 2022-23 base. Broad-sector growth is calculated from constant-price GVA levels.</p></div>
     </div>
   </section>
 
   <section class="mm-sec" id="prices">
-    <div class="mm-sec-h"><h2>Inflation: Consumer Price Index</h2><p class="mm-muted">All-India, combined rural and urban, year on year. The band shows RBI's 2–6% tolerance range around the 4% target. The 2024-base CPI publishes inflation from January 2026; for earlier years switch on discontinued series to see the 2012-base CPI, which ends in December 2025.</p></div>
-    <div class="mm-card"><div class="mm-chart" id="ch-cpi" data-draw="chart" data-chart="cpi" data-source="observations"></div><p class="mm-cap">Source: MoSPI CPI (getCPIIndex, base 2012; getCPIData, base 2024).</p></div>
+    <div class="mm-sec-h"><h2>Inflation: Consumer Price Index</h2><p class="mm-muted">All-India, combined rural and urban, year on year. RBI’s 2–6% tolerance range around the 4% target applies to headline CPI. The 2024-base CPI publishes inflation from January 2026; for earlier years switch on discontinued series to see the 2012-base CPI, which ends in December 2025.</p></div>
+    <div class="mm-grid">
+      <div class="mm-card"><h3>Headline CPI inflation</h3><div class="mm-chart" id="ch-cpi" data-draw="chart" data-chart="cpi" data-source="observations"></div><p class="mm-cap">Source: MoSPI headline CPI.</p></div>
+      <div class="mm-card"><h3>Food inflation</h3><div class="mm-chart" id="ch-food" data-draw="chart" data-chart="food" data-source="observations"></div><p class="mm-cap">Source: MoSPI. The old Consumer Food Price Index and current Food &amp; Beverages division cover different baskets.</p></div>
+    </div>
   </section>
 
   <section class="mm-sec" id="industry">
     <div class="mm-sec-h"><h2>Industry: Index of Industrial Production</h2><p class="mm-muted">Monthly, year on year. New series on base 2022-23 from April 2023; old 2011-12 series to March 2026. The latest month is a quick estimate and is revised.</p></div>
-    <div class="mm-card"><div class="mm-chart" id="ch-iip" data-draw="chart" data-chart="iip" data-source="observations"></div><p class="mm-cap">Source: MoSPI IIP (getIipData).</p></div>
+    <div class="mm-grid">
+      <div class="mm-card"><h3>Industrial production history</h3><div class="mm-chart" id="ch-iip" data-draw="chart" data-chart="iip" data-source="observations"></div><p class="mm-cap">Source: MoSPI IIP.</p></div>
+      <div class="mm-card"><h3>IIP growth by sector</h3><div class="mm-chart" id="ch-iip-sectors" data-draw="iip-sectors" data-source="observations catalog"></div><p class="mm-cap">Source: MoSPI IIP, all four sectors in the 2022-23 series.</p></div>
+    </div>
   </section>
 
   <section class="mm-sec" id="policy">
@@ -208,15 +227,19 @@
   </section>
 
   <section class="mm-sec" id="rates">
-    <div class="mm-sec-h"><h2>Government bond yields</h2><p class="mm-muted">Month-end yields of SGL transactions by residual maturity (RBI Handbook, to its latest edition's cut-off), the weekly FBIL 10-year par yield and the weekly 91-day T-bill auction cut-off (Weekly Statistical Supplement).</p></div>
-    <div class="mm-card"><div class="mm-chart" id="ch-yields" data-draw="chart" data-chart="yields" data-source="observations"></div><p class="mm-cap">Source: RBI Handbook of Statistics (month-end G-Sec yields); Weekly Statistical Supplement Table 5.</p></div>
+    <div class="mm-sec-h"><h2>Government bond yields</h2><p class="mm-muted">Weekly benchmark and auction yields are shown separately from the RBI Handbook’s month-end yields on actual SGL trades by residual maturity.</p></div>
+    <div class="mm-grid">
+      <div class="mm-card"><h3>Weekly benchmark and auction yields</h3><div class="mm-chart" id="ch-yields" data-draw="chart" data-chart="yields" data-source="observations"></div><p class="mm-cap">Source: RBI Weekly Statistical Supplement, Table 5.</p></div>
+      <div class="mm-card"><h3>Historical month-end traded yields</h3><div class="mm-chart" id="ch-yields-history" data-draw="chart" data-chart="yields-history" data-source="observations"></div><p class="mm-cap">Source: RBI Handbook Table 178. Coverage ends at the latest Handbook’s cut-off.</p></div>
+    </div>
   </section>
 
   <section class="mm-sec" id="external">
     <div class="mm-sec-h"><h2>Forex reserves and the rupee</h2><p class="mm-muted">Reserves are the total of foreign currency assets, gold, SDRs and the IMF reserve position. Exchange rates are RBI/FBIL reference rates in rupees per unit of foreign currency, so a rise means a weaker rupee.</p></div>
     <div class="mm-grid">
       <div class="mm-card"><h3>Foreign exchange reserves, US$ bn</h3><div class="mm-chart" id="ch-forex" data-draw="chart" data-chart="forex" data-source="observations"></div><p class="mm-cap">Source: RBI via MoSPI API (indicator 47, from 1990), Handbook Tables 210 and 215, WSS Table 2.</p></div>
-      <div class="mm-card"><h3>Rupee exchange rate</h3><div class="mm-chart" id="ch-fx" data-draw="chart" data-chart="fx" data-source="observations"></div><p class="mm-cap">Source: RBI via MoSPI API (indicator 33, from 1992), Handbook Table 205, WSS Table 5.</p></div>
+      <div class="mm-card"><h3>USD/INR, rupees per US dollar</h3><div class="mm-chart" id="ch-fx" data-draw="chart" data-chart="fx" data-source="observations"></div><p class="mm-cap">Source: RBI via MoSPI API (indicator 33, from 1992), Handbook Table 205, WSS Table 5.</p></div>
+      <div class="mm-card"><h3>EUR/INR, rupees per euro</h3><div class="mm-chart" id="ch-fx-eur" data-draw="chart" data-chart="fx-eur" data-source="observations"></div><p class="mm-cap">Source: RBI via MoSPI API (indicator 33) and RBI Handbook Table 205. Monthly averages.</p></div>
     </div>
   </section>
 
@@ -244,7 +267,7 @@
   </div>
 
   <footer class="mm-foot">
-    <p class="mm-cap">Data built <span data-draw="built" data-part="obs">—</span>. Sources, methods and known gaps: <a href="https://github.com/prathameshtaywade/india-macro-monitor#readme" target="_blank" rel="noopener">project README on GitHub</a>.</p>
+    <p class="mm-cap">Published series updated <span data-draw="built" data-part="obs">—</span>. Sources, methods and known gaps: <a href="https://github.com/prathameshtaywade/india-macro-monitor#readme" target="_blank" rel="noopener">project README on GitHub</a>.</p>
   </footer>
 </div>
 <script src="app.js"></script>
