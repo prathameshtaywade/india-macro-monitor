@@ -229,7 +229,7 @@
       const firstSeries = S.find((s) => s.pts[0].d.getTime() === first.getTime());
       root.append('p').attr('class', 'mm-cap').text('First reading shown: ' + firstSeries.pts[0].label + '.');
     }
-    const W = Math.max(260, el.clientWidth), H = 240;
+    const W = el.clientWidth || 260, H = W < 400 ? 200 : 240;
     const svg = root.append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`)
       .attr('role', 'img').attr('aria-label', cfg.aria);
     const vals = S.flatMap((s) => s.pts.map((p) => p.v));
@@ -300,42 +300,50 @@
       const lastPt = s.step ? s.pts[s.pts.length - 2] || s.pts[0] : s.pts[s.pts.length - 1];
       if (lastPt.d >= x.domain()[0]) gLines.append('circle').attr('cx', x(s.step ? end : lastPt.d)).attr('cy', y(lastPt.v)).attr('r', 3.5).style('fill', s.color);
     }
-    // tooltip
+    // Hover with a mouse or tap to keep the values visible while reading.
     const tip = root.append('div').attr('class', 'mm-tip').property('hidden', true);
     const rule = gHover.append('line').attr('y1', m.t).attr('y2', H - m.b).style('stroke', 'var(--cds-chart-axis)').style('opacity', 0);
     const bis = d3.bisector((p) => p.d);
+    function hideValues() {
+      tip.property('hidden', true);
+      rule.style('opacity', 0);
+    }
+    function showValues(ev) {
+      const [mx] = d3.pointer(ev, svg.node());
+      const dt = x.invert(mx);
+      const lines = [];
+      for (const s of S) {
+        const real = s.step ? s.pts.slice(0, -1) : s.pts;
+        let p;
+        if (s.step) { const i = bis.right(real, dt) - 1; p = real[i]; }
+        else {
+          const day = new Date(Math.round(+dt / DAY_MS) * DAY_MS);
+          p = real[bis.center(real, day)];
+          const tolerance = (s.cadence || 2) * DAY_MS / 2;
+          if (!p || day < real[0].d || day > real.at(-1).d || Math.abs(p.d - day) > tolerance) p = null;
+        }
+        if (p) lines.push([s, p]);
+      }
+      if (!lines.length) { hideValues(); return; }
+      tip.property('hidden', false).selectAll('*').remove();
+      for (const [s, p] of lines) {
+        const row = tip.append('div');
+        row.append('span').style('color', s.color).text('● ');
+        row.append('span').text(s.name + ': ');
+        row.append('b').text(fmt(p.v, cfg.unit, digits));
+        row.append('span').attr('class', 'mm-muted').text(' ' + (s.step ? 'from ' : '') + p.label);
+      }
+      rule.attr('x1', mx).attr('x2', mx).style('opacity', 1);
+      const tw = tip.node().offsetWidth, top = svg.node().offsetTop + 6;
+      const side = mx + 14 + tw <= W ? mx + 14 : mx - tw - 14;
+      tip.style('left', Math.max(0, Math.min(W - tw, side)) + 'px').style('top', top + 'px');
+    }
     svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.l - m.r).attr('height', H - m.t - m.b)
-      .style('fill', 'transparent').style('touch-action', 'pan-y')
-      .on('pointermove', (ev) => {
-        const [mx] = d3.pointer(ev, svg.node());
-        const dt = x.invert(mx);
-        const lines = [];
-        for (const s of S) {
-          const real = s.step ? s.pts.slice(0, -1) : s.pts;
-          let p;
-          if (s.step) { const i = bis.right(real, dt) - 1; p = real[i]; }
-          else {
-            const day = new Date(Math.round(+dt / DAY_MS) * DAY_MS);
-            p = real[bis.center(real, day)];
-            const tolerance = (s.cadence || 2) * DAY_MS / 2;
-            if (!p || day < real[0].d || day > real.at(-1).d || Math.abs(p.d - day) > tolerance) p = null;
-          }
-          if (p) lines.push([s, p]);
-        }
-        if (!lines.length) { tip.property('hidden', true); rule.style('opacity', 0); return; }
-        tip.property('hidden', false).selectAll('*').remove();
-        for (const [s, p] of lines) {
-          const row = tip.append('div');
-          row.append('span').style('color', s.color).text('● ');
-          row.append('span').text(s.name + ': ');
-          row.append('b').text(fmt(p.v, cfg.unit, digits));
-          row.append('span').attr('class', 'mm-muted').text(' ' + (s.step ? 'from ' : '') + p.label);
-        }
-        rule.attr('x1', mx).attr('x2', mx).style('opacity', 1);
-        const tw = tip.node().offsetWidth, top = svg.node().offsetTop + 6;
-        tip.style('left', (mx + 14 + tw > W ? Math.max(0, mx - tw - 14) : mx + 14) + 'px').style('top', top + 'px');
-      })
-      .on('pointerleave', () => { tip.property('hidden', true); rule.style('opacity', 0); });
+      .attr('class', 'mm-plot-target').style('fill', 'transparent').style('touch-action', 'pan-y pinch-zoom')
+      .on('pointermove', (ev) => { if (ev.pointerType !== 'touch') showValues(ev); })
+      .on('pointerleave', (ev) => { if (ev.pointerType !== 'touch') hideValues(); })
+      .on('pointercancel', hideValues)
+      .on('click', showValues);
   }
 
   dash.draw('chart', (el) => {
@@ -767,14 +775,21 @@
     const target = id ? document.getElementById(id) : null;
     const panel = target && target.closest('[data-tab]');
     showTab(panel ? panel.dataset.tab : 'overview');
-    if (panel) requestAnimationFrame(() => target.scrollIntoView());
+    if (panel) {
+      // Charts above the target can change its position during the first render.
+      Promise.resolve(dash.ready).then(() => requestAnimationFrame(() => {
+        if (location.hash === hash) target.scrollIntoView();
+      }));
+    }
   }
   const tabButtons = [...document.querySelectorAll('[data-tab-btn]')];
   tabButtons.forEach((b, i) => {
     b.addEventListener('click', () => {
+      const navIsSticky = b.parentElement.getBoundingClientRect().top <= 0;
       showTab(b.dataset.tabBtn);
       if (dash.setLink) dash.setLink(b.dataset.tabBtn);
       try { if (location.hash !== '#' + b.dataset.tabBtn) history.replaceState(null, '', '#' + b.dataset.tabBtn); } catch (e) { /* sandboxed */ }
+      if (navIsSticky) document.getElementById(b.getAttribute('aria-controls')).scrollIntoView();
     });
     b.addEventListener('keydown', (e) => {
       if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;

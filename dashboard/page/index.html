@@ -1,7 +1,7 @@
 <meta name="dash-one-writer">
 <meta name="dash-form" content="dashboard">
 <style>
-  .mm { display: grid; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); }
+  .mm { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); }
   .mm h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
   .mm h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; text-wrap: balance; }
   .mm h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; }
@@ -11,7 +11,7 @@
   .mm-muted, .mm-cap { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
   .mm-num { font-variant-numeric: tabular-nums; }
   .mm-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 178px), 1fr)); gap: var(--cds-gap-md); }
-  .mm-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; display: grid; gap: var(--cds-gap-xs); align-content: start; }
+  .mm-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--cds-gap-xs); align-content: start; }
   .mm-kl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); letter-spacing: .02em; }
   .mm-kv { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.15; }
   .mm-kc { font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
@@ -22,7 +22,9 @@
   .mm-tab { font: inherit; font-weight: var(--cds-font-weight-medium); padding: 10px 16px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--color-fg-muted); cursor: pointer; margin-bottom: -1px; }
   .mm-tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); }
   .mm-tab:focus-visible { outline: 2px solid var(--color-fg); outline-offset: -2px; }
-  .mm-panel { display: grid; gap: var(--cds-gap-xl); }
+  .mm-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--cds-gap-xl); }
+  .mm [data-tab], .mm [data-tab] [id] { scroll-margin-top: 64px; }
+  .mm-jumps, .mm-touch-note, .mm-rates-note { display: none; }
   .mm-overview { gap: var(--cds-gap-lg); }
   .mm-overview h2, .mm-state-title { font-size: 23px; }
   .mm-overview .mm-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -38,11 +40,6 @@
   .mm-regional { display: grid; gap: 10px; }
   .mm-regional-group h4 { margin: 10px 0 2px; font-size: var(--cds-font-size-caption); }
   .mm-regional-row { grid-template-columns: minmax(0, 1fr) minmax(52px, 35%) 5em; }
-  @media (max-width: 650px) {
-    .mm-overview .mm-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .mm-release-grid { grid-template-columns: minmax(0, 1fr); }
-    .mm-tab { padding-inline: 10px; }
-  }
   .mm-foot { border-top: 1px solid var(--color-border-line); padding-top: var(--cds-pad-md); }
   .mm-foot a { color: inherit; }
   .mm-seg { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); align-items: center; }
@@ -50,7 +47,7 @@
   .mm-chip { font: inherit; font-size: var(--cds-font-size-caption); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-bg); color: var(--color-fg); cursor: pointer; }
   .mm-chip[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
   .mm-chip:focus-visible, .mm-row-btn:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
-  .mm-sec { display: grid; gap: var(--cds-gap-md); }
+  .mm-sec { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--cds-gap-md); }
   .mm-sec-h { display: grid; gap: var(--cds-gap-xs); max-width: 80ch; }
   .mm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: var(--cds-gap-md); }
   .mm-chart { position: relative; min-height: 300px; }
@@ -63,7 +60,7 @@
   .mm-lg { display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
   .mm-lg i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
   .mm-lg i.dashed { height: 0; border-top: 2px dashed; background: none !important; }
-  .mm-tip { position: absolute; pointer-events: none; z-index: 2; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: var(--cds-radius); padding: 8px 10px; font-size: var(--cds-font-size-caption); display: grid; gap: 2px; min-width: 150px; max-width: 260px; font-variant-numeric: tabular-nums; }
+  .mm-tip { position: absolute; pointer-events: none; z-index: 2; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: var(--cds-radius); padding: 8px 10px; font-size: var(--cds-font-size-caption); display: grid; gap: 2px; box-sizing: border-box; min-width: min(150px, 100%); max-width: min(260px, 100%); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
   .mm-tip b { font-weight: var(--cds-font-weight-medium); }
   .mm-tw { overflow-x: auto; }
   .mm table { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
@@ -111,7 +108,39 @@
   .mm-notes { display: grid; gap: var(--cds-gap-md); margin-top: var(--cds-gap-md); max-width: 80ch; line-height: 1.55; }
   .mm-notes ul, .mm-notes ol { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
   .mm code { font-size: .92em; }
-  .mm .dash-select { max-width: 100%; }
+  .mm .dash-select { min-width: 0; max-width: 100%; }
+  @media (hover: none), (max-width: 650px) {
+    .mm-touch-note { display: block; }
+    .mm .dash-select { min-height: 44px; font-size: 16px; }
+    .mm-check, .mm-row-btn { min-height: 44px; box-sizing: border-box; }
+    .mm details { padding-block: 0; }
+    .mm details[open] { padding-bottom: var(--cds-pad-md); }
+    .mm details summary { box-sizing: border-box; min-height: 44px; padding-block: 12px; }
+  }
+  @media (max-width: 650px) {
+    .mm, .mm-panel { gap: var(--cds-gap-lg); }
+    .mm-card, .mm-tile { padding: var(--cds-pad-md); }
+    .mm-overview .mm-kpis, .mm-stats, .mm-state-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .mm-release-grid { grid-template-columns: minmax(0, 1fr); }
+    .mm-state-controls { display: grid; }
+    .mm-state-controls label { grid-template-columns: minmax(0, 1fr); min-width: 0; }
+    .mm-state-controls label:last-child { grid-column: 1 / -1; }
+    .mm-seg .dash-select { width: 100%; }
+    .mm-tabs { flex-wrap: nowrap; gap: 0; overflow-x: auto; }
+    .mm-tab { flex: 1 0 auto; min-height: 44px; padding-inline: 4px; margin-bottom: 0; font-size: clamp(12px, 3.5vw, 14px); }
+    .mm-jumps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--cds-gap-xs); }
+    .mm-jumps a { display: grid; place-items: center; min-height: 44px; padding: 2px 4px; box-sizing: border-box;
+      border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); color: inherit;
+      font-size: var(--cds-font-size-caption); text-align: center; text-decoration: none; }
+    .mm-jumps a:focus-visible, .mm-tw:focus-visible { outline: 2px solid var(--color-fg); outline-offset: -2px; }
+    .mm-chart { min-height: 0; }
+    .mm-lg { max-width: 100%; flex-wrap: wrap; }
+    .mm-lg i { flex-shrink: 0; }
+  }
+  @media (max-width: 420px) {
+    .mm-rates-note { display: block; }
+    #current-rates table { min-width: 364px; }
+  }
   @media print { .mm-tabs { display: none; } .mm-panel[hidden] { display: grid !important; } .mm-panel + .mm-panel { break-before: page; } }
 </style>
 
@@ -153,9 +182,21 @@
   </div>
 
   <div class="mm-panel" id="tab-macro" data-tab="macro" role="tabpanel" aria-labelledby="tabbtn-macro" hidden>
+    <nav class="mm-jumps" aria-label="Economy sections">
+      <a href="#growth">GDP and GVA</a>
+      <a href="#demand">Spending</a>
+      <a href="#jobs">Jobs</a>
+      <a href="#prices">Inflation</a>
+      <a href="#industry">Industry</a>
+      <a href="#policy">Monetary policy</a>
+      <a href="#rates">Bond yields</a>
+      <a href="#external">Forex</a>
+      <a href="#current-rates">RBI rate table</a>
+    </nav>
     <div class="mm-bar" id="macro-controls">
       <p class="mm-muted">Growth rates and discontinued GDP and IIP series are available in the Explorer.</p>
       <label class="mm-chip mm-check" for="show-old"><input type="checkbox" id="show-old"> Show discontinued CPI series</label>
+      <p class="mm-cap mm-touch-note">Tap a chart to see values.</p>
     </div>
 
   <section class="mm-sec" id="growth">
@@ -222,7 +263,8 @@
     <div class="mm-card">
       <h2 id="current-rates-heading">RBI current rates</h2>
       <p class="mm-cap">From the "Current Rates" box on rbi.org.in, fetched <span data-draw="built" data-part="snap">—</span>.</p>
-      <div class="mm-tw"><table data-source="snapshot" data-row-key="item"><thead><tr><th data-field="group">Group</th><th data-field="item">Item</th><th class="r" data-field="value">Value</th><th data-field="as_of">As of</th></tr></thead><tbody data-draw="snap"></tbody></table></div>
+      <p class="mm-cap mm-rates-note">Swipe the table sideways for all columns.</p>
+      <div class="mm-tw" role="region" aria-label="RBI rates table" tabindex="0"><table data-source="snapshot" data-row-key="item"><thead><tr><th data-field="group">Group</th><th data-field="item">Item</th><th class="r" data-field="value">Value</th><th data-field="as_of">As of</th></tr></thead><tbody data-draw="snap"></tbody></table></div>
     </div>
   </section>
   </div>

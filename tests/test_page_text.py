@@ -59,7 +59,10 @@ class FixedPageText(unittest.TestCase):
         economy = h[h.index('data-tab="macro"'):h.index('data-tab="states"')]
         for part in ('id="growth"', 'id="demand"', 'id="jobs"'):
             self.assertIn(part, economy)
-        self.assertEqual(re.findall(r'<section class="mm-sec" id="([^"]+)"', economy)[-1], "current-rates")
+        economy_sections = re.findall(r'<section class="mm-sec" id="([^"]+)"', economy)
+        self.assertEqual(economy_sections[-1], "current-rates")
+        jump_nav = economy.split('<nav class="mm-jumps"', 1)[1].split("</nav>", 1)[0]
+        self.assertEqual(re.findall(r'href="#([^"]+)"', jump_nav), economy_sections)
         brief = h[h.index('data-tab="brief"'):h.index('data-tab="explore"')]
         for part in ('id="brief"', 'id="brief-funding"', 'id="brief-pricing"', 'id="banking"', 'id="funding"'):
             self.assertIn(part, brief)
