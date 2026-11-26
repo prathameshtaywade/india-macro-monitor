@@ -21,7 +21,7 @@ open(os.path.join(SITE, "index.html"), "w", encoding="utf-8").write(tpl.replace(
 
 shutil.copy(os.path.join(ROOT, "dashboard", "page", "app.js"), SITE)
 shutil.copy(os.path.join(ROOT, "web", "dash-shim.js"), SITE)
-for f in ("observations.json", "catalog.json", "snapshot.json"):
+for f in ("observations.json", "catalog.json", "snapshot.json", "regions.json"):
     shutil.copy(os.path.join(ROOT, "dashboard", f), os.path.join(SITE, "data", f))
 open(os.path.join(SITE, ".nojekyll"), "w").close()
 print("site/ built:", sorted(os.listdir(SITE)))

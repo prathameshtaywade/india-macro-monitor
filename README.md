@@ -45,31 +45,19 @@ a browser, and d3 in the dashboard.
 
 ## Page layout
 
-Two tabs, each with its own link (`#brief`, `#macro`); a link to any chart opens the tab that holds it.
-Every history chart starts in **April 2023** on one shared timeline; older data stays in the files.
-
-1. **Banking brief** (opens by default)
-   - **Bank credit and deposit growth:** the latest credit-minus-deposit gap and its 3-month average with equal
-     prominence, a sentence generated from the data, a 12-month chart (Dec 2025–Nov 2026 shaded: those months compare
-     a month-end with the reporting Friday a year earlier), and the incremental credit–deposit ratio, financial year
-     to date, beside the same point last year. The panel says the gap is not a cash shortfall.
-   - **Funding conditions** (daily): call money rate minus the repo rate in force, its 5-trading-day average, and RBI
-     net liquidity (row F), shown as an amount plus "net absorption/injection".
-   - **Pricing of new business** (monthly): fresh-loan WALR, fresh term-deposit WADTDR, their difference labelled a
-     market pricing indicator, the 1-year median MCLR dated by its own month, and outstanding-book rates.
-   - **History:** bank credit and deposit growth, call spread, net liquidity, lending and deposit rates.
-2. **Macro summary** (starts with the tiles)
-   - Eight tiles with neutral changes (no good/bad colour), then a sentence on repo, CPI against the 2–6% band, and GDP.
-   - The main GDP and GVA chart shows real levels in ₹ lakh crore. The GVA breakdown uses one quarter for the total,
-     the three broad sectors, and the eight industries. Industry levels reconcile to total GVA within source rounding.
-   - The IIP headline and charts show index levels, with General IIP and all four sectors. The Series Explorer
-     retains growth rates and discontinued GDP and IIP series.
-   - The CPI tolerance band applies to the headline chart. Food inflation has its own chart. Old-base CPI is opt-in.
-   - Weekly benchmark yields and historical traded yields have separate charts, as do USD/INR and EUR/INR.
-     Period labels and expected update windows distinguish live feeds from historical Handbook series.
-   - Series explorer for any series, including those without a chart of their own.
-3. **Footer:** when published series last changed and a link to this README for sources, methods and known gaps (the page itself no
-   longer carries the catalogue table or the methods section).
+- **Overview** opens with six headline indicators and recent changes in unemployment, inflation and industrial
+  production. Official release links and dates appear when the reading matches the period in
+  `data/raw/overview_releases.json`.
+- **Economy** shows GDP and GVA levels, real household consumption and fixed investment, national jobs data,
+  CPI, industrial production, policy rates, bond yields and exchange rates. The RBI current-rates table is
+  at the bottom. The CPI tolerance band applies to headline inflation. The monthly jobs charts use
+  all-India PLFS estimates for people aged 15+ in Current Weekly Status.
+- **States** compares two states or union territories on rural and urban household spending and the latest
+  available month of state headline CPI. Spending is nominal monthly per-person expenditure, without
+  imputation. Use the survey-round selector to switch HCES periods.
+- **Banking** retains credit and deposit growth, the incremental credit–deposit ratio, funding conditions,
+  lending and deposit pricing, and their histories.
+- **Explorer** gives access to the underlying national series, including growth rates and discontinued series.
 
 Fixed page text may not mention a month or year unless it is a listed permanent fact (`tests/test_page_text.py`);
 anything that describes the current situation is drawn from the data.

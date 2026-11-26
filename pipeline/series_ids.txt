@@ -29,6 +29,14 @@ gva_financial
 gva_public
 gdp_level_q
 gdp_growth_a
+pfce_real_q
+gfcf_real_q
+plfs_ur
+plfs_ur_rural
+plfs_ur_urban
+plfs_lfpr
+plfs_lfpr_female
+plfs_wpr
 cpi_infl_combined
 cpi_index
 cpi_infl_rural

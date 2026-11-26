@@ -1,0 +1,12 @@
+{
+  "releases": [
+    {"series": "plfs_ur", "period": "2026-10", "published": "2026-11-16", "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2336905&lang=1&reg=3"},
+    {"series": "cpi_infl_combined", "period": "2026-10", "published": "2026-11-12", "url": "https://www.mospi.gov.in/uploads/release_calendar/1794480152014_Press_Release_of_CPI_for_October_2026_.pdf"},
+    {"series": "iip_index", "period": "2026-09", "published": "2026-10-28", "url": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2329475&lang=1&reg=3"}
+  ],
+  "plfs_backfill": {
+    "period": "2026-03",
+    "url": "https://www.mospi.gov.in/uploads/publications_reports/publications_reports1784110855014_e0b17a74-27a0-472f-821a-c09813e0cc42_MB_June_2026.pdf",
+    "values": {"plfs_ur": 5.1, "plfs_ur_rural": 4.3, "plfs_ur_urban": 6.8, "plfs_lfpr": 55.4, "plfs_lfpr_female": 34.4, "plfs_wpr": 52.6}
+  }
+}

@@ -8,7 +8,7 @@ Spec/docs  : https://github.com/nso-india/esankhyiki-mcp  (swagger/*.yaml, defin
 Writes raw JSON pages to data/raw/mospi/<name>.json. Standard library only.
 Usage: python3 pipeline/fetch_mospi.py
 """
-import json, os, ssl, sys, time, urllib.parse, urllib.request
+import calendar, json, os, ssl, sys, time, urllib.parse, urllib.request
 
 
 def _ssl_context():
@@ -34,6 +34,8 @@ QUERIES = {
     # NAS accepts one indicator_code per call (comma lists are rejected)
     "nas_q_2022_1": ("/api/nas/getNASData", dict(base_year="2022-23", series="Current", frequency_code="Quarterly", indicator_code="1")),
     "nas_q_2022_5": ("/api/nas/getNASData", dict(base_year="2022-23", series="Current", frequency_code="Quarterly", indicator_code="5")),
+    "nas_q_2022_9": ("/api/nas/getNASData", dict(base_year="2022-23", series="Current", frequency_code="Quarterly", indicator_code="9")),
+    "nas_q_2022_10": ("/api/nas/getNASData", dict(base_year="2022-23", series="Current", frequency_code="Quarterly", indicator_code="10")),
     "nas_q_2022_21": ("/api/nas/getNASData", dict(base_year="2022-23", series="Current", frequency_code="Quarterly", indicator_code="21")),
     "nas_q_2022_22": ("/api/nas/getNASData", dict(base_year="2022-23", series="Current", frequency_code="Quarterly", indicator_code="22")),
     "nas_a_2022_1": ("/api/nas/getNASData", dict(base_year="2022-23", series="Current", frequency_code="Annually", indicator_code="1")),
@@ -46,6 +48,7 @@ QUERIES = {
     # ---- CPI ----
     # New series (base 2024=100), Jan 2025 onwards; division 0 = General, 1 = Food & beverages
     "cpi_2024_gen": ("/api/cpi/getCPIData", dict(base_year="2024", series="Current", state_code="1", division_code="0")),
+    "cpi_2024_states": ("/api/cpi/getCPIData", dict(base_year="2024", series="Current", division_code="0")),
     "cpi_2024_food": ("/api/cpi/getCPIData", dict(base_year="2024", series="Current", state_code="1", division_code="1")),
     # Old series (base 2012=100), All-India (99); General + Consumer Food Price
     "cpi_2012": ("/api/cpi/getCPIIndex", dict(base_year="2012", series="Current", state_code="99")),
@@ -53,6 +56,11 @@ QUERIES = {
     "iip_2022": ("/api/iip/getIipData", dict(base_year="2022-23", frequency="Monthly", type="General")),
     "iip_2022_sect": ("/api/iip/getIipData", dict(base_year="2022-23", frequency="Monthly", type="Sectoral")),
     "iip_2011": ("/api/iip/getIipData", dict(base_year="2011-12", frequency="Monthly", type="General")),
+    # ---- Monthly PLFS (all India, 15+, Current Weekly Status) and HCES ----
+    "plfs_unemployment": ("/api/plfs/getData", dict(indicator_code="3", frequency_code="3", state_code="99", age_code="1", gender_code="3", sector_code="1,2,3")),
+    "plfs_participation": ("/api/plfs/getData", dict(indicator_code="1", frequency_code="3", state_code="99", age_code="1", gender_code="2,3", sector_code="3")),
+    "plfs_employment": ("/api/plfs/getData", dict(indicator_code="2", frequency_code="3", state_code="99", age_code="1", gender_code="3", sector_code="3")),
+    "hces_mpce": ("/api/hces/getHcesRecords", dict(indicator_code="1", imputation_type_code="1")),
     # ---- RBI tables re-published on the MoSPI API ----
     "rbi_forex_monthly": ("/api/rbi/getRbiRecords", dict(sub_indicator_code="47")),
     "rbi_fx_monthly": ("/api/rbi/getRbiRecords", dict(sub_indicator_code="33")),
@@ -127,6 +135,13 @@ def main(names=None, out_dir=None, getter=None):
         if names and name not in names:
             continue
         try:
+            if name == "cpi_2024_states":
+                with open(os.path.join(out_dir, "cpi_2024_gen.json"), encoding="utf-8") as f:
+                    headline = json.load(f)["rows"]
+                months = {month: i for i, month in enumerate(calendar.month_name)}
+                newest = max((r for r in headline if r["sector"] == "Combined" and r["inflation"] not in (None, "", "-")),
+                             key=lambda r: (int(r["year"]), months[r["month"]]))
+                params = dict(params, year=newest["year"], month=newest["month"])
             rows = fetch_all(ep, params, limit=100 if ep.endswith("getCPIData") else 200, getter=getter)
             if not rows:
                 raise ValueError("no rows returned")
