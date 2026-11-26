@@ -1,7 +1,8 @@
 // Minimal stand-in for the Claude dashboard runtime (`dash`), so dashboard/page/app.js runs on a plain website.
 // Implements only what app.js uses: data, calc, draw, colors.
 (function () {
-  const FILES = { observations: 'data/observations.json', catalog: 'data/catalog.json', snapshot: 'data/snapshot.json' };
+  const FILES = { observations: 'data/observations.json', catalog: 'data/catalog.json',
+    snapshot: 'data/snapshot.json', regions: 'data/regions.json' };
   const state = {};
   const calcs = {};
   const calcCache = {};
@@ -43,9 +44,17 @@
     requestAnimationFrame(() => { queued = false; runAll(); });
   }
 
+  const ready = Promise.all(Object.entries(FILES).map(([id, url]) =>
+    fetch(url, { cache: 'no-cache' })
+      .then((r) => { if (!r.ok) throw new Error(r.status + ' ' + url); return r.json(); })
+      .then((j) => { state[id] = { status: 'ok', data: Array.isArray(j) ? j : j.rows || [], meta: j.meta || [] }; })
+      .catch((e) => { console.error(e); state[id] = { status: 'error', data: [], meta: [], message: String(e) }; })
+      .finally(schedule)
+  ));
+
   window.dash = {
     colors: ['var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--c4)', 'var(--c5)'],
-    data,
+    data, ready,
     calc(id, spec) { calcs[id] = spec; },
     loader() {},
     onData(fn) { fn(); },
@@ -55,14 +64,6 @@
     },
     params: () => ({}), setParams() {}, resetParams() {}, setLink() {}, refresh() {},
   };
-
-  for (const [id, url] of Object.entries(FILES)) {
-    fetch(url, { cache: 'no-cache' })
-      .then((r) => { if (!r.ok) throw new Error(r.status + ' ' + url); return r.json(); })
-      .then((j) => { state[id] = { status: 'ok', data: Array.isArray(j) ? j : j.rows || [], meta: j.meta || [] }; })
-      .catch((e) => { console.error(e); state[id] = { status: 'error', data: [], meta: [], message: String(e) }; })
-      .finally(schedule);
-  }
 
   // Redraw when the width changes or a section is shown again.
   let lastW = 0;

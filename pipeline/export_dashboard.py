@@ -75,11 +75,14 @@ def main():
     pending = (M.get("funding_repo") or {}).get("pending_from")
     if pending:
         meta.append({"label": "Repo spread pending from", "value": pending})
+    for release in M.get("overview_releases", []):
+        meta.append({"label": "Official release", "value": release})
     out = os.path.join(ROOT, "dashboard")
     os.makedirs(out, exist_ok=True)
     dump = lambda obj, f: json.dump(obj, open(os.path.join(out, f), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     dump({"rows": obs, "meta": meta}, "observations.json")
     dump({"rows": cat}, "catalog.json")
+    dump(M.get("regions", {"rows": [], "meta": []}), "regions.json")
     dump({"rows": snap, "meta": [{"label": "Scraped from", "value": "https://www.rbi.org.in/ (Current Rates box)"},
                                  {"label": "Fetched (UTC)", "value": H.get("fetched_utc", "")}]}, "snapshot.json")
     print(len(obs), "observations,", len(cat), "series,", len(snap), "snapshot items")
