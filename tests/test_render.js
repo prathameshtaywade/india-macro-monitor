@@ -257,5 +257,15 @@ test('freshness notice is tied to the next expected release', () => {
   assert.strictEqual(e.textContent, 'Past expected update window: headline CPI, FBIL 10-year yield.');
 });
 
+test('the IIP headline shows the index level and change in index points', () => {
+  const observations = obs([monthRow('iip_index', '2026-08', 123.1), monthRow('iip_index', '2026-09', 124.3)]);
+  const { draws } = load({ observations, catalog: obs([]) });
+  const value = el({ k: 'iip_index', part: 'value' }), change = el({ k: 'iip_index', part: 'change' });
+  draws.kpi(value);
+  draws.kpi(change);
+  assert.strictEqual(value.textContent, '124.3');
+  assert.strictEqual(change.textContent, '+1.2 index points vs Aug 2026');
+});
+
 if (failures) { console.log(`${failures} failed`); process.exit(1); }
 console.log('all render checks passed');

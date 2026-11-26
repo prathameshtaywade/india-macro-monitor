@@ -11,10 +11,12 @@ a browser, and d3 in the dashboard.
 | GDP | `gdp_growth_q` real GDP growth y/y (2022-23 base) | Q (fiscal) | % | Q1 2023-24 → Q1 2026-27 | 7.8 | MoSPI NAS API, indicator 22 |
 | GDP | `gdp_growth_q_old` (2011-12 base, discontinued) | Q | % | Q1 2012-13 → Q2 2025-26 | 8.2 | MoSPI NAS API |
 | GVA | `gva_growth_q` + 3 broad-sector and 8 industry series | Q | % | Q1 2023-24 → Q1 2026-27 | 8.2 (total), 10.0 (services) | MoSPI NAS API, indicators 1 and 21 |
+| GVA | `gva_level_q` + broad-sector and industry levels | Q | ₹ lakh crore | Q1 2022-23 → Q1 2026-27 | 73.82 (total), 40.91 (services) | MoSPI NAS API, indicator 1 |
 | GDP | `gdp_level_q`, `gdp_growth_a` (charted at 31 March of each FY), nominal growth | Q / FY | ₹ lakh cr / % | 2022-23 → | | MoSPI NAS API |
 | CPI | `cpi_infl_combined/rural/urban`, `cpi_food`, `cpi_index` (2024=100) | M | % / index | Jan 2026 → Oct 2026 (index from Jan 2025) | 6.09 | MoSPI `getCPIData` |
 | CPI | `cpi_infl_old`, `cfpi_old` (2012=100, discontinued) | M | % | Jan 2014 → Dec 2025 | 1.33 | MoSPI `getCPIIndex` |
-| IIP | `iip_growth`, `iip_index`, all four sectors (2022-23=100) | M | % | Apr 2023 → Sep 2026 | 6.7 | MoSPI `getIipData` |
+| IIP | `iip_growth` and growth rates for all four sectors (2022-23 base) | M | % | Apr 2023 → Sep 2026 | 6.7 (General) | MoSPI `getIipData` |
+| IIP | `iip_index` and four sector indices | M | 2022-23=100 | Apr 2023 → Sep 2026 | 124.3 (General) | MoSPI `getIipData` |
 | IIP | `iip_growth_old` (2011-12=100) | M | % | Apr 2012 → Mar 2026 | 4.1 | MoSPI `getIipData` |
 | Banks | `scb_gap`, `scb_gap_3m` credit growth minus deposit growth, latest and 3-month average | M | pp | Jan 2023 → Oct 2026 | 2.68 / 1.74 | Derived from Handbook T167 + WSS Table 4 |
 | Banks | `scb_inc_cd_fytd` incremental credit–deposit ratio, financial year to date | M | % | Apr 2022 → Oct 2026 | 90.1 (72.1 a year earlier) | Derived; omitted while deposits are up <0.5% since end-March |
@@ -58,11 +60,11 @@ Every history chart starts in **April 2023** on one shared timeline; older data 
    - **History:** bank credit and deposit growth, call spread, net liquidity, lending and deposit rates.
 2. **Macro summary** (starts with the tiles)
    - Eight tiles with neutral changes (no good/bad colour), then a sentence on repo, CPI against the 2–6% band, and GDP.
-   - GVA uses one quarter for the benchmark, the primary, secondary and services groups, and the industry detail.
-     Broad-sector growth is year-on-year growth of summed constant-price levels. The underlying eight industries
-     must reconcile to total GVA within source rounding.
-   - The CPI tolerance band applies to the headline chart. Food inflation has its own chart. The IIP breakdown
-     includes all four sectors and shows General IIP separately. Old-base series are off by default.
+   - The main GDP and GVA chart shows real levels in ₹ lakh crore. The GVA breakdown uses one quarter for the total,
+     the three broad sectors, and the eight industries. Industry levels reconcile to total GVA within source rounding.
+   - The IIP headline and charts show index levels, with General IIP and all four sectors. The Series Explorer
+     retains growth rates and discontinued GDP and IIP series.
+   - The CPI tolerance band applies to the headline chart. Food inflation has its own chart. Old-base CPI is opt-in.
    - Weekly benchmark yields and historical traded yields have separate charts, as do USD/INR and EUR/INR.
      Period labels and expected update windows distinguish live feeds from historical Handbook series.
    - Series explorer for any series, including those without a chart of their own.
