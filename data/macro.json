@@ -1,5 +1,5 @@
 {
-"generated_utc": "2026-11-25T16:15:46Z",
+"generated_utc": "2026-11-26T02:24:24Z",
 "snapshot": {
 "fetched_utc": "2026-11-25T13:32:20Z",
 "source_url": "https://www.rbi.org.in/",
@@ -2272,6 +2272,702 @@
 [
 "2025-26",
 7.8
+]
+]
+},
+{
+"id": "pfce_real_q",
+"name": "Real household consumption (PFCE)",
+"group": "Growth",
+"unit": "₹ lakh crore",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "MoSPI – NAS",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=10",
+"notes": "Quarterly level at constant prices.",
+"data": [
+[
+"2022-Q1",
+34.4787
+],
+[
+"2022-Q2",
+34.2543
+],
+[
+"2022-Q3",
+40.3722
+],
+[
+"2022-Q4",
+40.2834
+],
+[
+"2023-Q1",
+36.8924
+],
+[
+"2023-Q2",
+36.2428
+],
+[
+"2023-Q3",
+42.5971
+],
+[
+"2023-Q4",
+42.9802
+],
+[
+"2024-Q1",
+39.1157
+],
+[
+"2024-Q2",
+38.5557
+],
+[
+"2024-Q3",
+45.5233
+],
+[
+"2024-Q4",
+45.7212
+],
+[
+"2025-Q1",
+41.7618
+],
+[
+"2025-Q2",
+41.0156
+],
+[
+"2025-Q3",
+49.1743
+],
+[
+"2025-Q4",
+49.1373
+],
+[
+"2026-Q1",
+44.7428
+]
+]
+},
+{
+"id": "gfcf_real_q",
+"name": "Real fixed investment (GFCF)",
+"group": "Growth",
+"unit": "₹ lakh crore",
+"freq": "Quarterly",
+"base": "2022-23 series",
+"source": "MoSPI – NAS",
+"source_url": "https://api.mospi.gov.in/api/nas/getNASData?base_year=2022-23&series=Current&frequency_code=Quarterly&indicator_code=9",
+"notes": "Quarterly level at constant prices.",
+"data": [
+[
+"2022-Q1",
+19.9429
+],
+[
+"2022-Q2",
+20.635
+],
+[
+"2022-Q3",
+21.3833
+],
+[
+"2022-Q4",
+22.5684
+],
+[
+"2023-Q1",
+21.5237
+],
+[
+"2023-Q2",
+22.8192
+],
+[
+"2023-Q3",
+23.1013
+],
+[
+"2023-Q4",
+24.731
+],
+[
+"2024-Q1",
+23.6146
+],
+[
+"2024-Q2",
+24.8427
+],
+[
+"2024-Q3",
+24.6997
+],
+[
+"2024-Q4",
+26.6032
+],
+[
+"2025-Q1",
+24.9728
+],
+[
+"2025-Q2",
+26.6362
+],
+[
+"2025-Q3",
+26.7583
+],
+[
+"2025-Q4",
+29.4072
+],
+[
+"2026-Q1",
+27.9561
+]
+]
+},
+{
+"id": "plfs_ur",
+"name": "Unemployment rate",
+"group": "Jobs",
+"unit": "%",
+"freq": "Monthly",
+"base": "",
+"source": "MoSPI – Monthly PLFS",
+"source_url": "https://api.mospi.gov.in/api/plfs/getData?indicator_code=3&frequency_code=3&state_code=99&age_code=1&gender_code=3&sector_code=1%2C2%2C3",
+"notes": "All India, age 15+, Current Weekly Status. March 2026 is filled from the official June 2026 bulletin if absent from the API.",
+"data": [
+[
+"2025-04",
+5.1
+],
+[
+"2025-05",
+5.6
+],
+[
+"2025-06",
+5.6
+],
+[
+"2025-07",
+5.2
+],
+[
+"2025-08",
+5.1
+],
+[
+"2025-09",
+5.2
+],
+[
+"2025-10",
+5.2
+],
+[
+"2025-11",
+4.7
+],
+[
+"2025-12",
+4.8
+],
+[
+"2026-01",
+5.0
+],
+[
+"2026-02",
+4.9
+],
+[
+"2026-03",
+5.1
+],
+[
+"2026-04",
+5.2
+],
+[
+"2026-05",
+5.5
+],
+[
+"2026-06",
+5.5
+],
+[
+"2026-07",
+5.1
+],
+[
+"2026-08",
+5.0
+],
+[
+"2026-09",
+5.0
+],
+[
+"2026-10",
+4.9
+]
+]
+},
+{
+"id": "plfs_ur_rural",
+"name": "Unemployment rate – rural",
+"group": "Jobs",
+"unit": "%",
+"freq": "Monthly",
+"base": "",
+"source": "MoSPI – Monthly PLFS",
+"source_url": "https://api.mospi.gov.in/api/plfs/getData?indicator_code=3&frequency_code=3&state_code=99&age_code=1&gender_code=3&sector_code=1%2C2%2C3",
+"notes": "All India, age 15+, Current Weekly Status. March 2026 is filled from the official June 2026 bulletin if absent from the API.",
+"data": [
+[
+"2025-04",
+4.5
+],
+[
+"2025-05",
+5.1
+],
+[
+"2025-06",
+4.9
+],
+[
+"2025-07",
+4.4
+],
+[
+"2025-08",
+4.3
+],
+[
+"2025-09",
+4.6
+],
+[
+"2025-10",
+4.4
+],
+[
+"2025-11",
+3.9
+],
+[
+"2025-12",
+3.9
+],
+[
+"2026-01",
+4.2
+],
+[
+"2026-02",
+4.2
+],
+[
+"2026-03",
+4.3
+],
+[
+"2026-04",
+4.6
+],
+[
+"2026-05",
+5.1
+],
+[
+"2026-06",
+5.0
+],
+[
+"2026-07",
+4.5
+],
+[
+"2026-08",
+4.1
+],
+[
+"2026-09",
+4.2
+],
+[
+"2026-10",
+4.2
+]
+]
+},
+{
+"id": "plfs_ur_urban",
+"name": "Unemployment rate – urban",
+"group": "Jobs",
+"unit": "%",
+"freq": "Monthly",
+"base": "",
+"source": "MoSPI – Monthly PLFS",
+"source_url": "https://api.mospi.gov.in/api/plfs/getData?indicator_code=3&frequency_code=3&state_code=99&age_code=1&gender_code=3&sector_code=1%2C2%2C3",
+"notes": "All India, age 15+, Current Weekly Status. March 2026 is filled from the official June 2026 bulletin if absent from the API.",
+"data": [
+[
+"2025-04",
+6.5
+],
+[
+"2025-05",
+6.9
+],
+[
+"2025-06",
+7.1
+],
+[
+"2025-07",
+7.2
+],
+[
+"2025-08",
+6.7
+],
+[
+"2025-09",
+6.8
+],
+[
+"2025-10",
+7.0
+],
+[
+"2025-11",
+6.5
+],
+[
+"2025-12",
+6.7
+],
+[
+"2026-01",
+7.0
+],
+[
+"2026-02",
+6.6
+],
+[
+"2026-03",
+6.8
+],
+[
+"2026-04",
+6.6
+],
+[
+"2026-05",
+6.4
+],
+[
+"2026-06",
+6.6
+],
+[
+"2026-07",
+6.7
+],
+[
+"2026-08",
+6.8
+],
+[
+"2026-09",
+6.9
+],
+[
+"2026-10",
+6.7
+]
+]
+},
+{
+"id": "plfs_lfpr",
+"name": "Labour-force participation rate",
+"group": "Jobs",
+"unit": "%",
+"freq": "Monthly",
+"base": "",
+"source": "MoSPI – Monthly PLFS",
+"source_url": "https://api.mospi.gov.in/api/plfs/getData?indicator_code=1&frequency_code=3&state_code=99&age_code=1&gender_code=2%2C3&sector_code=3",
+"notes": "All India, age 15+, Current Weekly Status. March 2026 is filled from the official June 2026 bulletin if absent from the API.",
+"data": [
+[
+"2025-04",
+55.6
+],
+[
+"2025-05",
+54.8
+],
+[
+"2025-06",
+54.2
+],
+[
+"2025-07",
+54.9
+],
+[
+"2025-08",
+55.0
+],
+[
+"2025-09",
+55.3
+],
+[
+"2025-10",
+55.4
+],
+[
+"2025-11",
+55.8
+],
+[
+"2025-12",
+56.1
+],
+[
+"2026-01",
+55.9
+],
+[
+"2026-02",
+55.9
+],
+[
+"2026-03",
+55.4
+],
+[
+"2026-04",
+55.0
+],
+[
+"2026-05",
+54.4
+],
+[
+"2026-06",
+54.4
+],
+[
+"2026-07",
+55.4
+],
+[
+"2026-08",
+55.6
+],
+[
+"2026-09",
+55.5
+],
+[
+"2026-10",
+55.7
+]
+]
+},
+{
+"id": "plfs_lfpr_female",
+"name": "Female labour-force participation rate",
+"group": "Jobs",
+"unit": "%",
+"freq": "Monthly",
+"base": "",
+"source": "MoSPI – Monthly PLFS",
+"source_url": "https://api.mospi.gov.in/api/plfs/getData?indicator_code=1&frequency_code=3&state_code=99&age_code=1&gender_code=2%2C3&sector_code=3",
+"notes": "All India, age 15+, Current Weekly Status. March 2026 is filled from the official June 2026 bulletin if absent from the API.",
+"data": [
+[
+"2025-04",
+34.2
+],
+[
+"2025-05",
+33.2
+],
+[
+"2025-06",
+32.0
+],
+[
+"2025-07",
+33.3
+],
+[
+"2025-08",
+33.7
+],
+[
+"2025-09",
+34.1
+],
+[
+"2025-10",
+34.2
+],
+[
+"2025-11",
+35.1
+],
+[
+"2025-12",
+35.3
+],
+[
+"2026-01",
+35.1
+],
+[
+"2026-02",
+35.3
+],
+[
+"2026-03",
+34.4
+],
+[
+"2026-04",
+33.9
+],
+[
+"2026-05",
+32.8
+],
+[
+"2026-06",
+32.7
+],
+[
+"2026-07",
+34.4
+],
+[
+"2026-08",
+34.8
+],
+[
+"2026-09",
+34.6
+],
+[
+"2026-10",
+35.0
+]
+]
+},
+{
+"id": "plfs_wpr",
+"name": "Worker-population ratio",
+"group": "Jobs",
+"unit": "%",
+"freq": "Monthly",
+"base": "",
+"source": "MoSPI – Monthly PLFS",
+"source_url": "https://api.mospi.gov.in/api/plfs/getData?indicator_code=2&frequency_code=3&state_code=99&age_code=1&gender_code=3&sector_code=3",
+"notes": "All India, age 15+, Current Weekly Status. March 2026 is filled from the official June 2026 bulletin if absent from the API.",
+"data": [
+[
+"2025-04",
+52.8
+],
+[
+"2025-05",
+51.7
+],
+[
+"2025-06",
+51.2
+],
+[
+"2025-07",
+52.0
+],
+[
+"2025-08",
+52.2
+],
+[
+"2025-09",
+52.4
+],
+[
+"2025-10",
+52.5
+],
+[
+"2025-11",
+53.2
+],
+[
+"2025-12",
+53.4
+],
+[
+"2026-01",
+53.1
+],
+[
+"2026-02",
+53.2
+],
+[
+"2026-03",
+52.6
+],
+[
+"2026-04",
+52.2
+],
+[
+"2026-05",
+51.4
+],
+[
+"2026-06",
+51.4
+],
+[
+"2026-07",
+52.5
+],
+[
+"2026-08",
+52.8
+],
+[
+"2026-09",
+52.7
+],
+[
+"2026-10",
+53.0
 ]
 ]
 },
@@ -22586,6 +23282,727 @@
 ]
 ],
 "notes": "A market-wide pricing indicator, not a bank's margin: loan mix, funding mix and tenor all affect it."
+}
+],
+"regions": {
+"rows": [
+{
+"id": "andaman-and-nicobar-islands",
+"name": "Andaman & Nicobar Islands",
+"mpce": {
+"2023-24": {
+"rural": 7771.0,
+"urban": 10453.0
+},
+"2022-23": {
+"rural": 7332.0,
+"urban": 10268.0
+}
+},
+"inflation": {
+"rural": 3.86,
+"urban": 3.03,
+"combined": 3.46
+}
+},
+{
+"id": "andhra-pradesh",
+"name": "Andhra Pradesh",
+"mpce": {
+"2023-24": {
+"rural": 5327.0,
+"urban": 7182.0
+},
+"2022-23": {
+"rural": 4870.0,
+"urban": 6782.0
+}
+},
+"inflation": {
+"rural": 7.81,
+"urban": 6.37,
+"combined": 7.25
+}
+},
+{
+"id": "arunachal-pradesh",
+"name": "Arunachal Pradesh",
+"mpce": {
+"2023-24": {
+"rural": 5995.0,
+"urban": 9832.0
+},
+"2022-23": {
+"rural": 5276.0,
+"urban": 8636.0
+}
+},
+"inflation": {
+"rural": 4.62,
+"urban": 3.5,
+"combined": 4.33
+}
+},
+{
+"id": "assam",
+"name": "Assam",
+"mpce": {
+"2023-24": {
+"rural": 3793.0,
+"urban": 6794.0
+},
+"2022-23": {
+"rural": 3432.0,
+"urban": 6136.0
+}
+},
+"inflation": {
+"rural": 4.94,
+"urban": 3.23,
+"combined": 4.59
+}
+},
+{
+"id": "bihar",
+"name": "Bihar",
+"mpce": {
+"2023-24": {
+"rural": 3670.0,
+"urban": 5080.0
+},
+"2022-23": {
+"rural": 3384.0,
+"urban": 4768.0
+}
+},
+"inflation": {
+"rural": 5.79,
+"urban": 5.18,
+"combined": 5.71
+}
+},
+{
+"id": "chandigarh",
+"name": "Chandigarh",
+"mpce": {
+"2023-24": {
+"rural": 8857.0,
+"urban": 13425.0
+},
+"2022-23": {
+"rural": 7467.0,
+"urban": 12575.0
+}
+},
+"inflation": {
+"urban": 5.23,
+"combined": 5.23
+}
+},
+{
+"id": "chhattisgarh",
+"name": "Chhattisgarh",
+"mpce": {
+"2023-24": {
+"rural": 2739.0,
+"urban": 4927.0
+},
+"2022-23": {
+"rural": 2466.0,
+"urban": 4483.0
+}
+},
+"inflation": {
+"rural": 6.72,
+"urban": 4.59,
+"combined": 5.99
+}
+},
+{
+"id": "dadra-and-nagar-haveli-and-daman-and-diu",
+"name": "Dadra & Nagar Haveli and Daman & Diu",
+"mpce": {
+"2023-24": {
+"rural": 4311.0,
+"urban": 6837.0
+},
+"2022-23": {
+"rural": 4184.0,
+"urban": 6298.0
+}
+},
+"inflation": {
+"rural": 6.61,
+"urban": 7.92,
+"combined": 7.59
+}
+},
+{
+"id": "delhi",
+"name": "Delhi",
+"mpce": {
+"2023-24": {
+"rural": 7400.0,
+"urban": 8534.0
+},
+"2022-23": {
+"rural": 6576.0,
+"urban": 8217.0
+}
+},
+"inflation": {
+"rural": 5.24,
+"urban": 3.77,
+"combined": 3.8
+}
+},
+{
+"id": "goa",
+"name": "Goa",
+"mpce": {
+"2023-24": {
+"rural": 8048.0,
+"urban": 9726.0
+},
+"2022-23": {
+"rural": 7367.0,
+"urban": 8734.0
+}
+},
+"inflation": {
+"rural": 4.33,
+"urban": 4.72,
+"combined": 4.58
+}
+},
+{
+"id": "gujarat",
+"name": "Gujarat",
+"mpce": {
+"2023-24": {
+"rural": 4116.0,
+"urban": 7175.0
+},
+"2022-23": {
+"rural": 3798.0,
+"urban": 6621.0
+}
+},
+"inflation": {
+"rural": 6.06,
+"urban": 5.46,
+"combined": 5.71
+}
+},
+{
+"id": "haryana",
+"name": "Haryana",
+"mpce": {
+"2023-24": {
+"rural": 5377.0,
+"urban": 8427.0
+},
+"2022-23": {
+"rural": 4859.0,
+"urban": 7911.0
+}
+},
+"inflation": {
+"rural": 5.2,
+"urban": 3.56,
+"combined": 4.38
+}
+},
+{
+"id": "himachal-pradesh",
+"name": "Himachal Pradesh",
+"mpce": {
+"2023-24": {
+"rural": 5825.0,
+"urban": 9223.0
+},
+"2022-23": {
+"rural": 5561.0,
+"urban": 8075.0
+}
+},
+"inflation": {
+"rural": 4.28,
+"urban": 4.21,
+"combined": 4.27
+}
+},
+{
+"id": "jammu-and-kashmir",
+"name": "Jammu & Kashmir",
+"mpce": {
+"2023-24": {
+"rural": 4774.0,
+"urban": 6327.0
+},
+"2022-23": {
+"rural": 4296.0,
+"urban": 6179.0
+}
+},
+"inflation": {
+"rural": 4.87,
+"urban": 4.91,
+"combined": 4.88
+}
+},
+{
+"id": "jharkhand",
+"name": "Jharkhand",
+"mpce": {
+"2023-24": {
+"rural": 2946.0,
+"urban": 5393.0
+},
+"2022-23": {
+"rural": 2763.0,
+"urban": 4931.0
+}
+},
+"inflation": {
+"rural": 6.44,
+"urban": 4.86,
+"combined": 5.9
+}
+},
+{
+"id": "karnataka",
+"name": "Karnataka",
+"mpce": {
+"2023-24": {
+"rural": 4903.0,
+"urban": 8076.0
+},
+"2022-23": {
+"rural": 4397.0,
+"urban": 7666.0
+}
+},
+"inflation": {
+"rural": 7.54,
+"urban": 6.6,
+"combined": 7.07
+}
+},
+{
+"id": "kerala",
+"name": "Kerala",
+"mpce": {
+"2023-24": {
+"rural": 6611.0,
+"urban": 7783.0
+},
+"2022-23": {
+"rural": 5924.0,
+"urban": 7078.0
+}
+},
+"inflation": {
+"rural": 7.01,
+"urban": 5.58,
+"combined": 6.22
+}
+},
+{
+"id": "ladakh",
+"name": "Ladakh",
+"mpce": {
+"2023-24": {
+"rural": 5010.0,
+"urban": 7533.0
+},
+"2022-23": {
+"rural": 4035.0,
+"urban": 6215.0
+}
+},
+"inflation": {
+"rural": 6.8,
+"urban": 4.95,
+"combined": 6.34
+}
+},
+{
+"id": "lakshadweep",
+"name": "Lakshadweep",
+"mpce": {
+"2023-24": {
+"rural": 6350.0,
+"urban": 6377.0
+},
+"2022-23": {
+"rural": 5895.0,
+"urban": 5475.0
+}
+},
+"inflation": {
+"rural": 5.68,
+"urban": 4.92,
+"combined": 5.13
+}
+},
+{
+"id": "madhya-pradesh",
+"name": "Madhya Pradesh",
+"mpce": {
+"2023-24": {
+"rural": 3441.0,
+"urban": 5538.0
+},
+"2022-23": {
+"rural": 3113.0,
+"urban": 4987.0
+}
+},
+"inflation": {
+"rural": 7.66,
+"urban": 6.46,
+"combined": 7.19
+}
+},
+{
+"id": "maharashtra",
+"name": "Maharashtra",
+"mpce": {
+"2023-24": {
+"rural": 4145.0,
+"urban": 7363.0
+},
+"2022-23": {
+"rural": 4010.0,
+"urban": 6657.0
+}
+},
+"inflation": {
+"rural": 6.86,
+"urban": 5.2,
+"combined": 5.85
+}
+},
+{
+"id": "manipur",
+"name": "Manipur",
+"mpce": {
+"2023-24": {
+"rural": 4531.0,
+"urban": 5945.0
+},
+"2022-23": {
+"rural": 4360.0,
+"urban": 4880.0
+}
+},
+"inflation": {
+"rural": 5.51,
+"urban": 3.66,
+"combined": 4.91
+}
+},
+{
+"id": "meghalaya",
+"name": "Meghalaya",
+"mpce": {
+"2023-24": {
+"rural": 3852.0,
+"urban": 7839.0
+},
+"2022-23": {
+"rural": 3514.0,
+"urban": 6433.0
+}
+},
+"inflation": {
+"rural": 3.8,
+"urban": 3.16,
+"combined": 3.63
+}
+},
+{
+"id": "mizoram",
+"name": "Mizoram",
+"mpce": {
+"2023-24": {
+"rural": 5963.0,
+"urban": 8709.0
+},
+"2022-23": {
+"rural": 5224.0,
+"urban": 7655.0
+}
+},
+"inflation": {
+"rural": 3.19,
+"urban": 2.58,
+"combined": 2.85
+}
+},
+{
+"id": "nagaland",
+"name": "Nagaland",
+"mpce": {
+"2023-24": {
+"rural": 5155.0,
+"urban": 8022.0
+},
+"2022-23": {
+"rural": 4393.0,
+"urban": 7098.0
+}
+},
+"inflation": {
+"rural": 4.0,
+"urban": 3.1,
+"combined": 3.66
+}
+},
+{
+"id": "odisha",
+"name": "Odisha",
+"mpce": {
+"2023-24": {
+"rural": 3357.0,
+"urban": 5825.0
+},
+"2022-23": {
+"rural": 2950.0,
+"urban": 5187.0
+}
+},
+"inflation": {
+"rural": 7.74,
+"urban": 5.63,
+"combined": 7.17
+}
+},
+{
+"id": "puducherry",
+"name": "Puducherry",
+"mpce": {
+"2023-24": {
+"rural": 7598.0,
+"urban": 8637.0
+},
+"2022-23": {
+"rural": 6590.0,
+"urban": 7706.0
+}
+},
+"inflation": {
+"rural": 8.03,
+"urban": 7.93,
+"combined": 7.96
+}
+},
+{
+"id": "punjab",
+"name": "Punjab",
+"mpce": {
+"2023-24": {
+"rural": 5817.0,
+"urban": 7359.0
+},
+"2022-23": {
+"rural": 5315.0,
+"urban": 6544.0
+}
+},
+"inflation": {
+"rural": 5.75,
+"urban": 5.42,
+"combined": 5.6
+}
+},
+{
+"id": "rajasthan",
+"name": "Rajasthan",
+"mpce": {
+"2023-24": {
+"rural": 4510.0,
+"urban": 6574.0
+},
+"2022-23": {
+"rural": 4263.0,
+"urban": 5913.0
+}
+},
+"inflation": {
+"rural": 6.33,
+"urban": 5.09,
+"combined": 5.89
+}
+},
+{
+"id": "sikkim",
+"name": "Sikkim",
+"mpce": {
+"2023-24": {
+"rural": 9377.0,
+"urban": 13927.0
+},
+"2022-23": {
+"rural": 7731.0,
+"urban": 12105.0
+}
+},
+"inflation": {
+"rural": 5.65,
+"urban": 4.48,
+"combined": 5.25
+}
+},
+{
+"id": "tamil-nadu",
+"name": "Tamil Nadu",
+"mpce": {
+"2023-24": {
+"rural": 5701.0,
+"urban": 8165.0
+},
+"2022-23": {
+"rural": 5310.0,
+"urban": 7630.0
+}
+},
+"inflation": {
+"rural": 7.86,
+"urban": 6.84,
+"combined": 7.29
+}
+},
+{
+"id": "telangana",
+"name": "Telangana",
+"mpce": {
+"2023-24": {
+"rural": 5435.0,
+"urban": 8978.0
+},
+"2022-23": {
+"rural": 4802.0,
+"urban": 8158.0
+}
+},
+"inflation": {
+"rural": 8.05,
+"urban": 6.68,
+"combined": 7.26
+}
+},
+{
+"id": "tripura",
+"name": "Tripura",
+"mpce": {
+"2023-24": {
+"rural": 6259.0,
+"urban": 8034.0
+},
+"2022-23": {
+"rural": 5206.0,
+"urban": 7405.0
+}
+},
+"inflation": {
+"rural": 5.0,
+"urban": 4.17,
+"combined": 4.8
+}
+},
+{
+"id": "uttar-pradesh",
+"name": "Uttar Pradesh",
+"mpce": {
+"2023-24": {
+"rural": 3481.0,
+"urban": 5395.0
+},
+"2022-23": {
+"rural": 3191.0,
+"urban": 5040.0
+}
+},
+"inflation": {
+"rural": 7.2,
+"urban": 4.88,
+"combined": 6.47
+}
+},
+{
+"id": "uttarakhand",
+"name": "Uttarakhand",
+"mpce": {
+"2023-24": {
+"rural": 5003.0,
+"urban": 7486.0
+},
+"2022-23": {
+"rural": 4641.0,
+"urban": 7004.0
+}
+},
+"inflation": {
+"rural": 5.84,
+"urban": 4.66,
+"combined": 5.41
+}
+},
+{
+"id": "west-bengal",
+"name": "West Bengal",
+"mpce": {
+"2023-24": {
+"rural": 3620.0,
+"urban": 5775.0
+},
+"2022-23": {
+"rural": 3239.0,
+"urban": 5267.0
+}
+},
+"inflation": {
+"rural": 5.08,
+"urban": 4.13,
+"combined": 4.66
+}
+}
+],
+"meta": [
+{
+"label": "Inflation period",
+"value": "2026-10"
+},
+{
+"label": "Inflation source",
+"value": "https://api.mospi.gov.in/api/cpi/getCPIData?base_year=2024&series=Current&division_code=0&year=2026&month=October"
+},
+{
+"label": "Household spending source",
+"value": "https://api.mospi.gov.in/api/hces/getHcesRecords?indicator_code=1&imputation_type_code=1"
+}
+]
+},
+"overview_releases": [
+{
+"series": "plfs_ur",
+"period": "2026-10",
+"published": "2026-11-16",
+"url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2336905&lang=1&reg=3"
+},
+{
+"series": "cpi_infl_combined",
+"period": "2026-10",
+"published": "2026-11-12",
+"url": "https://www.mospi.gov.in/uploads/release_calendar/1794480152014_Press_Release_of_CPI_for_October_2026_.pdf"
+},
+{
+"series": "iip_index",
+"period": "2026-09",
+"published": "2026-10-28",
+"url": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2329475&lang=1&reg=3"
 }
 ]
 }

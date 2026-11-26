@@ -39,7 +39,7 @@
         const round = (v) => (v == null ? null : +(+v).toFixed(p));
         const last = rows[rows.length - 1], prev = rows[rows.length - 2];
         return {
-          series, label: last.label, value: round(last.value),
+          series, period: last.period, label: last.label, value: round(last.value),
           prev_label: prev ? prev.label : null, prev: prev ? round(prev.value) : null,
           change: prev ? +(round(last.value) - round(prev.value)).toFixed(p) : null,
         };
@@ -95,6 +95,13 @@
   const CH = {
     output: { unit: '₹ lakh crore', aria: 'Line chart of real GDP and GVA in lakh crore rupees by quarter', series: [
       ['gdp_level_q', 'Real GDP'], ['gva_level_q', 'Real GVA']] },
+    demand: { unit: '₹ lakh crore', aria: 'Quarterly real household consumption and fixed investment in lakh crore rupees', series: [
+      ['pfce_real_q', 'Household consumption (PFCE)'], ['gfcf_real_q', 'Fixed investment (GFCF)']] },
+    jobs: { unit: '%', available: true, digits: 1, aria: 'Monthly unemployment rates nationally, in rural areas and in urban areas', series: [
+      ['plfs_ur', 'All India'], ['plfs_ur_rural', 'Rural'], ['plfs_ur_urban', 'Urban']] },
+    participation: { unit: '%', available: true, digits: 1, aria: 'Monthly labour-force participation and worker-population ratios', series: [
+      ['plfs_lfpr', 'Labour-force participation'], ['plfs_lfpr_female', 'Female participation', { dash: true }],
+      ['plfs_wpr', 'Worker-population ratio']] },
     cpi: { unit: '%', zero: true, band: [2, 6], ref: 4, refLabel: '4% target', aria: 'Line chart of CPI inflation with the 2 to 6 percent band', series: [
       ['cpi_infl_old', 'Headline, 2012 base', { muted: true, old: true }], ['cpi_infl_combined', 'Headline, 2024 base']] },
     food: { unit: '%', zero: true, aria: 'Line chart of food inflation', series: [
@@ -146,8 +153,9 @@
     const year = point.d.getUTCFullYear(), month = point.d.getUTCMonth();
     const dayOfMonth = (offset, day) => new Date(Date.UTC(year, month + offset, day));
     // Allow the next expected release plus a few days for holidays and ingestion.
-    if (['gdp_growth_q', 'gdp_level_q', 'gva_level_q'].includes(id)) return dayOfMonth(7, 8);
+    if (['gdp_growth_q', 'gdp_level_q', 'gva_level_q', 'pfce_real_q', 'gfcf_real_q'].includes(id)) return dayOfMonth(7, 8);
     if (id.startsWith('cpi_') && id !== 'cpi_infl_old') return dayOfMonth(2, 16);
+    if (id.startsWith('plfs_')) return dayOfMonth(2, 20);
     if (id.startsWith('iip_') && id !== 'iip_growth_old') return dayOfMonth(3, 5);
     if (id === 'mclr_1y_median') return dayOfMonth(2, 6);
     if (PRICING_SERIES.has(id) || BANK_SERIES.has(id)) return dayOfMonth(3, 6);
@@ -164,6 +172,7 @@
 
   const SOURCE_LABELS = {
     gdp_growth_q: 'GDP', gva_level_q: 'GVA', cpi_infl_combined: 'headline CPI', iip_index: 'IIP',
+    plfs_ur: 'monthly labour survey', pfce_real_q: 'household consumption',
     scb_gap: 'bank credit and deposits', mmo_net_liq: 'RBI liquidity', mmo_call: 'daily call money',
     walr_fresh: 'fresh lending rates', wadtdr_fresh: 'fresh deposit rates', gsec10_w: 'FBIL 10-year yield',
     forex_w: 'weekly reserves', usdinr_w: 'weekly USD/INR',
@@ -184,7 +193,8 @@
       ? d3.max(cfg.series, ([id]) => { const a = I.m.get(id); return a && a.length ? a[a.length - 1].d : null; }) || I.max
       : I.max;
     const t0 = cfg.months ? d3.utcDay.offset(d3.utcMonth.offset(end, -(cfg.months - 1)), -5)
-      : parse(CHART_START);
+      : cfg.available ? d3.min(cfg.series, ([id]) => I.m.get(id)?.[0]?.d) ?? parse(CHART_START)
+        : parse(CHART_START);
     const colors = dash.colors; let ci = 0;
     const catalog = new Map((catalogRows() || []).map((series) => [series.id, series]));
     const S = [];
@@ -403,6 +413,7 @@
   // Changes are shown neutrally: a macro move is not good or bad for every bank, so tiles carry no colour judgement.
   const K = {
     gdp_growth_q: { unit: '%', p: 1 }, cpi_infl_combined: { unit: '%', p: 2 }, iip_index: { unit: IIP_UNIT, p: 1 },
+    plfs_ur: { unit: '%', p: 1 }, pfce_real_q: { unit: '₹ lakh crore', p: 2 },
     repo: { unit: '%', p: 2 }, gsec10_w: { unit: '%', p: 2 }, forex_w: { unit: 'US$ bn', p: 1 },
     scb_credit_yoy: { unit: '%', p: 1 }, scb_dep_yoy: { unit: '%', p: 1 }, usdinr_w: { unit: '₹ per US$', p: 2 },
     scb_gap: { unit: 'pp', p: 2 }, scb_gap_3m: { unit: 'pp', p: 2 },
@@ -439,6 +450,47 @@
       el.classList.add('is-flat');
     }
   });
+  dash.draw('consumption-change', (el) => {
+    const I = index(), rows = I?.raw.get('pfce_real_q') ?? [];
+    const last = rows.at(-1);
+    const previous = last && rows.find((row) => row.period === (Number(last.period.slice(0, 4)) - 1) + last.period.slice(4));
+    const change = previous?.value ? (last.value / previous.value - 1) * 100 : null;
+    el.textContent = change == null ? '—' : fmt(change, '%', 1) + ' year on year';
+  });
+
+  const RELEASE_METRICS = [
+    ['plfs_ur', 'Unemployment', '#jobs', 'percentage points'],
+    ['cpi_infl_combined', 'Headline inflation', '#prices', 'percentage points'],
+    ['iip_index', 'Industrial production', '#industry', 'index points'],
+  ];
+  dash.draw('what-changed', (el) => {
+    const observations = dash.data('observations');
+    if (observations.status !== 'ok') { el.replaceChildren(msg(statusText(observations.status))); return; }
+    const releases = (observations.meta || []).filter((item) => item.label === 'Official release').map((item) => item.value);
+    const catalog = catalogRows() ?? [];
+    el.replaceChildren();
+    const root = d3.select(el);
+    for (const [id, title, href, deltaUnit] of RELEASE_METRICS) {
+      const reading = latest(id);
+      if (!reading) continue;
+      const release = releases.find((r) => r.series === id && r.period === reading.period);
+      const card = root.append('article').attr('class', 'mm-release');
+      const heading = card.append('h3');
+      heading.append('a').attr('href', href).text(title);
+      const value = fmt(reading.value, K[id].unit, K[id].p);
+      const change = reading.change == null ? '' : (reading.change === 0 ? 'Unchanged from ' :
+        (reading.change > 0 ? 'Up ' : 'Down ') + Math.abs(reading.change).toFixed(K[id].p) + ' ' + deltaUnit + ' from ') + reading.prev_label;
+      card.append('p').attr('class', 'mm-release-value').text(value + ' in ' + reading.label);
+      if (change) card.append('p').attr('class', 'mm-cap').text(change);
+      const url = release?.url ?? catalog.find((series) => series.id === id)?.source_url;
+      if (url && url.startsWith('https://')) {
+        const source = card.append('p').attr('class', 'mm-cap');
+        if (release) source.append('span').text('Released ' + d3.utcFormat('%-d %b %Y')(parse(release.published)) + ' · ');
+        source.append('a').attr('href', url).attr('target', '_blank').attr('rel', 'noopener').text(release ? 'Official release' : 'Source data');
+      }
+    }
+  });
+
   dash.draw('repo-move', (el) => {
     const r = latest('repo');
     if (!r || r.change == null) { el.textContent = '—'; return; }
@@ -625,14 +677,81 @@
   });
 
 
+  // ---------- state and union territory comparison ----------
+  const regionChoice = { left: 'maharashtra', right: 'bihar', round: '' };
+  function stateData() {
+    const dataset = dash.data('regions');
+    return dataset.status === 'ok' ? dataset : null;
+  }
+  function surveyRounds(rows) {
+    return [...new Set(rows.flatMap((row) => Object.keys(row.mpce)))].sort().reverse();
+  }
+  dash.draw('region-picker', (el) => {
+    const data = stateData();
+    if (!data) return;
+    const side = el.dataset.picker;
+    const options = side === 'round' ? surveyRounds(data.data).map((id) => ({ id, name: id })) : data.data;
+    if (!options.some(({ id }) => id === regionChoice[side])) regionChoice[side] = options[0]?.id ?? '';
+    el.replaceChildren();
+    for (const { id, name } of options) {
+      const option = new Option(name, id);
+      if (side !== 'round') option.disabled = id === regionChoice[side === 'left' ? 'right' : 'left'];
+      el.append(option);
+    }
+    el.value = regionChoice[side];
+    el.disabled = !options.length;
+    el.onchange = () => {
+      regionChoice[side] = el.value;
+      dash.draw('region-picker');
+      dash.draw('regional-chart');
+    };
+  });
+
+  dash.draw('regional-chart', (el) => {
+    const data = stateData();
+    if (!data) { el.replaceChildren(msg(statusText(dash.data('regions').status))); return; }
+    const pair = ['left', 'right'].map((side) => data.data.find((row) => row.id === regionChoice[side]));
+    if (pair.some((row) => !row)) { el.replaceChildren(msg('Select two states or union territories.')); return; }
+
+    const meta = (label) => (data.meta ?? []).find((item) => item.label === label)?.value;
+    const spending = el.dataset.metric === 'mpce';
+    const round = regionChoice.round || surveyRounds(data.data)[0];
+    const period = spending ? round : d3.utcFormat('%B %Y')(parse(meta('Inflation period') + '-01'));
+    const dimensions = spending ? ['rural', 'urban'] : ['combined', 'rural', 'urban'];
+    const values = pair.map((row) => spending ? row.mpce[round] ?? {} : row.inflation);
+    const available = values.flatMap((row) => dimensions.map((key) => row[key]).filter(Number.isFinite));
+    const scale = d3.scaleLinear().domain(d3.extent([0, ...available])).range([0, 100]);
+    el.replaceChildren();
+    const root = d3.select(el);
+    root.append('p').attr('class', 'mm-cap').text(spending ? round + ' survey · ₹ per person per month' : period + ' · Year on year');
+    for (const key of dimensions) {
+      const group = root.append('div').attr('class', 'mm-regional-group');
+      group.append('h4').text(key[0].toUpperCase() + key.slice(1));
+      for (const [i, state] of pair.entries()) {
+        const value = values[i][key];
+        const row = group.append('div').attr('class', 'mm-sector-row mm-regional-row');
+        row.append('span').text(state.name);
+        const track = row.append('span').attr('class', 'mm-sector-track').attr('aria-hidden', 'true');
+        if (Number.isFinite(value)) {
+          track.append('i').attr('class', 'mm-sector-bar').style('background', dash.colors[i])
+            .style('left', scale(Math.min(value, 0)) + '%').style('width', Math.abs(scale(value) - scale(0)) + '%');
+        }
+        row.append('b').text(!Number.isFinite(value) ? '—' : spending ? '₹' + value.toLocaleString('en-IN') : fmt(value, '%', 2));
+      }
+    }
+    const url = meta(spending ? 'Household spending source' : 'Inflation source');
+    if (url && url.startsWith('https://')) root.append('a').attr('class', 'mm-cap').attr('href', url)
+      .attr('target', '_blank').attr('rel', 'noopener').text(spending ? 'MoSPI household expenditure data' : 'MoSPI state CPI data');
+  });
+
   // ---------- controls (listen; set aria-pressed / hidden only) ----------
   for (const cb of document.querySelectorAll('#show-old')) {
     cb.checked = !!MM.showOld;
     cb.addEventListener('change', () => { MM.showOld = cb.checked; dash.draw('chart'); });
   }
-  // ---------- tabs: Banking brief | Macro summary ----------
-  // Each tab has its own link (#brief, #macro); a link to any element inside a tab opens that tab.
-  const TABS = ['brief', 'macro'];
+  // ---------- dashboard views ----------
+  // A hash for a chart or tab opens its containing view.
+  const TABS = ['overview', 'macro', 'states', 'brief', 'explore'];
   function showTab(name) {
     for (const p of document.querySelectorAll('[data-tab]')) { const hide = p.dataset.tab !== name; if (p.hidden !== hide) p.hidden = hide; }
     for (const b of document.querySelectorAll('[data-tab-btn]')) {
@@ -647,7 +766,7 @@
     if (TABS.includes(id)) { showTab(id); return; }
     const target = id ? document.getElementById(id) : null;
     const panel = target && target.closest('[data-tab]');
-    showTab(panel ? panel.dataset.tab : 'brief');
+    showTab(panel ? panel.dataset.tab : 'overview');
     if (panel) requestAnimationFrame(() => target.scrollIntoView());
   }
   const tabButtons = [...document.querySelectorAll('[data-tab-btn]')];
@@ -665,7 +784,7 @@
   });
   window.addEventListener('hashchange', route);
   route();
-  // Print both tabs, then restore the one in view.
+  // Print all views, then restore the one in view.
   window.addEventListener('beforeprint', () => { for (const p of document.querySelectorAll('[data-tab]')) p.hidden = false; });
   window.addEventListener('afterprint', route);
 })();

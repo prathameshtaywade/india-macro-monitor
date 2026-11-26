@@ -1,7 +1,8 @@
 // Minimal stand-in for the Claude dashboard runtime (`dash`), so dashboard/page/app.js runs on a plain website.
 // Implements only what app.js uses: data, calc, draw, colors.
 (function () {
-  const FILES = { observations: 'data/observations.json', catalog: 'data/catalog.json', snapshot: 'data/snapshot.json' };
+  const FILES = { observations: 'data/observations.json', catalog: 'data/catalog.json',
+    snapshot: 'data/snapshot.json', regions: 'data/regions.json' };
   const state = {};
   const calcs = {};
   const calcCache = {};

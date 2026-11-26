@@ -48,15 +48,19 @@ class FixedPageText(unittest.TestCase):
         for phrase in ("this month", "this week", "currently", "the latest MPC", "Handbook 2025-26", "Handbook 2026-27"):
             self.assertNotIn(phrase, text)
 
-    def test_two_tabs_brief_first_and_macro_opens_with_the_tiles(self):
+    def test_overview_opens_first_and_topic_links_remain_available(self):
         with open(PAGE, encoding="utf-8") as f:
             h = f.read()
         tabs = re.findall(r'data-tab="([a-z]+)"', h)
-        self.assertEqual(tabs, ["brief", "macro"])
-        macro = h[h.index('data-tab="macro"'):]
-        first = re.search(r"<(section|div|p)\b[^>]*>", macro[macro.index(">") + 1:])
-        self.assertIn('id="headline"', first.group(0), "the Macro summary tab must start with the tiles")
-        brief = h[h.index('data-tab="brief"'):h.index('data-tab="macro"')]
+        self.assertEqual(tabs, ["overview", "macro", "states", "brief", "explore"])
+        overview = h[h.index('data-tab="overview"'):h.index('data-tab="macro"')]
+        self.assertNotIn("hidden", overview.split(">", 1)[0])
+        self.assertIn('id="headline"', overview)
+        economy = h[h.index('data-tab="macro"'):h.index('data-tab="states"')]
+        for part in ('id="growth"', 'id="demand"', 'id="jobs"'):
+            self.assertIn(part, economy)
+        self.assertEqual(re.findall(r'<section class="mm-sec" id="([^"]+)"', economy)[-1], "current-rates")
+        brief = h[h.index('data-tab="brief"'):h.index('data-tab="explore"')]
         for part in ('id="brief"', 'id="brief-funding"', 'id="brief-pricing"', 'id="banking"', 'id="funding"'):
             self.assertIn(part, brief)
 

@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from checks import is_weekly_key, latest_revision  # noqa: E402
 from banking import growth_gap, incremental_cd_fytd, trailing_mean  # noqa: E402
 from funding import call_spread_bp, pricing_gap, resolve_lending, resolve_mmo, spread_verification, trailing_mean_obs  # noqa: E402
+from economic_overview import build_regions, source_query  # noqa: E402
 from macro_sectors import gva_group_growth, gva_group_levels  # noqa: E402
 from rbi_releases import BASE as RBI_RELEASE_URL  # noqa: E402
 from rbi_policy import LEDGER, policy_rows  # noqa: E402
@@ -151,6 +152,47 @@ add(id="gdp_growth_a", name="Real GDP growth, annual (y/y)", group="Growth", uni
     base="2022-23 series", source="MoSPI – NAS", source_url=r["endpoint"],
     notes="; ".join(f"{x['year']}: {x['revision']}" for x in sorted(r["rows"], key=lambda x: x["year"])),
     data=[(x["year"], num(x["constant_price"])) for x in r["rows"]])
+
+# Quarterly household consumption and fixed investment in official constant prices.
+for sid, name, code in [
+    ("pfce_real_q", "Real household consumption (PFCE)", "10"),
+    ("gfcf_real_q", "Real fixed investment (GFCF)", "9"),
+]:
+    raw = mospi(f"nas_q_2022_{code}")
+    rows = [row for row in raw["rows"] if not row.get("institutional_sector")]
+    levels = clean([(fq(row["year"], row["quarter"]), num(row["constant_price"])) for row in rows])
+    add(id=sid, name=name, group="Growth", unit="₹ lakh crore", freq="Quarterly",
+        base="2022-23 series", source="MoSPI – NAS", source_url=source_query(raw),
+        notes="Quarterly level at constant prices.", data=[(p, v / 1e5) for p, v in levels])
+
+# Monthly national PLFS estimates, ages 15+, Current Weekly Status.
+with open(os.path.join(RAW, "overview_releases.json"), encoding="utf-8") as f:
+    overview_releases = json.load(f)
+plfs_backfill = overview_releases["plfs_backfill"]
+for feed, definitions in [
+    ("plfs_unemployment", [
+        ("plfs_ur", "Unemployment rate", "person", "rural + urban"),
+        ("plfs_ur_rural", "Unemployment rate – rural", "person", "rural"),
+        ("plfs_ur_urban", "Unemployment rate – urban", "person", "urban"),
+    ]),
+    ("plfs_participation", [
+        ("plfs_lfpr", "Labour-force participation rate", "person", "rural + urban"),
+        ("plfs_lfpr_female", "Female labour-force participation rate", "female", "rural + urban"),
+    ]),
+    ("plfs_employment", [
+        ("plfs_wpr", "Worker-population ratio", "person", "rural + urban"),
+    ]),
+]:
+    raw = mospi(feed)
+    for sid, name, gender, sector in definitions:
+        data = [(ym(r["year"], r["month"]), num(r["value"])) for r in raw["rows"]
+                if r["state"] == "All India" and r["AgeGroup"] == "15 years and above"
+                and r["gender"] == gender and r["sector"] == sector]
+        data.insert(0, (plfs_backfill["period"], plfs_backfill["values"][sid]))
+        add(id=sid, name=name, group="Jobs", unit="%", freq="Monthly", base="",
+            source="MoSPI – Monthly PLFS", source_url=source_query(raw),
+            notes="All India, age 15+, Current Weekly Status. March 2026 is filled from the official June 2026 bulletin if absent from the API.",
+            data=data)
 
 # ---------------- CPI (MoSPI) ----------------
 r = mospi("cpi_2024_gen")
@@ -411,8 +453,10 @@ if LDR:
 gen = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 if previous.get("series") == json.loads(json.dumps(S, ensure_ascii=False)):
     gen = previous.get("generated_utc", gen)
+regions = build_regions(mospi("hces_mpce"), mospi("cpi_2024_states"), ym, num)
 out = {"generated_utc": gen, "snapshot": HOME, "provenance": RB.get("provenance", {}),
-       "funding_repo": funding_repo, "series": S}
+       "funding_repo": funding_repo, "series": S, "regions": regions,
+       "overview_releases": overview_releases["releases"]}
 json.dump(out, open(macro_path, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
 for s in S:
     if s["data"]:

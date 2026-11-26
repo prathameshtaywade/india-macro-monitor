@@ -18,11 +18,31 @@
   .is-flat { color: var(--color-fg-muted); }
   .mm-bar { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-xl); align-items: center; justify-content: space-between; }
   .mm-bar .mm-muted { max-width: 80ch; }
-  .mm-tabs { display: flex; gap: var(--cds-gap-xs); position: sticky; top: 0; z-index: 3; background: var(--color-bg); border-bottom: 1px solid var(--color-border-line); padding-top: var(--cds-pad-sm); }
+  .mm-tabs { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); position: sticky; top: 0; z-index: 3; background: var(--color-bg); border-bottom: 1px solid var(--color-border-line); padding-top: var(--cds-pad-sm); }
   .mm-tab { font: inherit; font-weight: var(--cds-font-weight-medium); padding: 10px 16px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--color-fg-muted); cursor: pointer; margin-bottom: -1px; }
   .mm-tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); }
   .mm-tab:focus-visible { outline: 2px solid var(--color-fg); outline-offset: -2px; }
   .mm-panel { display: grid; gap: var(--cds-gap-xl); }
+  .mm-overview { gap: var(--cds-gap-lg); }
+  .mm-overview h2, .mm-state-title { font-size: 23px; }
+  .mm-overview .mm-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mm-overview .mm-kpis .mm-card { border-top: 2px solid var(--c1); }
+  .mm-overview .mm-kpis a { color: inherit; text-decoration: none; }
+  .mm-overview .mm-kpis a:hover, .mm-overview .mm-kpis a:focus-visible { text-decoration: underline; }
+  .mm-release-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--cds-gap-md); }
+  .mm-release { border-top: 1px solid var(--color-border-line); padding-top: 12px; display: grid; gap: 5px; align-content: start; }
+  .mm-release a, .mm-regional a { color: inherit; text-underline-offset: 3px; }
+  .mm-release-value { font-variant-numeric: tabular-nums; }
+  .mm-state-controls { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); }
+  .mm-state-controls label { display: grid; gap: 5px; min-width: min(100%, 150px); }
+  .mm-regional { display: grid; gap: 10px; }
+  .mm-regional-group h4 { margin: 10px 0 2px; font-size: var(--cds-font-size-caption); }
+  .mm-regional-row { grid-template-columns: minmax(0, 1fr) minmax(52px, 35%) 5em; }
+  @media (max-width: 650px) {
+    .mm-overview .mm-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .mm-release-grid { grid-template-columns: minmax(0, 1fr); }
+    .mm-tab { padding-inline: 10px; }
+  }
   .mm-foot { border-top: 1px solid var(--color-border-line); padding-top: var(--cds-pad-md); }
   .mm-foot a { color: inherit; }
   .mm-seg { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); align-items: center; }
@@ -34,6 +54,8 @@
   .mm-sec-h { display: grid; gap: var(--cds-gap-xs); max-width: 80ch; }
   .mm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: var(--cds-gap-md); }
   .mm-chart { position: relative; min-height: 300px; }
+  .mm-sector-card { align-self: start; }
+  .mm-sector-chart { min-height: 0; }
   .mm-chart svg { display: block; overflow: visible; }
   .mm-chart text, .mm-axis text { fill: var(--cds-text-secondary); font-size: 11px; font-family: var(--font-anthropic-sans); }
   .mm-axis path, .mm-axis line { stroke: var(--cds-chart-axis); }
@@ -104,11 +126,125 @@
   <p class="mm-cap" role="status" data-draw="scheduled-policy" data-source="observations"></p>
 
   <nav class="mm-tabs" role="tablist" aria-label="Views">
-    <button class="mm-tab" type="button" role="tab" id="tabbtn-brief" aria-controls="tab-brief" aria-selected="true" data-tab-btn="brief">Banking brief</button>
-    <button class="mm-tab" type="button" role="tab" id="tabbtn-macro" aria-controls="tab-macro" aria-selected="false" data-tab-btn="macro" tabindex="-1">Macro summary</button>
+    <button class="mm-tab" type="button" role="tab" id="tabbtn-overview" aria-controls="tab-overview" aria-selected="true" data-tab-btn="overview">Overview</button>
+    <button class="mm-tab" type="button" role="tab" id="tabbtn-macro" aria-controls="tab-macro" aria-selected="false" tabindex="-1" data-tab-btn="macro">Economy</button>
+    <button class="mm-tab" type="button" role="tab" id="tabbtn-states" aria-controls="tab-states" aria-selected="false" tabindex="-1" data-tab-btn="states">States</button>
+    <button class="mm-tab" type="button" role="tab" id="tabbtn-brief" aria-controls="tab-brief" aria-selected="false" tabindex="-1" data-tab-btn="brief">Banking</button>
+    <button class="mm-tab" type="button" role="tab" id="tabbtn-explore" aria-controls="tab-explore" aria-selected="false" tabindex="-1" data-tab-btn="explore">Explorer</button>
   </nav>
 
-  <div class="mm-panel" id="tab-brief" data-tab="brief" role="tabpanel" aria-labelledby="tabbtn-brief">
+  <div class="mm-panel mm-overview" id="tab-overview" data-tab="overview" role="tabpanel" aria-labelledby="tabbtn-overview">
+    <section class="mm-sec" aria-labelledby="overview-heading">
+      <h2 id="overview-heading">India’s economy at a glance</h2>
+      <div class="mm-kpis" id="headline" aria-label="Latest readings">
+      <div class="mm-card" id="kpi-gdp"><a class="mm-kl" href="#growth">Real GDP growth, y/y</a><span class="mm-kv" data-draw="kpi" data-k="gdp_growth_q" data-part="value" data-source="latest" data-field="value" data-where="series=gdp_growth_q">—</span><span class="mm-kc" data-draw="kpi" data-k="gdp_growth_q" data-part="change" data-source="latest" data-field="change" data-where="series=gdp_growth_q">—</span><span class="mm-cap" data-draw="kpi" data-k="gdp_growth_q" data-part="label" data-source="latest" data-field="label" data-where="series=gdp_growth_q">—</span></div>
+      <div class="mm-card" id="kpi-cpi"><a class="mm-kl" href="#prices">Headline inflation, y/y</a><span class="mm-kv" data-draw="kpi" data-k="cpi_infl_combined" data-part="value" data-source="latest" data-field="value" data-where="series=cpi_infl_combined">—</span><span class="mm-kc" data-draw="kpi" data-k="cpi_infl_combined" data-part="change" data-source="latest" data-field="change" data-where="series=cpi_infl_combined">—</span><span class="mm-cap" data-draw="kpi" data-k="cpi_infl_combined" data-part="label" data-source="latest" data-field="label" data-where="series=cpi_infl_combined">—</span><span class="mm-cap" data-draw="vs-band" data-source="latest"></span></div>
+      <div class="mm-card" id="kpi-iip"><a class="mm-kl" href="#industry">Industrial production · 2022-23 = 100</a><span class="mm-kv" data-draw="kpi" data-k="iip_index" data-part="value" data-source="latest" data-field="value" data-where="series=iip_index">—</span><span class="mm-kc" data-draw="kpi" data-k="iip_index" data-part="change" data-source="latest" data-field="change" data-where="series=iip_index">—</span><span class="mm-cap" data-draw="kpi" data-k="iip_index" data-part="label" data-source="latest" data-field="label" data-where="series=iip_index">—</span></div>
+      <div class="mm-card" id="kpi-jobs"><a class="mm-kl" href="#jobs">Unemployment rate · age 15+</a><span class="mm-kv" data-draw="kpi" data-k="plfs_ur" data-part="value" data-source="latest" data-field="value" data-where="series=plfs_ur">—</span><span class="mm-kc" data-draw="kpi" data-k="plfs_ur" data-part="change" data-source="latest" data-field="change" data-where="series=plfs_ur">—</span><span class="mm-cap" data-draw="kpi" data-k="plfs_ur" data-part="label" data-source="latest" data-field="label" data-where="series=plfs_ur">—</span></div>
+      <div class="mm-card" id="kpi-consumption"><a class="mm-kl" href="#demand">Real household consumption</a><span class="mm-kv" data-draw="kpi" data-k="pfce_real_q" data-part="value" data-source="latest" data-field="value" data-where="series=pfce_real_q">—</span><span class="mm-kc" data-draw="consumption-change" data-source="observations">—</span><span class="mm-cap" data-draw="kpi" data-k="pfce_real_q" data-part="label" data-source="latest" data-field="label" data-where="series=pfce_real_q">—</span></div>
+      <div class="mm-card" id="kpi-repo"><a class="mm-kl" href="#policy">RBI policy repo rate</a><span class="mm-kv" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</span><span class="mm-kc" data-draw="kpi" data-k="repo" data-part="change" data-source="latest" data-field="change" data-where="series=repo">—</span><span class="mm-cap" data-draw="kpi" data-k="repo" data-part="label" data-source="latest" data-field="label" data-where="series=repo">—</span></div>
+      </div>
+      <p class="mm-cap" role="status" data-draw="freshness" data-series="gdp_growth_q cpi_infl_combined iip_index plfs_ur pfce_real_q"></p>
+    </section>
+    <section class="mm-sec" id="release-movements" aria-labelledby="changed-heading">
+      <h2 id="changed-heading">What changed</h2>
+      <div class="mm-release-grid" data-draw="what-changed" data-source="observations catalog"></div>
+    </section>
+  </div>
+
+  <div class="mm-panel" id="tab-macro" data-tab="macro" role="tabpanel" aria-labelledby="tabbtn-macro" hidden>
+    <div class="mm-bar" id="macro-controls">
+      <p class="mm-muted">Growth rates and discontinued GDP and IIP series are available in the Explorer.</p>
+      <label class="mm-chip mm-check" for="show-old"><input type="checkbox" id="show-old"> Show discontinued CPI series</label>
+    </div>
+
+  <section class="mm-sec" id="growth">
+    <div class="mm-sec-h"><h2>Economic output: GDP and GVA</h2><p class="mm-muted">Quarterly levels in ₹ lakh crore at constant 2022-23 prices. Quarters follow India’s financial year (Q1 = April–June).</p></div>
+    <div class="mm-grid">
+      <div class="mm-card"><h3>Real GDP and GVA</h3><div class="mm-chart" id="ch-growth" data-draw="chart" data-chart="output" data-source="observations"></div><p class="mm-cap">Source: MoSPI National Accounts, indicators 5 and 1.</p></div>
+      <div class="mm-card mm-sector-card"><h3>Real GVA by sector</h3><div class="mm-chart mm-sector-chart" id="ch-sectors" data-draw="sectors" data-source="observations catalog"></div><p class="mm-cap">Source: MoSPI National Accounts. Broad-sector GVA sums its component industries.</p></div>
+    </div>
+  </section>
+
+  <section class="mm-sec" id="demand">
+    <div class="mm-sec-h"><h2>Household spending and investment</h2><p class="mm-muted">Quarterly national totals at constant 2022-23 prices.</p></div>
+    <div class="mm-card"><div class="mm-chart" data-draw="chart" data-chart="demand" data-source="observations catalog"></div>
+      <p class="mm-cap">Source: MoSPI National Accounts. PFCE measures private consumption. GFCF measures fixed investment.</p></div>
+  </section>
+
+  <section class="mm-sec" id="jobs">
+    <div class="mm-sec-h"><h2>Jobs and participation</h2><p class="mm-muted">Monthly Periodic Labour Force Survey, all India, age 15+. Current Weekly Status reflects activity in the preceding seven days.</p></div>
+    <div class="mm-grid">
+      <div class="mm-card"><h3>Unemployment</h3><div class="mm-chart" data-draw="chart" data-chart="jobs" data-source="observations catalog"></div><p class="mm-cap">Unemployed share of the labour force.</p></div>
+      <div class="mm-card"><h3>Participation and employment</h3><div class="mm-chart" data-draw="chart" data-chart="participation" data-source="observations catalog"></div><p class="mm-cap">Participation and employment as shares of their respective age 15+ populations.</p></div>
+    </div>
+  </section>
+
+  <section class="mm-sec" id="prices">
+    <div class="mm-sec-h"><h2>Inflation: Consumer Price Index</h2><p class="mm-muted">All-India, combined rural and urban, year on year. RBI’s 2–6% tolerance range around the 4% target applies to headline CPI. The 2024-base CPI publishes inflation from January 2026; for earlier years switch on discontinued series to see the 2012-base CPI, which ends in December 2025.</p></div>
+    <div class="mm-grid">
+      <div class="mm-card"><h3>Headline CPI inflation</h3><div class="mm-chart" id="ch-cpi" data-draw="chart" data-chart="cpi" data-source="observations"></div><p class="mm-cap">Source: MoSPI headline CPI.</p></div>
+      <div class="mm-card"><h3>Food inflation</h3><div class="mm-chart" id="ch-food" data-draw="chart" data-chart="food" data-source="observations"></div><p class="mm-cap">Source: MoSPI. The old Consumer Food Price Index and current Food &amp; Beverages division cover different baskets.</p></div>
+    </div>
+  </section>
+
+  <section class="mm-sec" id="industry">
+    <div class="mm-sec-h"><h2>Industry: Index of Industrial Production</h2><p class="mm-muted">Monthly index levels, with 2022-23 = 100. Each sector is measured against its own base-year production. The latest month is a quick estimate and can be revised.</p></div>
+    <div class="mm-grid">
+      <div class="mm-card"><h3>Industrial production history</h3><div class="mm-chart" id="ch-iip" data-draw="chart" data-chart="iip" data-source="observations"></div><p class="mm-cap">Source: MoSPI IIP.</p></div>
+      <div class="mm-card mm-sector-card"><h3>IIP by sector</h3><div class="mm-chart mm-sector-chart" id="ch-iip-sectors" data-draw="iip-sectors" data-source="observations catalog"></div><p class="mm-cap">Source: MoSPI IIP, all four sectors in the 2022-23 series.</p></div>
+    </div>
+  </section>
+
+  <section class="mm-sec" id="policy">
+    <div class="mm-sec-h"><h2>Monetary policy</h2><p class="mm-muted">Policy rates as step lines from their effective dates, with the weekly weighted average call money rate, which policy aims to keep near the repo rate. The latest change was a <span data-draw="repo-move">—</span> to <b class="mm-num" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</b>, effective <span data-draw="kpi" data-k="repo" data-part="label">—</span>.</p></div>
+    <div class="mm-card"><h3>Repo, SDF and MSF corridor</h3><div class="mm-chart" id="ch-policy" data-draw="chart" data-chart="policy" data-source="observations"></div><p class="mm-cap">Source: RBI Handbook of Statistics (policy rates table), then MPC resolutions for later changes; WSS Table 5 for the call rate.</p></div>
+  </section>
+
+  <section class="mm-sec" id="rates">
+    <div class="mm-sec-h"><h2>Government bond yields</h2><p class="mm-muted">Weekly benchmark and auction yields are shown separately from the RBI Handbook’s month-end yields on actual SGL trades by residual maturity.</p></div>
+    <div class="mm-grid">
+      <div class="mm-card"><h3>Weekly benchmark and auction yields</h3><div class="mm-chart" id="ch-yields" data-draw="chart" data-chart="yields" data-source="observations"></div><p class="mm-cap">Source: RBI Weekly Statistical Supplement, Table 5.</p></div>
+      <div class="mm-card"><h3>Historical month-end traded yields</h3><div class="mm-chart" id="ch-yields-history" data-draw="chart" data-chart="yields-history" data-source="observations"></div><p class="mm-cap">Source: RBI Handbook Table 178. Coverage ends at the latest Handbook’s cut-off.</p></div>
+    </div>
+  </section>
+
+  <section class="mm-sec" id="external">
+    <div class="mm-sec-h"><h2>Forex reserves and the rupee</h2><p class="mm-muted">Reserves are the total of foreign currency assets, gold, SDRs and the IMF reserve position. Exchange rates are RBI/FBIL reference rates in rupees per unit of foreign currency, so a rise means a weaker rupee.</p></div>
+    <div class="mm-grid">
+      <div class="mm-card"><h3>Foreign exchange reserves, US$ bn</h3><div class="mm-chart" id="ch-forex" data-draw="chart" data-chart="forex" data-source="observations"></div><p class="mm-cap">Source: RBI via MoSPI API (indicator 47, from 1990), Handbook Tables 210 and 215, WSS Table 2.</p></div>
+      <div class="mm-card"><h3>USD/INR, rupees per US dollar</h3><div class="mm-chart" id="ch-fx" data-draw="chart" data-chart="fx" data-source="observations"></div><p class="mm-cap">Source: RBI via MoSPI API (indicator 33, from 1992), Handbook Table 205, WSS Table 5.</p></div>
+      <div class="mm-card"><h3>EUR/INR, rupees per euro</h3><div class="mm-chart" id="ch-fx-eur" data-draw="chart" data-chart="fx-eur" data-source="observations"></div><p class="mm-cap">Source: RBI via MoSPI API (indicator 33) and RBI Handbook Table 205. Monthly averages.</p></div>
+    </div>
+  </section>
+
+  <section class="mm-sec" id="current-rates" aria-labelledby="current-rates-heading">
+    <div class="mm-card">
+      <h2 id="current-rates-heading">RBI current rates</h2>
+      <p class="mm-cap">From the "Current Rates" box on rbi.org.in, fetched <span data-draw="built" data-part="snap">—</span>.</p>
+      <div class="mm-tw"><table data-source="snapshot" data-row-key="item"><thead><tr><th data-field="group">Group</th><th data-field="item">Item</th><th class="r" data-field="value">Value</th><th data-field="as_of">As of</th></tr></thead><tbody data-draw="snap"></tbody></table></div>
+    </div>
+  </section>
+  </div>
+
+  <div class="mm-panel" id="tab-states" data-tab="states" role="tabpanel" aria-labelledby="tabbtn-states" hidden>
+    <section class="mm-sec" id="state-comparison" aria-labelledby="states-heading">
+      <div class="mm-sec-h"><h2 class="mm-state-title" id="states-heading">Compare two states</h2><p class="mm-muted">Compare household spending and inflation across states and union territories.</p></div>
+      <div class="mm-state-controls">
+        <label><span class="mm-kl">First state</span><select class="dash-select" data-draw="region-picker" data-source="regions" data-picker="left" disabled></select></label>
+        <label><span class="mm-kl">Second state</span><select class="dash-select" data-draw="region-picker" data-source="regions" data-picker="right" disabled></select></label>
+        <label><span class="mm-kl">Spending survey round</span><select class="dash-select" data-draw="region-picker" data-source="regions" data-picker="round" disabled></select></label>
+      </div>
+      <div class="mm-grid">
+        <div class="mm-card"><h3>Household spending</h3><div class="mm-regional" data-draw="regional-chart" data-source="regions" data-metric="mpce" aria-live="polite"></div>
+          <p class="mm-cap">Nominal monthly spending per person, excluding the imputed value of free welfare items.</p></div>
+        <div class="mm-card"><h3>Consumer inflation</h3><div class="mm-regional" data-draw="regional-chart" data-source="regions" data-metric="inflation" aria-live="polite"></div>
+          <p class="mm-cap">State headline CPI, base 2024. A dash means the source has no estimate for that group.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="mm-panel" id="tab-brief" data-tab="brief" role="tabpanel" aria-labelledby="tabbtn-brief" hidden>
   <p class="mm-cap" role="status" data-draw="freshness" data-series="scb_gap mmo_call mmo_net_liq walr_fresh wadtdr_fresh"></p>
   <section class="mm-card mm-brief" id="brief" aria-labelledby="brief-h">
     <div class="mm-sec-h">
@@ -174,75 +310,7 @@
   </section>
   </div>
 
-  <div class="mm-panel" id="tab-macro" data-tab="macro" role="tabpanel" aria-labelledby="tabbtn-macro" hidden>
-  <section class="mm-kpis" id="headline" aria-label="Latest readings">
-    <div class="mm-card" id="kpi-gdp"><span class="mm-kl">Real GDP growth, y/y</span><span class="mm-kv" data-draw="kpi" data-k="gdp_growth_q" data-part="value" data-source="latest" data-field="value" data-where="series=gdp_growth_q">—</span><span class="mm-kc" data-draw="kpi" data-k="gdp_growth_q" data-part="change" data-source="latest" data-field="change" data-where="series=gdp_growth_q">—</span><span class="mm-cap" data-draw="kpi" data-k="gdp_growth_q" data-part="label">—</span></div>
-    <div class="mm-card" id="kpi-cpi"><span class="mm-kl">CPI inflation, y/y</span><span class="mm-kv" data-draw="kpi" data-k="cpi_infl_combined" data-part="value" data-source="latest" data-field="value" data-where="series=cpi_infl_combined">—</span><span class="mm-kc" data-draw="kpi" data-k="cpi_infl_combined" data-part="change" data-source="latest" data-field="change" data-where="series=cpi_infl_combined">—</span><span class="mm-cap" data-draw="kpi" data-k="cpi_infl_combined" data-part="label">—</span></div>
-    <div class="mm-card" id="kpi-iip"><span class="mm-kl">Industrial production (IIP) · 2022-23 = 100</span><span class="mm-kv" data-draw="kpi" data-k="iip_index" data-part="value" data-source="latest" data-field="value" data-where="series=iip_index">—</span><span class="mm-kc" data-draw="kpi" data-k="iip_index" data-part="change" data-source="latest" data-field="change" data-where="series=iip_index">—</span><span class="mm-cap" data-draw="kpi" data-k="iip_index" data-part="label">—</span></div>
-    <div class="mm-card" id="kpi-repo"><span class="mm-kl">Policy repo rate</span><span class="mm-kv" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</span><span class="mm-kc" data-draw="kpi" data-k="repo" data-part="change" data-source="latest" data-field="change" data-where="series=repo">—</span><span class="mm-cap">Effective <span data-draw="kpi" data-k="repo" data-part="label">—</span></span></div>
-    <div class="mm-card" id="kpi-gsec"><span class="mm-kl">10-year G-Sec, FBIL par yield</span><span class="mm-kv" data-draw="kpi" data-k="gsec10_w" data-part="value" data-source="latest" data-field="value" data-where="series=gsec10_w">—</span><span class="mm-kc" data-draw="kpi" data-k="gsec10_w" data-part="change" data-source="latest" data-field="change" data-where="series=gsec10_w">—</span><span class="mm-cap">Week ended <span data-draw="kpi" data-k="gsec10_w" data-part="label">—</span></span></div>
-    <div class="mm-card" id="kpi-forex"><span class="mm-kl">Foreign exchange reserves, US$ bn</span><span class="mm-kv" data-draw="kpi" data-k="forex_w" data-part="value" data-source="latest" data-field="value" data-where="series=forex_w">—</span><span class="mm-kc" data-draw="kpi" data-k="forex_w" data-part="change" data-source="latest" data-field="change" data-where="series=forex_w">—</span><span class="mm-cap">As on <span data-draw="kpi" data-k="forex_w" data-part="label">—</span></span></div>
-    <div class="mm-card" id="kpi-credit"><span class="mm-kl">Bank credit growth, y/y</span><span class="mm-kv" data-draw="kpi" data-k="scb_credit_yoy" data-part="value" data-source="latest" data-field="value" data-where="series=scb_credit_yoy">—</span><span class="mm-kc" data-draw="kpi" data-k="scb_credit_yoy" data-part="change" data-source="latest" data-field="change" data-where="series=scb_credit_yoy">—</span><span class="mm-cap">Scheduled commercial banks, <span data-draw="kpi" data-k="scb_credit_yoy" data-part="label">—</span></span></div>
-    <div class="mm-card" id="kpi-inr"><span class="mm-kl">USD/INR (FBIL reference)</span><span class="mm-kv" data-draw="kpi" data-k="usdinr_w" data-part="value" data-source="latest" data-field="value" data-where="series=usdinr_w">—</span><span class="mm-kc" data-draw="kpi" data-k="usdinr_w" data-part="change" data-source="latest" data-field="change" data-where="series=usdinr_w">—</span><span class="mm-cap">Week ended <span data-draw="kpi" data-k="usdinr_w" data-part="label">—</span></span></div>
-  </section>
-    <p class="mm-cap" role="status" data-draw="freshness" data-series="gdp_growth_q gva_level_q cpi_infl_combined iip_index gsec10_w forex_w usdinr_w"></p>
-    <p class="mm-take" id="takeaway">The RBI policy repo rate is <b class="mm-num" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</b> after a <span data-draw="repo-move">—</span> on <span data-draw="kpi" data-k="repo" data-part="label">—</span>. CPI inflation was <b class="mm-num" data-draw="kpi" data-k="cpi_infl_combined" data-part="value" data-source="latest" data-field="value" data-where="series=cpi_infl_combined">—</b> in <span data-draw="kpi" data-k="cpi_infl_combined" data-part="label">—</span>, <span data-draw="vs-band">—</span>, and real GDP grew <b class="mm-num" data-draw="kpi" data-k="gdp_growth_q" data-part="value" data-source="latest" data-field="value" data-where="series=gdp_growth_q">—</b> year on year in <span data-draw="kpi" data-k="gdp_growth_q" data-part="label">—</span>.</p>
-    <p class="mm-cap">Each tile shows the latest observation and its change from the one before; changes are shown neutrally, without a good or bad judgement.</p>
-
-    <div class="mm-bar" id="macro-controls">
-      <p class="mm-muted">Charts run from April 2023 to the latest data, on one shared timeline. Growth rates and discontinued GDP and IIP series are available in the Series Explorer.</p>
-      <label class="mm-chip mm-check" for="show-old"><input type="checkbox" id="show-old"> Show discontinued CPI series</label>
-    </div>
-
-  <section class="mm-sec" id="growth">
-    <div class="mm-sec-h"><h2>Economic output: GDP and GVA</h2><p class="mm-muted">Quarterly levels in ₹ lakh crore at constant 2022-23 prices. Quarters follow India’s financial year (Q1 = April–June).</p></div>
-    <div class="mm-grid">
-      <div class="mm-card"><h3>Real GDP and GVA</h3><div class="mm-chart" id="ch-growth" data-draw="chart" data-chart="output" data-source="observations"></div><p class="mm-cap">Source: MoSPI National Accounts, indicators 5 and 1.</p></div>
-      <div class="mm-card"><h3>Real GVA by sector</h3><div class="mm-chart" id="ch-sectors" data-draw="sectors" data-source="observations catalog"></div><p class="mm-cap">Source: MoSPI National Accounts. Broad-sector GVA sums its component industries.</p></div>
-    </div>
-  </section>
-
-  <section class="mm-sec" id="prices">
-    <div class="mm-sec-h"><h2>Inflation: Consumer Price Index</h2><p class="mm-muted">All-India, combined rural and urban, year on year. RBI’s 2–6% tolerance range around the 4% target applies to headline CPI. The 2024-base CPI publishes inflation from January 2026; for earlier years switch on discontinued series to see the 2012-base CPI, which ends in December 2025.</p></div>
-    <div class="mm-grid">
-      <div class="mm-card"><h3>Headline CPI inflation</h3><div class="mm-chart" id="ch-cpi" data-draw="chart" data-chart="cpi" data-source="observations"></div><p class="mm-cap">Source: MoSPI headline CPI.</p></div>
-      <div class="mm-card"><h3>Food inflation</h3><div class="mm-chart" id="ch-food" data-draw="chart" data-chart="food" data-source="observations"></div><p class="mm-cap">Source: MoSPI. The old Consumer Food Price Index and current Food &amp; Beverages division cover different baskets.</p></div>
-    </div>
-  </section>
-
-  <section class="mm-sec" id="industry">
-    <div class="mm-sec-h"><h2>Industry: Index of Industrial Production</h2><p class="mm-muted">Monthly index levels, with 2022-23 = 100. Each sector is measured against its own base-year production. The latest month is a quick estimate and can be revised.</p></div>
-    <div class="mm-grid">
-      <div class="mm-card"><h3>Industrial production history</h3><div class="mm-chart" id="ch-iip" data-draw="chart" data-chart="iip" data-source="observations"></div><p class="mm-cap">Source: MoSPI IIP.</p></div>
-      <div class="mm-card"><h3>IIP by sector</h3><div class="mm-chart" id="ch-iip-sectors" data-draw="iip-sectors" data-source="observations catalog"></div><p class="mm-cap">Source: MoSPI IIP, all four sectors in the 2022-23 series.</p></div>
-    </div>
-  </section>
-
-  <section class="mm-sec" id="policy">
-    <div class="mm-sec-h"><h2>Monetary policy</h2><p class="mm-muted">Policy rates as step lines from their effective dates, with the weekly weighted average call money rate, which policy aims to keep near the repo rate. The latest change was a <span data-draw="repo-move">—</span> to <b class="mm-num" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</b>, effective <span data-draw="kpi" data-k="repo" data-part="label">—</span>.</p></div>
-    <div class="mm-grid">
-      <div class="mm-card"><h3>Repo, SDF and MSF corridor</h3><div class="mm-chart" id="ch-policy" data-draw="chart" data-chart="policy" data-source="observations"></div><p class="mm-cap">Source: RBI Handbook of Statistics (policy rates table), then MPC resolutions for later changes; WSS Table 5 for the call rate.</p></div>
-      <div class="mm-card" id="current-rates"><h3>RBI current rates</h3><p class="mm-cap">From the "Current Rates" box on rbi.org.in, fetched <span data-draw="built" data-part="snap">—</span>.</p><div class="mm-tw"><table data-source="snapshot" data-row-key="item"><thead><tr><th data-field="group">Group</th><th data-field="item">Item</th><th class="r" data-field="value">Value</th><th data-field="as_of">As of</th></tr></thead><tbody data-draw="snap"></tbody></table></div></div>
-    </div>
-  </section>
-
-  <section class="mm-sec" id="rates">
-    <div class="mm-sec-h"><h2>Government bond yields</h2><p class="mm-muted">Weekly benchmark and auction yields are shown separately from the RBI Handbook’s month-end yields on actual SGL trades by residual maturity.</p></div>
-    <div class="mm-grid">
-      <div class="mm-card"><h3>Weekly benchmark and auction yields</h3><div class="mm-chart" id="ch-yields" data-draw="chart" data-chart="yields" data-source="observations"></div><p class="mm-cap">Source: RBI Weekly Statistical Supplement, Table 5.</p></div>
-      <div class="mm-card"><h3>Historical month-end traded yields</h3><div class="mm-chart" id="ch-yields-history" data-draw="chart" data-chart="yields-history" data-source="observations"></div><p class="mm-cap">Source: RBI Handbook Table 178. Coverage ends at the latest Handbook’s cut-off.</p></div>
-    </div>
-  </section>
-
-  <section class="mm-sec" id="external">
-    <div class="mm-sec-h"><h2>Forex reserves and the rupee</h2><p class="mm-muted">Reserves are the total of foreign currency assets, gold, SDRs and the IMF reserve position. Exchange rates are RBI/FBIL reference rates in rupees per unit of foreign currency, so a rise means a weaker rupee.</p></div>
-    <div class="mm-grid">
-      <div class="mm-card"><h3>Foreign exchange reserves, US$ bn</h3><div class="mm-chart" id="ch-forex" data-draw="chart" data-chart="forex" data-source="observations"></div><p class="mm-cap">Source: RBI via MoSPI API (indicator 47, from 1990), Handbook Tables 210 and 215, WSS Table 2.</p></div>
-      <div class="mm-card"><h3>USD/INR, rupees per US dollar</h3><div class="mm-chart" id="ch-fx" data-draw="chart" data-chart="fx" data-source="observations"></div><p class="mm-cap">Source: RBI via MoSPI API (indicator 33, from 1992), Handbook Table 205, WSS Table 5.</p></div>
-      <div class="mm-card"><h3>EUR/INR, rupees per euro</h3><div class="mm-chart" id="ch-fx-eur" data-draw="chart" data-chart="fx-eur" data-source="observations"></div><p class="mm-cap">Source: RBI via MoSPI API (indicator 33) and RBI Handbook Table 205. Monthly averages.</p></div>
-    </div>
-  </section>
-
+  <div class="mm-panel" id="tab-explore" data-tab="explore" role="tabpanel" aria-labelledby="tabbtn-explore" hidden>
   <section class="mm-sec" id="explore">
     <div class="mm-sec-h"><h2>Series explorer</h2><p class="mm-muted">Pick any series to see it from April 2023, with its definition, source, full coverage and latest observations.</p></div>
     <label class="mm-seg" for="ex-pick"><span>Series</span><select class="dash-select" id="ex-pick" data-draw="picker" aria-label="Series" data-source="catalog"></select></label>
