@@ -1,7 +1,7 @@
 {
-"generated_utc": "2026-11-26T13:12:36Z",
+"generated_utc": "2026-11-27T13:09:40Z",
 "snapshot": {
-"fetched_utc": "2026-11-26T13:12:03Z",
+"fetched_utc": "2026-11-27T13:09:05Z",
 "source_url": "https://www.rbi.org.in/",
 "policy": {
 "Policy Repo Rate": 5.5,
@@ -15,26 +15,26 @@
 "SLR": 18.0
 },
 "fx": {
-"INR / 1 USD": 92.4799,
-"INR / 1 GBP": 121.1511,
-"INR / 1 EUR": 101.3897,
-"INR / 100 JPY": 58.08,
-"INR / 1 AED": 25.1786
+"INR / 1 USD": 92.9139,
+"INR / 1 GBP": 121.9563,
+"INR / 1 EUR": 102.0086,
+"INR / 100 JPY": 58.32,
+"INR / 1 AED": 25.2967
 },
 "gsec": {
-"6.20% GS 2029": 6.8476,
-"6.53% GS 2031": 7.0506,
-"6.94% GS 2036": 7.1641,
-"7.06% GS 2041": 7.3641,
-"7.63% GS 2056": 7.6962
+"6.20% GS 2029": 6.8925,
+"6.53% GS 2031": 7.1163,
+"6.94% GS 2036": 7.2363,
+"7.06% GS 2041": 7.4246,
+"7.63% GS 2056": 7.7496
 },
 "tbill": {
 "91 day T-bills": 5.8846,
 "182 day T-bills": 6.5288,
 "364 day T-bills": 6.6387
 },
-"fx_as_of": "1.00pm of November 26, 2026",
-"gsec_as_of": "November 25, 2026"
+"fx_as_of": "1.00pm of November 27, 2026",
+"gsec_as_of": "November 26, 2026"
 },
 "provenance": {
 "extracted_on": "2026-11-24",
@@ -52,8 +52,8 @@
 "policy_2026_10_07": "RBI press release prid=63742 (7 Oct 2026): MPC resolution Oct 5-7 2026, repo +25 bp to 5.50%, SDF 5.25%, MSF/Bank Rate 5.75%"
 },
 "funding_repo": {
-"verified_on": "2026-11-26",
-"cutoff": "2026-11-27",
+"verified_on": "2026-11-27",
+"cutoff": "2026-11-28",
 "mismatch": null,
 "pending_from": null
 },
@@ -17116,13 +17116,17 @@
 [
 "2026-11-25",
 5.73
+],
+[
+"2026-11-26",
+5.76
 ]
 ],
 "notes": "Row A.I 'Call Money'. Days with no call trades (weekends, holidays) are left out.",
 "group": "Funding",
 "freq": "Daily",
 "base": "",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64044",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64052",
 "source": "RBI press release 'Money Market Operations as on <date>'"
 },
 {
@@ -18277,13 +18281,17 @@
 [
 "2026-11-25",
 5.72
+],
+[
+"2026-11-26",
+5.63
 ]
 ],
 "notes": "Row A 'Overnight Segment (I+II+III+IV)': call, triparty repo, market repo and repo in corporate bonds.",
 "group": "Funding",
 "freq": "Daily",
 "base": "",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64044",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64052",
 "source": "RBI press release 'Money Market Operations as on <date>'"
 },
 {
@@ -19854,13 +19862,17 @@
 [
 "2026-11-25",
 32216.06
+],
+[
+"2026-11-26",
+47641.2
 ]
 ],
 "notes": "Row F. Positive = net injection by RBI, negative = net absorption. Reported on non-trading days too. Net liquidity = Repo + MSF + SLF - Reverse Repo - SDF.",
 "group": "Funding",
 "freq": "Daily",
 "base": "",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64044",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64052",
 "source": "RBI press release 'Money Market Operations as on <date>'"
 },
 {
@@ -21015,13 +21027,17 @@
 [
 "2026-11-25",
 23.0
+],
+[
+"2026-11-26",
+26.0
 ]
 ],
 "notes": "Call money weighted average rate minus the policy repo rate in force that day, in basis points. Trading days only.",
 "group": "Funding",
 "freq": "Daily",
 "base": "",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64044",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64052",
 "source": "RBI press release 'Money Market Operations as on <date>'"
 },
 {
@@ -22160,13 +22176,17 @@
 [
 "2026-11-25",
 5.6
+],
+[
+"2026-11-26",
+9.0
 ]
 ],
 "notes": "Average of the latest five trading days.",
 "group": "Funding",
 "freq": "Daily",
 "base": "",
-"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64044",
+"source_url": "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64052",
 "source": "RBI press release 'Money Market Operations as on <date>'"
 },
 {
