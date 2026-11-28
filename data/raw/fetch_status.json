@@ -1,0 +1,27 @@
+{
+ "MOSPI": {
+  "consecutive_failures": 0,
+  "last_run": "2026-11-28",
+  "last_success": "2026-11-28"
+ },
+ "PUBLIC_INPUTS": {
+  "consecutive_failures": 1,
+  "last_run": "2026-11-28",
+  "last_success": null
+ },
+ "RBI_HOME": {
+  "consecutive_failures": 0,
+  "last_run": "2026-11-28",
+  "last_success": "2026-11-28"
+ },
+ "RBI_POLICY": {
+  "consecutive_failures": 0,
+  "last_run": "2026-11-28",
+  "last_success": "2026-11-28"
+ },
+ "RBI_RELEASES": {
+  "consecutive_failures": 0,
+  "last_run": "2026-11-28",
+  "last_success": "2026-11-28"
+ }
+}

@@ -1,7 +1,7 @@
 {
 "generated_utc": "2026-11-28T07:52:45Z",
 "snapshot": {
-"fetched_utc": "2026-11-27T13:09:05Z",
+"fetched_utc": "2026-11-28T12:21:47Z",
 "source_url": "https://www.rbi.org.in/",
 "policy": {
 "Policy Repo Rate": 5.5,
@@ -52,8 +52,8 @@
 "policy_2026_10_07": "RBI press release prid=63742 (7 Oct 2026): MPC resolution Oct 5-7 2026, repo +25 bp to 5.50%, SDF 5.25%, MSF/Bank Rate 5.75%"
 },
 "funding_repo": {
-"verified_on": "2026-11-27",
-"cutoff": "2026-11-28",
+"verified_on": "2026-11-28",
+"cutoff": "2026-11-29",
 "mismatch": null,
 "pending_from": null
 },
@@ -26805,7 +26805,7 @@
 },
 {
 "label": "Inflation source",
-"value": "https://api.mospi.gov.in/api/cpi/getCPIData?base_year=2024&series=Current&division_code=0&year=2026&month=October"
+"value": "https://api.mospi.gov.in/api/cpi/getCPIData?base_year=2024&series=Current&division_code=0&year=2026&month_code=8%2C9%2C10"
 },
 {
 "label": "Household spending source",
