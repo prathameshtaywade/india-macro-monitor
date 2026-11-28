@@ -46,6 +46,8 @@ RANGES = {  # unit -> (min, max)
 # Series whose plausible range differs from their unit's default.
 SERIES_RANGES = {
     "scb_inc_cd_fytd": (-1000, 1000),
+    "m3": (1e6, 1e8),
+    **{sid: (-200, 200) for sid in ("trade_merchandise_balance", "bop_current_account", "bop_fdi", "bop_fpi")},
     **{f"{sid}_level": (0, 2000) for sid in (*GVA_GROUPS, *GVA_COMPONENTS)},
 }
 STALE_DAYS = {"Daily": 6, "Weekly": 21, "Monthly": 75, "Monthly / fortnightly": 75, "Quarterly": 200, "Annual (FY)": 500}
@@ -168,7 +170,8 @@ def validate(cur, prev=None, today=None, expected_ids=None, core=None):
             if gap > 1:
                 warnings.append(f"`{sid}` has {gap - 1} missing month(s) between {first:%Y-%m} and {second:%Y-%m}")
 
-    wss_last = [series[sid]["data"][-1][0] for sid in WSS_SERIES if sid in series and series[sid]["data"]]
+    wss_last = [series[sid]["data"][-1][0] for sid in WSS_SERIES if sid in series and series[sid]["data"]
+                and (sid != "forex_w" or not cur.get("weekly_html_issue"))]
     if wss_last:
         newest = max(wss_last)
         lag = (today - dt.date.fromisoformat(newest)).days

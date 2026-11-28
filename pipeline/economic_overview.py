@@ -35,14 +35,14 @@ def build_regions(spending, prices, month_of, number):
         output[sector] = value
 
     for row in spending["rows"]:
-        if row["state"] == "All India" or row["imputation_type"] != "Without Imputation":
+        if row["imputation_type"] != "Without Imputation":
             continue
         region = get_region(row["state"])
         measured(region["mpce"].setdefault(row["year"], {}), row["sector"].lower(),
                  number(row["value"]), f'{row["state"]} MPCE {row["year"]}', (0, 100000))
     for row in cpi_rows:
         month = month_of(row["year"], row["month"])
-        if row["state"] == "All India" or month not in window:
+        if month not in window:
             continue
         region = get_region(row["state"])
         sector = row["sector"].lower()

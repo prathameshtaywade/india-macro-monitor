@@ -14,6 +14,7 @@ import shutil
 
 from checks import INDIA_TIME, policy_mismatches
 from export_dashboard import MONTH_END_SERIES, place
+from research_site import build_research, format_date, metadata
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -101,10 +102,19 @@ def main():
     page = (ROOT / "dashboard/page/index.html").read_text(encoding="utf-8")
     page = re.sub(r'<meta name="dash-[^"]*"[^>]*>\s*', "", page)
     page = re.sub(r'<script src="app\.js"></script>\s*', "", page)
-    page = render_overview(page, macro, datetime.now(INDIA_TIME).date().isoformat())
+    today = datetime.now(INDIA_TIME).date().isoformat()
+    page = render_overview(page, macro, today)
+    base, schedule = build_research(site, ROOT / "data/raw", macro, today)
+    upcoming = "".join(f'<li><time datetime="{event["date"]}">{format_date(event["date"])}</time> · '
+                       f'{escape(event["title"])}</li>' for event in schedule[:4])
+    page = page.replace("<!-- NEXT RELEASES -->", upcoming or "<li>See the calendar for confirmed dates.</li>")
+    page = page.replace("data-web-only hidden", "data-web-only")
+    page = re.sub(r'<div class="mm-chart" (data-draw="chart" data-chart="([\w-]+)")',
+                  r'<div class="mm-chart" id="chart-\2" \1', page)
     template = (ROOT / "web/template.html").read_text(encoding="utf-8")
+    template = template.replace("<!-- SOCIAL -->", metadata("India Macro Monitor", "India’s economic indicators at a glance", base, base + "previews/overview.png"))
     (site / "index.html").write_text(template.replace("<!-- PAGE -->", page), encoding="utf-8")
-    for path in ("dashboard/page/app.js", "web/dash-shim.js"):
+    for path in ("dashboard/page/app.js", "web/dash-shim.js", "web/research.js"):
         shutil.copy(ROOT / path, site)
     for name in ("observations.json", "catalog.json", "snapshot.json", "regions.json"):
         shutil.copy(ROOT / "dashboard" / name, site / "data" / name)

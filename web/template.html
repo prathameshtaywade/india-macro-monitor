@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>India Macro Monitor</title>
 <meta name="description" content="Official Indian macroeconomic data from MoSPI and the Reserve Bank of India: GDP, CPI, IIP, repo rate, G-Sec yields, forex reserves, bank credit and the rupee.">
+<!-- SOCIAL -->
+<link rel="alternate" type="application/rss+xml" title="India Macro Monitor releases" href="feed.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400&display=swap">
@@ -51,10 +53,11 @@
 <div id="dash-root">
 <!-- PAGE -->
 <noscript><p class="site-foot">Interactive charts require JavaScript. <a href="data/observations.json">Download chart observations (JSON)</a> or <a href="data/catalog.json">view series definitions (JSON)</a>.</p></noscript>
-<p class="site-foot">Data: Ministry of Statistics and Programme Implementation (MoSPI) and Reserve Bank of India. Rebuilt daily by a GitHub Action; published only when validation passes.</p>
+<p class="site-foot">Figures are sourced from official releases. Rebuilt daily by a GitHub Action after validation.</p>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 <script src="dash-shim.js"></script>
+<script src="research.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

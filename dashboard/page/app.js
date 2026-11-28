@@ -72,6 +72,13 @@
   function msg(text) { const p = document.createElement('p'); p.className = 'mm-muted'; p.textContent = text; return p; }
   function statusText(st) { return st === 'error' ? "Couldn't load this data." : st === 'loading' ? '—' : '—'; }
 
+  function chartDownload(root, filename, header, rows) {
+    const cell = (v) => typeof v === 'number' ? String(v) : '"' + String(v ?? '').replaceAll('"', '""') + '"';
+    const csv = [header, ...rows].map((row) => row.map(cell).join(',')).join('\r\n') + '\r\n';
+    root.append('a').attr('class', 'mm-chart-link mm-cap').attr('download', filename + '.csv')
+      .attr('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent('\uFEFF' + csv)).text('Chart CSV');
+  }
+
   // ---------- index observations by series ----------
   function index() {
     const o = dash.data('observations');
@@ -112,8 +119,8 @@
     policy: { unit: '%', aria: 'Step chart of repo, SDF and MSF rates with the call money rate', series: [
       ['repo', 'Repo', { step: true }], ['sdf', 'SDF', { step: true }], ['msf', 'MSF', { step: true }],
       ['mmo_call', 'Call money (daily)', { dash: true }]] },
-    yields: { unit: '%', aria: 'Line chart of weekly government yields', series: [
-      ['gsec10_w', '10-year FBIL par yield (weekly)'], ['gsec10_bench_d', '10-year benchmark bond, traded (daily)'],
+    yields: { unit: '%', aria: 'Line chart of government benchmark and auction yields', series: [
+      ['gsec10_bench_d', '10-year benchmark bond, traded (daily)'],
       ['tb91_w', '91-day T-bill auction cut-off', { dash: true }]] },
     'yields-history': { unit: '%', aria: 'Line chart of historical month-end traded yields', series: [
       ['gsec10', '10-year'], ['gsec5', '5-year'], ['gsec1', '1-year']] },
@@ -139,8 +146,9 @@
   };
 
   function exploreCfg() {
-    const cat = catalogRows(); if (!cat) return null;
-    const c = cat.find((r) => r.id === MM.ex) || cat[0];
+    const c = selectedSeries();
+    if (!c) return null;
+    if (research && explorer.history.get(c.id)) return fullExploreCfg(c);
     return { unit: c.unit, aria: 'Line chart of ' + c.name, series: [[c.id, c.name, { step: /^Event/.test(c.freq) }]] };
   }
 
@@ -165,11 +173,19 @@
     if (WSS_SERIES.has(id)) return new Date(+point.d + 8 * DAY_MS);
     if (id === 'usdinr_d' || id === 'gsec10_bench_d') return new Date(+point.d + 7 * DAY_MS);
     if (id === 'mmo_net_liq' || id === 'mmo_call' || id === 'mmo_overnight') return new Date(+point.d + 7 * DAY_MS);
+    if (['wpi_index', 'wpi_inflation', 'cpi_core', 'gst_gross', 'repo_real_expost'].includes(id)) return dayOfMonth(2, 20);
+    if (id === 'm3') return new Date(+point.d + 22 * DAY_MS);
+    if (id.startsWith('bop_') || id.startsWith('sector_credit_') || id === 'trade_merchandise_balance' || id === 'fiscal_deficit_fytd') return dayOfMonth(3, 6);
     return null;
   }
 
   function sourceStatus(id, point) {
     if (ARCHIVE_SERIES.has(id)) return 'Historical series';
+    if (id === 'housing_loan_rate') return 'Selected published months';
+    if (id === 'forex_w') {
+      const issue = (dash.data('observations').meta || []).find((entry) => entry.label === 'Weekly RBI extract issue')?.value;
+      if (issue) return parse(dashboardDay) - parse(issue) >= 8 * DAY_MS ? 'Past expected update window' : '';
+    }
     const due = point && sourceDueDate(id, point);
     if (!(due && parse(dashboardDay) >= due)) return '';
     return WSS_SERIES.has(id) ? 'Awaiting weekly RBI update' : 'Past expected update window';
@@ -193,26 +209,29 @@
   });
   dash.draw('headline-status', (el) => {
     const id = el.dataset.k;
-    el.textContent = sourceStatus(id, index()?.m.get(id)?.at(-1));
+    const status = sourceStatus(id, index()?.m.get(id)?.at(-1));
+    const next = researchData()?.calendar.find((event) => event.series === id && event.date >= dashboardDay);
+    el.textContent = status || (next ? 'Next scheduled ' + dateLabel(next.date) : '');
   });
 
   function lineChart(el, cfg) {
     const I = index();
     const o = dash.data('observations');
     if (!I || !cfg) { el.replaceChildren(msg(statusText(o.status))); return; }
-    // A chart with `months` shows a fixed window ending at its own latest point; others follow the range filter.
-    const end = cfg.months
-      ? d3.max(cfg.series, ([id]) => { const a = I.m.get(id); return a && a.length ? a[a.length - 1].d : null; }) || I.max
+    const points = cfg.points || I.m;
+    // Explorer uses the selected series' coverage; dashboard charts still share a common axis.
+    const end = cfg.months || cfg.points
+      ? d3.max(cfg.series, ([id]) => points.get(id)?.at(-1)?.d) || I.max
       : I.max;
     const t0 = cfg.months ? d3.utcDay.offset(d3.utcMonth.offset(end, -(cfg.months - 1)), -5)
-      : cfg.available ? d3.min(cfg.series, ([id]) => I.m.get(id)?.[0]?.d) ?? parse(CHART_START)
+      : cfg.available ? d3.min(cfg.series, ([id]) => points.get(id)?.[0]?.d) ?? parse(CHART_START)
         : parse(CHART_START);
     const colors = dash.colors; let ci = 0;
     const catalog = new Map((catalogRows() || []).map((series) => [series.id, series]));
     const S = [];
     for (const [id, name, opt = {}] of cfg.series) {
       if (opt.old && !MM.showOld) continue;            // discontinued series are opt-in
-      const a = I.m.get(id); if (!a || !a.length) continue;
+      const a = points.get(id); if (!a || !a.length) continue;
       let pts = (t0 ? a.filter((p) => p.d >= t0) : a.slice()).filter((p) => p.d <= end);
       if (opt.step) {
         const before = t0 ? a.filter((p) => p.d < t0).pop() : null;
@@ -225,7 +244,7 @@
         color: opt.muted ? 'var(--cds-chart-muted)' : colors[ci++ % colors.length] });
     }
     el.replaceChildren();
-    if (!S.length) { el.append(msg('No observations since April 2023.')); return; }
+    if (!S.length) { el.append(msg(cfg.points ? 'No observations for this transformation.' : 'No observations since April 2023.')); return; }
     const root = d3.select(el);
     const lg = root.append('div').attr('class', 'mm-legend');
     const digits = cfg.digits ?? (cfg.unit === 'US$ bn' ? 1 : /^(bp|₹ crore)$/.test(cfg.unit) ? 0 : 2);
@@ -236,6 +255,12 @@
       it.append('b').text(fmt(s.last.v, cfg.unit, digits));
       it.append('span').attr('class', 'mm-muted').text(s.last.label + (s.status ? ' · ' + s.status : ''));
     }
+    if (research && el.id && el.dataset.chart !== 'explore') {
+      lg.append('a').attr('class', 'mm-chart-link mm-cap').attr('href', '#' + el.id).text('Chart link');
+    }
+    if (research) chartDownload(lg, el.dataset.chart,
+      ['series_id', 'date', 'label', 'value', 'unit'], S.flatMap((s) => points.get(s.id)
+        .filter((p) => p.d >= t0 && p.d <= end).map((p) => [s.id, p.d.toISOString().slice(0, 10), p.label, p.v, cfg.unit])));
     const first = d3.min(S, (s) => s.pts[0].d);
     if (!cfg.months && first - t0 > 60 * 864e5) {
       const firstSeries = S.find((s) => s.pts[0].d.getTime() === first.getTime());
@@ -671,6 +696,236 @@
   });
 
   // ---------- explorer ----------
+  dash.draw('yield-curve', (el) => {
+    const snapshot = dash.data('snapshot');
+    if (snapshot.status !== 'ok') return;
+    const rows = snapshot.data.filter((r) => r.group === 'G-Sec yield' && /\b\d{4}$/.test(r.item) && r.value != null)
+      .map((r) => ({ ...r, year: Number(r.item.slice(-4)) })).sort((a, b) => a.year - b.year);
+    if (rows.length < 2) { el.replaceChildren(msg('Insufficient observations for a curve.')); return; }
+    renderDatedRows(el, ['Maturity year', 'Government bond', 'Yield'], rows.map((r) => [
+      r.year, r.item, fmt(r.value, '%', 2),
+    ]));
+    const width = el.clientWidth || 280, height = 175, margin = { left: 44, right: 16, top: 8, bottom: 26 };
+    const x = d3.scaleLinear().domain(d3.extent(rows, (v) => v.year)).range([margin.left, width - margin.right]);
+    const y = d3.scaleLinear().domain(d3.extent(rows, (v) => v.value)).nice().range([height - margin.bottom, margin.top]);
+    const svg = d3.select(el).insert('svg', ':first-child').attr('width', '100%').attr('height', height)
+      .attr('viewBox', '0 0 ' + width + ' ' + height).attr('role', 'img').attr('aria-label', 'Observed government bond yields by maturity year');
+    svg.append('g').attr('class', 'mm-axis').attr('transform', 'translate(' + margin.left + ',0)')
+      .call(d3.axisLeft(y).ticks(4).tickFormat((v) => v + '%'));
+    svg.append('g').attr('class', 'mm-axis').attr('transform', 'translate(0,' + (height - margin.bottom) + ')')
+      .call(d3.axisBottom(x).ticks(width < 360 ? 3 : 5).tickFormat(d3.format('d')));
+    svg.append('path').attr('d', d3.line().x((r) => x(r.year)).y((r) => y(r.value))(rows))
+      .attr('fill', 'none').style('stroke', 'var(--c1)').attr('stroke-width', 2);
+    svg.selectAll('circle').data(rows).join('circle').attr('cx', (r) => x(r.year)).attr('cy', (r) => y(r.value))
+      .attr('r', 4).style('fill', 'var(--c1)');
+    el.append(msg('RBI current rates · ' + rows[0].as_of + '. Points are observed bonds, joined for readability.'));
+    chartDownload(d3.select(el), 'government-bond-yields', ['bond', 'maturity_year', 'yield_percent', 'as_of'],
+      rows.map((r) => [r.item, r.year, r.value, r.as_of]));
+  });
+
+  dash.draw('extra-indicators', (el) => {
+    const ids = ['wpi_inflation', 'cpi_core', 'fiscal_deficit_fytd', 'gst_gross', 'trade_merchandise_balance',
+      'bop_current_account', 'bop_fdi', 'bop_fpi', 'm3', 'sector_credit_farm_yoy', 'sector_credit_industry_yoy',
+      'sector_credit_services_yoy', 'sector_credit_personal_yoy', 'repo_real_expost'];
+    const I = index(), cat = catalogRows();
+    if (!I || !cat) return;
+    const rows = ids.flatMap((id) => {
+      const meta = selectedSeries(id), point = I.raw.get(id)?.at(-1);
+      if (!meta || !point) return [];
+      return [[{ url: '#series=' + id, label: meta.name }, fmt(point.value, meta.unit, meta.unit === '₹ crore' ? 0 : 2),
+        point.label + (sourceStatus(id, I.m.get(id)?.at(-1)) ? ' · ' + sourceStatus(id, I.m.get(id)?.at(-1)) : '')]];
+    });
+    renderDatedRows(el, ['Indicator', 'Latest', 'Period'], rows);
+  });
+
+
+  const research = window.MacroResearch;
+  const explorer = { history: new Map(), comparison: '', mode: 'level', inflight: '', failed: '' };
+  function selectedSeries(id = MM.ex) {
+    const rows = catalogRows();
+    return rows?.find((s) => s.id === id) || (id === MM.ex ? rows?.[0] : undefined);
+  }
+  function researchData() {
+    if (!research) return null;
+    const data = dash.data('research');
+    return data.status === 'ok' ? data.data : null;
+  }
+  function dateLabel(day) {
+    return d3.utcFormat('%-d %b %Y')(parse(day.slice(0, 10)));
+  }
+  function allowedCompare(left, right) {
+    return !!right && right.id !== left.id && left.freq === right.freq && research.validModes(right).includes(explorer.mode);
+  }
+  function fullExploreCfg(left) {
+    const right = selectedSeries(explorer.comparison);
+    const mode = research.validModes(left).includes(explorer.mode) ? explorer.mode : 'level';
+    const primary = explorer.history.get(left.id).filter((row) => !isScheduled({ ...row, series: left.id }));
+    const secondary = allowedCompare(left, right) ? explorer.history.get(right.id)
+      ?.filter((row) => !isScheduled({ ...row, series: right.id })) : null;
+    const start = mode === 'rebased' ? research.baseline(primary, secondary) : null;
+    const first = research.transform(left, primary, mode, start);
+    const points = new Map();
+    const toPoints = (rows) => rows.map((row) => ({ d: parse(row.date), label: row.label, v: row.value }));
+    points.set(left.id, toPoints(first.rows));
+    const groups = [[left.id, left.name, { step: mode === 'level' && left.freq.startsWith('Event') }]];
+    if (secondary) {
+      const other = research.transform(right, secondary, mode, start);
+      if (first.unit === other.unit) {
+        points.set(right.id, toPoints(other.rows));
+        groups.push([right.id, right.name, { dash: true, step: mode === 'level' && right.freq.startsWith('Event') }]);
+      }
+    }
+    return { unit: first.unit, points, available: true, aria: 'Line chart of ' + groups.map((s) => s[1]).join(' and '), series: groups };
+  }
+  function refreshExplorer() {
+    if (!research || !dash.fullSeries) return;
+    const primary = selectedSeries();
+    if (!primary) return;
+    const compare = selectedSeries(explorer.comparison);
+    const ids = [primary.id];
+    if (allowedCompare(primary, compare)) ids.push(compare.id);
+    const missing = ids.filter((id) => !explorer.history.has(id));
+    const request = missing.join(',');
+    if (!missing.length || request === explorer.inflight || request === explorer.failed) return;
+    explorer.inflight = request;
+    Promise.all(missing.map((id) => dash.fullSeries(id).then((rows) => explorer.history.set(id, rows))))
+      .catch(() => { explorer.failed = request; })
+      .finally(() => {
+        if (explorer.inflight === request) explorer.inflight = '';
+        dash.draw('chart');
+        dash.draw('research-status');
+      });
+  }
+  function renderExplorerSelection() {
+    for (const draw of ['transform-picker', 'compare-picker', 'chart', 'ex', 'ex-rows', 'series-download', 'series-permalink', 'research-status']) {
+      dash.draw(draw);
+    }
+    refreshExplorer();
+  }
+  dash.draw('compare-picker', (select) => {
+    const primary = selectedSeries();
+    if (!research || !primary) return;
+    select.replaceChildren(new Option('Choose a second series', ''));
+    for (const s of catalogRows()) {
+      if (s.id !== primary.id && s.freq === primary.freq) select.append(new Option(s.name, s.id));
+    }
+    select.value = explorer.comparison;
+    if (!select.value) explorer.comparison = '';
+    select.onchange = () => { explorer.comparison = select.value; renderExplorerSelection(); };
+  });
+  dash.draw('transform-picker', (select) => {
+    const series = selectedSeries();
+    if (!research || !series) return;
+    const modes = research.validModes(series);
+    if (!modes.includes(explorer.mode)) explorer.mode = 'level';
+    select.replaceChildren(...modes.map((mode) => new Option(research.labels[mode], mode)));
+    select.value = explorer.mode;
+    select.onchange = () => { explorer.mode = select.value; renderExplorerSelection(); };
+  });
+  dash.draw('series-permalink', (el) => {
+    const left = selectedSeries();
+    if (!research || !left) return;
+    const params = new URLSearchParams({ series: left.id });
+    if (explorer.comparison) params.set('compare', explorer.comparison);
+    if (explorer.mode !== 'level') params.set('display', explorer.mode);
+    el.href = '#' + params;
+  });
+  dash.draw('research-status', (el) => {
+    const left = selectedSeries();
+    if (!research || !left) return;
+    const right = selectedSeries(explorer.comparison);
+    const metric = explorer.mode;
+    const lines = [];
+    if (right && !allowedCompare(left, right)) lines.push('The selected display is unavailable for the second series.');
+    else if (right && ['level', 'adjusted'].includes(metric) && left.unit !== right.unit) lines.push('Select Rebased to 100 to compare series with different units.');
+    if (metric === 'adjusted') lines.push('Experimental seasonal adjustment. It requires five years of positive, consecutive monthly levels.');
+    if (metric === 'rebased') lines.push('The first shared positive reporting period is set to 100.');
+    if (['monthly', 'annual'].includes(metric) && /^(%|pp|bp)/.test(left.unit)) lines.push('Changes in rates are measured in percentage points or basis points.');
+    if (explorer.failed.includes(left.id) && !explorer.history.has(left.id)) lines.push('The chart is showing the standard dashboard window. Try reloading for full history.');
+    el.textContent = lines.join(' ');
+  });
+
+  function renderDatedRows(el, labels, rows) {
+    el.replaceChildren();
+    const wrapper = document.createElement('div');
+    wrapper.className = 'mm-tw';
+    const table = document.createElement('table');
+    const head = table.createTHead().insertRow();
+    for (const label of labels) {
+      const th = document.createElement('th');
+      th.scope = 'col'; th.textContent = label; head.append(th);
+    }
+    const body = table.createTBody();
+    for (const values of rows) {
+      const tr = body.insertRow();
+      for (const value of values) {
+        const td = tr.insertCell();
+        if (value?.url && /^(?:https:\/\/|#series=[a-z0-9_]+$)/.test(value.url)) {
+          const link = document.createElement('a');
+          link.href = value.url; link.textContent = value.label; td.append(link);
+        } else td.textContent = value;
+      }
+    }
+    wrapper.append(table);
+    el.append(wrapper);
+  }
+  dash.draw('revisions-view', (el) => {
+    const data = researchData();
+    if (!data?.revisions) return;
+    const rows = data.revisions.filter((r) => r.first.published_at || r.vintages > 1)
+      .sort((a, b) => b.latest.observed_at.localeCompare(a.latest.observed_at));
+    renderDatedRows(el, ['Series and period', 'First value', 'Latest value', 'Difference'], rows.slice(0, 20).map((r) => {
+      const c = selectedSeries(r.series);
+      const v = (n) => fmt(n, c?.unit, c?.unit === '%' ? 2 : 1);
+      const first = r.first.published_at
+        ? { label: v(r.first.value) + ' · published ' + dateLabel(r.first.published_at), url: r.first.source }
+        : v(r.first.value) + ' · first saved ' + dateLabel(r.first.observed_at);
+      return [`${c?.name || r.series} · ${r.period}`, first,
+        v(r.latest.value) + ' · saved ' + dateLabel(r.latest.observed_at),
+        fmt(r.latest.value - r.first.value, c?.unit === '%' ? 'pp' : c?.unit, 2)];
+    }));
+    el.append(msg('An official first print is linked where verified. Other rows compare the first value saved by this dashboard with the latest saved value.'));
+  });
+  dash.draw('surprises-view', (el) => {
+    const data = researchData();
+    if (!data?.surprises) return;
+    if (!data.surprises.length) { el.replaceChildren(msg('No verifiable pre-release consensus is available.')); return; }
+    renderDatedRows(el, ['Release', 'Consensus', 'First published', 'Surprise'], data.surprises.map((r) => [
+      (selectedSeries(r.series)?.name || r.series) + ' · ' + r.period,
+      { label: fmt(r.forecast, '%', 2) + ' · ' + r.publisher + ' · ' + dateLabel(r.date), url: r.source },
+      { label: fmt(r.actual, '%', 2) + ' · ' + dateLabel(r.released), url: r.actual_source },
+      fmt(r.surprise, 'pp', 2),
+    ]));
+    el.append(msg('Coverage is limited to dated, source-linked forecasts published before the release.'));
+  });
+
+  dash.draw('reader-tools', (el) => {
+    const cpi = latest('cpi_infl_combined');
+    const fx = index()?.raw.get('usdinr_d')?.at(-1);
+    const housing = index()?.raw.get('housing_loan_rate') || [];
+    const money = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+    const input = (key) => {
+      const item = el.querySelector('[data-calc="' + key + '"]');
+      return item.validity.valid ? item.valueAsNumber : NaN;
+    };
+    const put = (key, message) => { el.querySelector('[data-result="' + key + '"]').textContent = message; };
+    const calculate = () => {
+      const fd = input('fd'), usd = input('usd');
+      const principal = input('principal'), interest = input('interest') / 1200, months = input('years') * 12;
+      put('fd', cpi && Number.isFinite(fd) ?
+        fmt(100 * ((100 + fd) / (100 + cpi.value) - 1), '%', 2) + ' after inflation · CPI ' + cpi.label : 'Enter a rate to compare with CPI.');
+      put('usd', fx && Number.isFinite(usd) ? money.format(usd * fx.value) + ' · reference rate ' + fx.label : 'Enter a US dollar amount.');
+      const emi = interest ? principal * interest / -Math.expm1(-months * Math.log1p(interest)) : principal / months;
+      put('emi', Number.isFinite(emi) ? money.format(emi) + ' per month at the entered rate' : 'Enter valid loan terms.');
+      const prev = housing.at(-2), last = housing.at(-1);
+      if (last) put('housing', 'RBI housing-loan rate was ' + fmt(last.value, '%', 2) + ' in ' + last.label +
+        (prev ? ', compared with ' + fmt(prev.value, '%', 2) + ' in ' + prev.label : '') + '. Figures are for the periods shown.');
+    };
+    el.oninput = calculate;
+    calculate();
+  });
+
+
   dash.draw('picker', (sel) => {
     const cat = catalogRows();
     sel.replaceChildren();
@@ -681,8 +936,10 @@
       for (const r of rows) og.append(new Option(r.name, r.id));
       sel.append(og);
     }
-    sel.value = MM.ex;
-    sel.onchange = () => { MM.ex = sel.value; dash.draw('chart'); dash.draw('ex'); dash.draw('ex-rows'); dash.draw('series-download'); };
+    sel.value = selectedSeries()?.id || '';
+    if (sel.value) MM.ex = sel.value;
+    sel.onchange = () => { MM.ex = sel.value; renderExplorerSelection(); };
+    refreshExplorer();
   });
   dash.draw('series-download', (el) => {
     const series = catalogRows()?.find((r) => r.id === MM.ex);
@@ -700,9 +957,14 @@
       el.textContent = c.obs ? `${c.first} to ${last ? periodLabel(last) : c.last} · ${c.obs} observations` : 'No verified observations';
       if (status) el.textContent += ' · ' + status;
     }
-    else if (part === 'link') {
+    else if (part === 'next') {
+      const latestPeriod = index()?.raw.get(c.id)?.at(-1)?.period || '';
+      const due = researchData()?.calendar.find((event) => event.series === c.id && event.date >= dashboardDay &&
+        (!event.period || event.period > latestPeriod));
+      el.textContent = due ? dateLabel(due.date) + ' · published schedule' : 'No published date in the calendar';
+    } else if (part === 'link') {
       el.replaceChildren();
-      if (/^https:\/\//.test(c.source_url || '')) { const a = document.createElement('a'); a.href = c.source_url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = c.source_url; el.append(a); }
+      if (/^https:\/\//.test(c.source_url || '')) { const a = document.createElement('a'); a.href = c.source_url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'View source'; el.append(a); }
       else el.textContent = '—';
     } else el.textContent = c[part] || '—';
   });
@@ -711,7 +973,8 @@
     tb.replaceChildren();
     if (!I || !cat) return;
     const c = cat.find((r) => r.id === MM.ex) || cat[0];
-    const rows = (I.raw.get(c.id) || []).slice().sort((a, b) => ((a.date || a.period) < (b.date || b.period) ? 1 : -1)).slice(0, 12);
+    const raw = explorer.history.get(c.id)?.map((row) => ({ ...row, series: c.id })) || I.raw.get(c.id) || [];
+    const rows = raw.slice().sort((a, b) => ((a.date || a.period) < (b.date || b.period) ? 1 : -1)).slice(0, 12);
     for (const r of rows) {
       const tr = tb.insertRow(); tr.dataset.key = encodeURIComponent(r.series) + ',' + encodeURIComponent(r.period);
       tr.insertCell().textContent = periodLabel(r);
@@ -721,7 +984,7 @@
 
 
   // ---------- state and union territory comparison ----------
-  const regionChoice = { left: 'maharashtra', right: 'bihar', round: '' };
+  const regionChoice = { left: 'maharashtra', right: 'all-india', round: '' };
   function stateData() {
     const dataset = dash.data('regions');
     return dataset.status === 'ok' ? dataset : null;
@@ -733,7 +996,8 @@
     const data = stateData();
     if (!data) return;
     const side = el.dataset.picker;
-    const options = side === 'round' ? surveyRounds(data.data).map((id) => ({ id, name: id })) : data.data;
+    const options = side === 'round' ? surveyRounds(data.data).map((id) => ({ id, name: id }))
+      : data.data.filter((row) => side === 'right' || row.id !== 'all-india');
     if (!options.some(({ id }) => id === regionChoice[side])) regionChoice[side] = options[0]?.id ?? '';
     el.replaceChildren();
     for (const { id, name } of options) {
@@ -747,7 +1011,27 @@
       regionChoice[side] = el.value;
       dash.draw('region-picker');
       dash.draw('regional-chart');
+      dash.draw('state-ranking');
     };
+  });
+
+  dash.draw('state-ranking', (el) => {
+    const ds = stateData();
+    if (!ds) return;
+    const local = ds.data.find((r) => r.id === regionChoice.left);
+    const india = ds.data.find((r) => r.id === 'all-india');
+    if (!local) return;
+    const period = ds.meta.find((m) => m.label === 'Inflation period')?.value;
+    const round = regionChoice.round || surveyRounds(ds.data)[0];
+    const metrics = [['Headline inflation · ' + period, (r) => r.inflation?.combined, (v) => fmt(v, '%', 2)],
+      ['Rural spending · ' + round, (r) => r.mpce?.[round]?.rural, (v) => '₹' + v.toLocaleString('en-IN')],
+      ['Urban spending · ' + round, (r) => r.mpce?.[round]?.urban, (v) => '₹' + v.toLocaleString('en-IN')]];
+    renderDatedRows(el, ['Measure', local.name, 'All India', 'Rank (highest first)'], metrics.map(([label, value, format]) => {
+      const sample = ds.data.filter((r) => r.id !== 'all-india' && Number.isFinite(value(r)));
+      const v = value(local), national = india && value(india);
+      return [label, Number.isFinite(v) ? format(v) : '—', Number.isFinite(national) ? format(national) : '—',
+        Number.isFinite(v) ? (1 + sample.filter((r) => value(r) > v).length) + ' of ' + sample.length : '—'];
+    }));
   });
 
   dash.draw('regional-chart', (el) => {
@@ -815,7 +1099,17 @@
   }
   function route() {
     const hash = typeof location !== 'undefined' ? location.hash || '' : '';
-    const id = decodeURIComponent(hash.slice(1));
+    if (research && hash.startsWith('#series=')) {
+      const requested = new URLSearchParams(hash.slice(1));
+      MM.ex = requested.get('series');
+      explorer.comparison = requested.get('compare') || '';
+      explorer.mode = requested.get('display') || 'level';
+      showTab('explore');
+      renderExplorerSelection();
+      return;
+    }
+    let id;
+    try { id = decodeURIComponent(hash.slice(1)); } catch { id = ''; }
     if (TABS.includes(id)) { showTab(id); return; }
     const target = id ? document.getElementById(id) : null;
     const panel = target && target.closest('[data-tab]');
@@ -843,6 +1137,14 @@
     });
   });
   window.addEventListener('hashchange', route);
+  if (research) {
+    const canonical = document.querySelector('link[rel="canonical"]')?.href;
+    for (const link of document.querySelectorAll('[data-share]')) {
+      const address = new URL('share/' + link.dataset.share + '/', canonical || location.href);
+      link.href = 'https://wa.me/?text=' + encodeURIComponent(address.href);
+      link.target = '_blank'; link.rel = 'noopener';
+    }
+  }
   route();
   // Print all views, then restore the one in view.
   window.addEventListener('beforeprint', () => { for (const p of document.querySelectorAll('[data-tab]')) p.hidden = false; });

@@ -1,0 +1,472 @@
+{
+  "cpi_core": {
+    "2026-04": [
+      3.7,
+      "https://www.rbi.org.in/Scripts/BS_ViewBulletin.aspx?Id=24513"
+    ],
+    "2026-08": [
+      4.2,
+      "https://www.rbi.org.in/Scripts/BS_ViewBulletin.aspx?Id=24513"
+    ],
+    "2026-09": [
+      4.3,
+      "https://www.rbi.org.in/Scripts/BS_ViewBulletin.aspx?Id=24516"
+    ]
+  },
+  "gst_gross": {
+    "2025-10": [
+      188125,
+      "https://tutorial.gst.gov.in/downloads/news/gst_revenue_report_final_for_publishing_oct_2026.pdf"
+    ],
+    "2026-10": [
+      231290,
+      "https://tutorial.gst.gov.in/downloads/news/gst_revenue_report_final_for_publishing_oct_2026.pdf"
+    ]
+  },
+  "trade_merchandise_balance": {
+    "2025-09": [
+      -33,
+      "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2323944&lang=2&reg=48"
+    ],
+    "2025-10": [
+      -42.5835,
+      "https://www.commerce.gov.in/files/2026-11/SDDS%20Data-October-2026.pdf"
+    ],
+    "2026-09": [
+      -30.21,
+      "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2323944&lang=2&reg=48"
+    ],
+    "2026-10": [
+      -39.8766,
+      "https://www.commerce.gov.in/files/2026-11/SDDS%20Data-October-2026.pdf"
+    ]
+  },
+  "housing_loan_rate": {
+    "2025-01": [
+      8.7,
+      "https://www.rbi.org.in/Scripts/PublicationsView.aspx?Id=23800"
+    ],
+    "2026-02": [
+      7.61,
+      "https://www.rbi.org.in/Scripts/PublicationsView.aspx?Id=23800"
+    ]
+  },
+  "bop_current_account": {
+    "2026-07": [
+      -7.0,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63596"
+    ],
+    "2026-08": [
+      -5.2,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63813"
+    ],
+    "2026-09": [
+      -7.4,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63974"
+    ]
+  },
+  "bop_fdi": {
+    "2026-07": [
+      7.3,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63596"
+    ],
+    "2026-08": [
+      3.3,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63813"
+    ],
+    "2026-09": [
+      -4.9,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63974"
+    ]
+  },
+  "bop_fpi": {
+    "2026-07": [
+      4.1,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63596"
+    ],
+    "2026-08": [
+      1.7,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63813"
+    ],
+    "2026-09": [
+      -6.7,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63974"
+    ]
+  },
+  "sector_credit_farm_yoy": {
+    "2026-08": [
+      17.2,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63697"
+    ],
+    "2026-09": [
+      19.5,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63891"
+    ]
+  },
+  "sector_credit_industry_yoy": {
+    "2026-08": [
+      18.2,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63697"
+    ],
+    "2026-09": [
+      19.5,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63891"
+    ]
+  },
+  "sector_credit_services_yoy": {
+    "2026-08": [
+      24.3,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63697"
+    ],
+    "2026-09": [
+      28.3,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63891"
+    ]
+  },
+  "sector_credit_personal_yoy": {
+    "2026-08": [
+      16.9,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63697"
+    ],
+    "2026-09": [
+      17.3,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63891"
+    ]
+  },
+  "m3": {
+    "2026-08-15": [
+      32294503.0,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63519"
+    ],
+    "2026-08-31": [
+      33221648.0,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63624"
+    ],
+    "2026-09-15": [
+      33067446.0,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63718"
+    ],
+    "2026-09-30": [
+      33766475.0,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63819"
+    ],
+    "2026-10-15": [
+      33300300.0,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63939"
+    ],
+    "2026-10-31": [
+      33768416.0,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64013"
+    ],
+    "2026-11-15": [
+      33644451.0,
+      "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=64057"
+    ]
+  },
+  "fiscal_deficit_fytd": {
+    "2026-09": [
+      714413.0,
+      "https://cga.nic.in/writereaddata/MonthAccount/92026/DATA2627.htm"
+    ]
+  },
+  "wpi_index": {
+    "2023-04": [
+      99.0,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2023-05": [
+      98.6,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2023-06": [
+      98.3,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2023-07": [
+      99.1,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2023-08": [
+      99.5,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2023-09": [
+      99.6,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2023-10": [
+      100.1,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2023-11": [
+      100.1,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2023-12": [
+      99.4,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-01": [
+      99.3,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-02": [
+      99.3,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-03": [
+      99.4,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-04": [
+      99.9,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-05": [
+      100.4,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-06": [
+      100.7,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-07": [
+      101.0,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-08": [
+      100.8,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-09": [
+      101.2,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-10": [
+      102.1,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-11": [
+      102.1,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-12": [
+      101.6,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-01": [
+      101.1,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-02": [
+      100.9,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-03": [
+      100.6,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-04": [
+      100.5,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-05": [
+      100.2,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-06": [
+      100.3,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-07": [
+      100.2,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-08": [
+      100.8,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-09": [
+      101.0,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-10": [
+      100.9,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-11": [
+      101.5,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-12": [
+      101.9,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-01": [
+      102.3,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-02": [
+      103.1,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-03": [
+      104.6,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-04": [
+      108.9,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-05": [
+      110.1,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-06": [
+      110.3,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-07": [
+      110.0,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-08": [
+      110.8,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-09": [
+      112.5,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-10": [
+      113.3,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ]
+  },
+  "wpi_inflation": {
+    "2024-04": [
+      0.91,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-05": [
+      1.83,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-06": [
+      2.44,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-07": [
+      1.92,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-08": [
+      1.31,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-09": [
+      1.61,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-10": [
+      2.0,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-11": [
+      2.0,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2024-12": [
+      2.21,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-01": [
+      1.81,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-02": [
+      1.61,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-03": [
+      1.21,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-04": [
+      0.6,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-05": [
+      -0.2,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-06": [
+      -0.4,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-07": [
+      -0.79,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-08": [
+      0.0,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-09": [
+      -0.2,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-10": [
+      -1.18,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-11": [
+      -0.59,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2025-12": [
+      0.3,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-01": [
+      1.19,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-02": [
+      2.18,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-03": [
+      3.98,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-04": [
+      8.36,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-05": [
+      9.88,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-06": [
+      9.97,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-07": [
+      9.78,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-08": [
+      9.92,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-09": [
+      11.39,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ],
+    "2026-10": [
+      12.29,
+      "https://eaindustry.nic.in/indx_download_2223/wpi_monthly_index_202611.xlsx"
+    ]
+  }
+}

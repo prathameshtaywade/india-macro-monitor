@@ -1,8 +1,7 @@
 # India Macro Monitor — data pipeline
 
-Source-backed Indian macro dataset built only from official **MoSPI** and **RBI** sources, plus the
-interactive dashboard that reads it. Data first built **24 Nov 2026**; the table below is that snapshot. Free/open tooling only: Python 3 standard library,
-a browser, and d3 in the dashboard.
+Source-backed Indian macro dataset from **MoSPI**, **RBI** and other official publishers, plus an interactive
+dashboard. Data first built **24 Nov 2026**; the table below is that snapshot. Built with Python, D3 and GitHub Pages.
 
 ## Coverage at build time
 
@@ -79,6 +78,8 @@ The [published dashboard](https://prathameshtaywade.github.io/india-macro-monito
 | [RBI rate snapshot](https://prathameshtaywade.github.io/india-macro-monitor/data/snapshot.json) | `rows` with `item`, `group`, `value`, `unit`, and the source's `as_of` date or label. |
 | [State comparisons](https://prathameshtaywade.github.io/india-macro-monitor/data/regions.json) | `rows` with state and union territory CPI and household spending, plus `meta` for reporting periods and sources. |
 | `data/csv/<series_id>.csv` | Full stored history for one catalogue ID, such as `data/csv/cpi_infl_combined.csv`. |
+| `data/series/<series_id>.json` | Full stored history for one series, with `period`, `date`, `label`, and `value`. |
+| `data/research.json` | Upcoming calendar events, displayed revision comparisons, and source-linked forecast comparisons. |
 
 ## Website and automation
 
@@ -94,6 +95,41 @@ The same page runs in two places: the Claude dashboard and a static website buil
 | RBI Handbook + Weekly Statistical Supplement tables | weekly (WSS is out on Fridays) | **a person**, prompted by an issue from `rbi-reminder.yml` |
 | MPC rate decisions | every two months | **a person** adds them to `POLICY_EXTRA` in `pipeline/rbi_extract.js` |
 | New Handbook file ids | once a year (Jul–Sep) | **a person** updates `HB_IDS` in `pipeline/rbi_extract.js` |
+
+The public RBI weekly HTML extract now supplies reserves, bank credit, deposits and M3 automatically. The
+weekly browser import remains the fallback for those series and supplies rates from Table 5, which the HTML
+press release omits. The same collector reads RBI's monthly balance-of-payments and sectoral-credit releases,
+DPIIT's WPI workbook, CGA fiscal accounts, Commerce SDDS trade and GST reports. Core CPI and housing loan
+benchmarks are sourced observations from RBI publications with limited coverage. Collector failures leave the
+last successful readings available and appear in the GitHub warnings. The schedule describes the planned
+refresh; agency release times and source availability vary.
+
+## Research and reader tools
+
+- **Comparison.** Explorer fetches full series only when opened. It supports overlays at matching frequencies,
+  relative changes and rebasing to the first shared positive reporting period. Rate changes are shown in points.
+  The seasonal view is an experimental multiplicative decomposition with centred 12-month averages. It requires
+  at least five years of positive, consecutive monthly levels and can revise as new data arrive.
+- **Long histories.** `cpi_linked`, `iip_linked` and `gdp_linked` extend the current series using overlap ratios.
+  Earlier observations are dashboard estimates, with documented overlap periods and a break in measurement.
+  The current-base official series stay available separately.
+- **Releases.** `calendar.html` and `calendar.ics` use only published dates; update `data/raw/research_evidence.json`
+  when an agency changes its schedule. `feed.xml` provides RSS alerts without subscriber accounts. The revision
+  ledger records new and changed GDP, CPI and IIP values. Older rows use the first reading held in the repository
+  unless a dated official first print has been verified. Forecasts require a public pre-release source and a
+  matching official first print. The current comparison includes a documented CPI poll; there is no live consensus feed.
+- **Rates.** The headline 10-year rate is the traded government benchmark. Explorer retains the weekly FBIL par
+  benchmark. The maturity view draws the bonds quoted by RBI, and repo less trailing inflation is a backward-looking
+  real-rate proxy. Obtain written reuse permission before adding a commercial CCIL yield curve.
+- **Readers.** Overview has FD purchasing power, USD conversion, and home-loan payment calculators. States compares
+  reported values with the all-India figures and ranks available states and territories in the same reporting period.
+  The About page provides a corrections contact and explains reuse and limitations. WhatsApp links use section pages
+  with separately generated previews.
+- **Hosting.** GitHub Pages is the default. After a domain is registered and its DNS and Pages settings are configured,
+  set the repository Action variable `SITE_URL` to its HTTPS address for canonical links, alerts, and share previews.
+
+Install the pinned build dependencies once with `python3 -m pip install -r web/requirements.txt`. The code retains
+its copyright. For reuse, contact the maintainer through GitHub. Source data follows the original publishers’ terms.
 
 ### Safeguards
 

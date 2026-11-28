@@ -67,11 +67,11 @@ class FixedPageText(unittest.TestCase):
         for part in ('id="brief"', 'id="brief-funding"', 'id="brief-pricing"', 'id="banking"', 'id="funding"'):
             self.assertIn(part, brief)
 
-    def test_catalogue_and_methods_are_not_on_the_page(self):
+    def test_explorer_keeps_methodology_in_a_disclosure(self):
         with open(PAGE, encoding="utf-8") as f:
             h = f.read()
         self.assertNotIn('id="catalog"', h)
-        self.assertNotIn("<details", h)
+        self.assertIn("<details><summary>Source and methodology</summary>", h)
         self.assertIn("github.com/prathameshtaywade/india-macro-monitor#readme", h)
 
     def test_no_time_range_control(self):

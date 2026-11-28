@@ -2,7 +2,7 @@
 // Implements only what app.js uses: data, calc, draw, colors.
 (function () {
   const FILES = { observations: 'data/observations.json', catalog: 'data/catalog.json',
-    snapshot: 'data/snapshot.json', regions: 'data/regions.json' };
+    snapshot: 'data/snapshot.json', regions: 'data/regions.json', research: 'data/research.json' };
   const state = {};
   const calcs = {};
   const calcCache = {};
@@ -47,7 +47,7 @@
   const ready = Promise.all(Object.entries(FILES).map(([id, url]) =>
     fetch(url, { cache: 'no-cache' })
       .then((r) => { if (!r.ok) throw new Error(r.status + ' ' + url); return r.json(); })
-      .then((j) => { state[id] = { status: 'ok', data: Array.isArray(j) ? j : j.rows || [], meta: j.meta || [] }; })
+      .then((j) => { state[id] = { status: 'ok', data: id === 'research' ? j : Array.isArray(j) ? j : j.rows || [], meta: j.meta || [] }; })
       .catch((e) => { console.error(e); state[id] = { status: 'error', data: [], meta: [], message: String(e) }; })
       .finally(schedule)
   ));
@@ -56,6 +56,10 @@
     colors: ['var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--c4)', 'var(--c5)'],
     data, ready,
     seriesCsvBase: 'data/csv/',
+    fullSeries(id) {
+      return fetch('data/series/' + encodeURIComponent(id) + '.json')
+        .then((r) => { if (!r.ok) throw new Error('Series history unavailable'); return r.json(); });
+    },
     calc(id, spec) { calcs[id] = spec; },
     loader() {},
     onData(fn) { fn(); },

@@ -1,0 +1,182 @@
+{
+  "calendar_sources": {
+    "MoSPI": "https://www.mospi.gov.in/uploads/documents/releaseCalender/1793948871564-ARC%202026-27%20updated%20till%20October%202026.pdf",
+    "RBI": "https://www.rbi.org.in/Scripts/FS_PressRelease.aspx?prid=62422",
+    "DPIIT": "https://eaindustry.nic.in/press_release/press_release_202610.pdf"
+  },
+  "calendar": [
+    [
+      "2026-11-28",
+      "Industrial production",
+      "iip_index",
+      "2026-10",
+      "MoSPI"
+    ],
+    [
+      "2026-11-30",
+      "Quarterly GDP",
+      "gdp_growth_q",
+      "2026-Q2",
+      "MoSPI"
+    ],
+    [
+      "2026-12-04",
+      "RBI policy decision (meeting ends)",
+      "repo",
+      "",
+      "RBI"
+    ],
+    [
+      "2026-12-12",
+      "Consumer prices",
+      "cpi_infl_combined",
+      "2026-11",
+      "MoSPI"
+    ],
+    [
+      "2026-12-14",
+      "Wholesale prices",
+      "wpi_index",
+      "2026-11",
+      "DPIIT"
+    ],
+    [
+      "2026-12-15",
+      "Monthly jobs survey",
+      "plfs_ur",
+      "2026-11",
+      "MoSPI"
+    ],
+    [
+      "2026-12-28",
+      "Industrial production",
+      "iip_index",
+      "2026-11",
+      "MoSPI"
+    ],
+    [
+      "2027-01-07",
+      "GDP, first annual advance estimate",
+      "gdp_growth_a",
+      "2026-27",
+      "MoSPI"
+    ],
+    [
+      "2027-01-12",
+      "Consumer prices",
+      "cpi_infl_combined",
+      "2026-12",
+      "MoSPI"
+    ],
+    [
+      "2027-01-15",
+      "Monthly jobs survey",
+      "plfs_ur",
+      "2026-12",
+      "MoSPI"
+    ],
+    [
+      "2027-01-28",
+      "Industrial production",
+      "iip_index",
+      "2026-12",
+      "MoSPI"
+    ],
+    [
+      "2027-02-05",
+      "RBI policy decision (meeting ends)",
+      "repo",
+      "",
+      "RBI"
+    ],
+    [
+      "2027-02-12",
+      "Consumer prices",
+      "cpi_infl_combined",
+      "2027-01",
+      "MoSPI"
+    ],
+    [
+      "2027-02-15",
+      "Monthly jobs survey",
+      "plfs_ur",
+      "2027-01",
+      "MoSPI"
+    ],
+    [
+      "2027-02-26",
+      "Quarterly GDP",
+      "gdp_growth_q",
+      "2026-Q3",
+      "MoSPI"
+    ],
+    [
+      "2027-02-28",
+      "Industrial production",
+      "iip_index",
+      "2027-01",
+      "MoSPI"
+    ],
+    [
+      "2027-03-12",
+      "Consumer prices",
+      "cpi_infl_combined",
+      "2027-02",
+      "MoSPI"
+    ],
+    [
+      "2027-03-15",
+      "Monthly jobs survey",
+      "plfs_ur",
+      "2027-02",
+      "MoSPI"
+    ],
+    [
+      "2027-03-28",
+      "Industrial production",
+      "iip_index",
+      "2027-02",
+      "MoSPI"
+    ]
+  ],
+  "first_prints": [
+    {
+      "series": "gdp_growth_q",
+      "period": "2026-Q1",
+      "value": 7.8,
+      "published_at": "2026-08-31",
+      "source": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2304949&reg=48&lang=1"
+    },
+    {
+      "series": "cpi_infl_combined",
+      "period": "2026-10",
+      "value": 6.09,
+      "published_at": "2026-11-12",
+      "source": "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2026/nov/doc_10457_20261112_15543001.pdf"
+    },
+    {
+      "series": "iip_index",
+      "period": "2026-04",
+      "value": 118.9,
+      "published_at": "2026-06-01",
+      "source": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2267531&lang=1&reg=3"
+    },
+    {
+      "series": "iip_growth",
+      "period": "2026-04",
+      "value": 4.9,
+      "published_at": "2026-06-01",
+      "source": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2267531&lang=1&reg=3"
+    }
+  ],
+  "forecasts": [
+    {
+      "series": "cpi_infl_combined",
+      "period": "2026-10",
+      "forecast": 5.93,
+      "date": "2026-11-06",
+      "publisher": "Reuters poll median",
+      "source": "https://economictimes.indiatimes.com/news/economy/indicators/indias-consumer-inflation-soars-as-food-prices-surge-october-predictions-near-rbis-max-target/articleshow/135599213.cms"
+    }
+  ]
+}
