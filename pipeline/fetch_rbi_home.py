@@ -11,8 +11,10 @@ import html, json, os, re, ssl, sys, time, urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from checks import snapshot_errors  # noqa: E402
+from snapshot_history import history_key  # noqa: E402
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "data", "raw", "rbi_home.json")
+HISTORY = os.path.join(os.path.dirname(__file__), "..", "data", "raw", "rbi_home_history.jsonl")
 URL = "https://www.rbi.org.in/"
 
 
@@ -55,6 +57,21 @@ def parse(raw, fetched_utc=None):
     return snap
 
 
+def append_history(snap, path=HISTORY):
+    """Keep every valid snapshot whose as-on dates or charted values changed (append-only)."""
+    last = None
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    last = json.loads(line)
+    if last is not None and history_key(last) == history_key(snap):
+        return False
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(snap, ensure_ascii=False, sort_keys=True) + "\n")
+    return True
+
+
 def save_if_valid(snap, out=OUT):
     """Write the snapshot only if it passes the checks. Returns the list of errors (empty = saved)."""
     errs = snapshot_errors(snap)
@@ -73,6 +90,8 @@ def main():
                                  timeout=60, context=ctx()).read().decode("utf-8", "ignore")
     snap = parse(raw)
     errs = save_if_valid(snap)
+    if not errs:
+        append_history(snap)
     if errs:
         print("rbi.org.in snapshot rejected; keeping the last good file:\n  " + "\n  ".join(errs), file=sys.stderr)
         sys.exit(1)

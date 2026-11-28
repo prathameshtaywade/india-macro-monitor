@@ -18,6 +18,9 @@ from checks import snapshot_date  # noqa: E402
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 MN = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 MONTH_END_SERIES = {"forex_m", "gsec10", "gsec5", "gsec1"}
+# The page charts from this date only; earlier rows stay in data/macro.json but are not sent to readers.
+# Step series (policy rates) keep their last change before it, so the line starts at the level then in force.
+CHART_START = "2023-04-01"
 
 
 def place(p, freq, month_end=False):
@@ -42,10 +45,17 @@ def build(M):
         for p, v in s["data"]:
             d, lab = place(p, s["freq"], month_end=s["id"] in MONTH_END_SERIES)
             pts.append((p, d, lab, v))
+        keep = [i for i, (_, d, _, _) in enumerate(pts) if d is None or d >= CHART_START]
+        before = [i for i, (_, d, _, _) in enumerate(pts) if d is not None and d < CHART_START]
+        if s["freq"].startswith("Event") and before:
+            keep = [before[-1]] + keep
+        for i in keep:
+            p, d, lab, v = pts[i]
             obs.append({"series": s["id"], "period": p, "label": lab, "date": d, "value": round(v, 4)})
         first, last = (pts[0], pts[-1]) if pts else ((None,) * 4, (None,) * 4)
         cat.append({k: s.get(k, "") for k in ["id", "name", "group", "unit", "freq", "base", "source", "source_url", "notes"]}
-                   | {"first": first[2], "last": last[2], "latest": round(last[3], 4) if pts else None, "obs": len(pts)})
+                   | {"first": first[2], "last": last[2], "latest": round(last[3], 4) if pts else None, "obs": len(pts),
+                      "first_seen": ((M.get("first_seen") or {}).get(s["id"]) or {}).get(last[0]) if pts else None})
 
     H = M.get("snapshot") or {}
     fetched = snapshot_date(H)

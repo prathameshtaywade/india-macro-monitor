@@ -141,7 +141,11 @@ def main(names=None, out_dir=None, getter=None):
                 months = {month: i for i, month in enumerate(calendar.month_name)}
                 newest = max((r for r in headline if r["sector"] == "Combined" and r["inflation"] not in (None, "", "-")),
                              key=lambda r: (int(r["year"]), months[r["month"]]))
-                params = dict(params, year=newest["year"], month=newest["month"])
+                # The latest three months (crossing a year end if needed), so states can show a 3-month average.
+                y, m = int(newest["year"]), months[newest["month"]]
+                last3 = [((y * 12 + m - 1 - k) // 12, (y * 12 + m - 1 - k) % 12 + 1) for k in range(3)]
+                params = dict(params, year=",".join(sorted({str(a) for a, _ in last3})),
+                              month_code=",".join(str(b) for _, b in sorted(last3)))
             rows = fetch_all(ep, params, limit=100 if ep.endswith("getCPIData") else 200, getter=getter)
             if not rows:
                 raise ValueError("no rows returned")

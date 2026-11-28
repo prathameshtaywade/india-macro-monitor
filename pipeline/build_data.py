@@ -17,7 +17,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from checks import is_weekly_key, latest_revision  # noqa: E402
 from banking import growth_gap, incremental_cd_fytd, trailing_mean  # noqa: E402
 from funding import call_spread_bp, pricing_gap, resolve_lending, resolve_mmo, spread_verification, trailing_mean_obs  # noqa: E402
-from economic_overview import build_regions, source_query  # noqa: E402
+from snapshot_history import daily_series  # noqa: E402
+from economic_overview import build_regions, merge_backfill, source_query  # noqa: E402
 from macro_sectors import gva_group_growth, gva_group_levels  # noqa: E402
 from rbi_releases import BASE as RBI_RELEASE_URL  # noqa: E402
 from rbi_policy import LEDGER, policy_rows  # noqa: E402
@@ -188,7 +189,7 @@ for feed, definitions in [
         data = [(ym(r["year"], r["month"]), num(r["value"])) for r in raw["rows"]
                 if r["state"] == "All India" and r["AgeGroup"] == "15 years and above"
                 and r["gender"] == gender and r["sector"] == sector]
-        data.insert(0, (plfs_backfill["period"], plfs_backfill["values"][sid]))
+        data = merge_backfill(data, plfs_backfill["period"], plfs_backfill["values"][sid])
         add(id=sid, name=name, group="Jobs", unit="%", freq="Monthly", base="",
             source="MoSPI – Monthly PLFS", source_url=source_query(raw),
             notes="All India, age 15+, Current Weekly Status. March 2026 is filled from the official June 2026 bulletin if absent from the API.",
@@ -385,6 +386,24 @@ try:
 except (OSError, ValueError):
     previous = {}
 
+# ---------------- Daily history from the rbi.org.in "Current Rates" snapshot ----------------
+HOME_HISTORY = []
+_hist_path = os.path.join(RAW, "rbi_home_history.jsonl")
+if os.path.exists(_hist_path):
+    with open(_hist_path, encoding="utf-8") as f:
+        HOME_HISTORY = [json.loads(line) for line in f if line.strip()]
+DAILY = daily_series(HOME_HISTORY)
+add(id="usdinr_d", name="USD/INR – FBIL reference rate (daily)", group="External", unit="₹ per US$", freq="Daily",
+    base="", source="RBI – rbi.org.in Current Rates (FBIL reference rate, 1.00 pm)", source_url="https://www.rbi.org.in/",
+    notes="Collected daily from the snapshot since November 2026; dated by RBI's 'as at' date. Earlier weeks come "
+          "from the Weekly Statistical Supplement series.", data=DAILY["usdinr_d"])
+bench = DAILY["gsec10_bench_d"]
+add(id="gsec10_bench_d", name="10-year benchmark G-Sec, traded yield (daily)", group="Rates & yields", unit="% p.a.",
+    freq="Daily", base="", source="RBI – rbi.org.in Current Rates (G-Sec market)", source_url="https://www.rbi.org.in/",
+    notes="Yield of the listed bond maturing about ten years ahead" + (f" (currently {bench[-1][2]})" if bench else "")
+          + ". The bond changes when RBI issues a new 10-year benchmark. Not the same measure as FBIL's par yield.",
+    data=[(d, v) for d, v, _ in bench])
+
 # ---------------- Funding conditions and new-business pricing (RBI press releases) ----------------
 def _jsonl(name):
     path = os.path.join(RAW, name)
@@ -454,8 +473,25 @@ gen = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 if previous.get("series") == json.loads(json.dumps(S, ensure_ascii=False)):
     gen = previous.get("generated_utc", gen)
 regions = build_regions(mospi("hces_mpce"), mospi("cpi_2024_states"), ym, num)
+# Date each series' latest reading first appeared in this dataset ("first published here"). Carried forward from
+# the previous build; a reading that was already the latest before tracking began is recorded as None (unknown).
+_today_ist = time.strftime("%Y-%m-%d", time.gmtime(time.time() + 5.5 * 3600))
+_prev_fs = previous.get("first_seen") or {}
+_prev_latest = {x["id"]: x["data"][-1][0] for x in previous.get("series", []) if x.get("data")}
+first_seen = {}
+for _s in S:
+    if not _s["data"]:
+        continue
+    _p = _s["data"][-1][0]
+    _known = _prev_fs.get(_s["id"]) or {}
+    if _p in _known:
+        first_seen[_s["id"]] = {_p: _known[_p]}
+    elif _prev_latest.get(_s["id"]) == _p:
+        first_seen[_s["id"]] = {_p: None}
+    else:
+        first_seen[_s["id"]] = {_p: _today_ist}
 out = {"generated_utc": gen, "snapshot": HOME, "provenance": RB.get("provenance", {}),
-       "funding_repo": funding_repo, "series": S, "regions": regions,
+       "funding_repo": funding_repo, "series": S, "regions": regions, "first_seen": first_seen,
        "overview_releases": overview_releases["releases"]}
 json.dump(out, open(macro_path, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
 for s in S:

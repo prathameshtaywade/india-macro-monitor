@@ -89,6 +89,10 @@ The same page runs in two places: the Claude dashboard and a static website buil
 | A series disappears or is renamed | `pipeline/series_ids.txt` lists every published id; any missing or unlisted id fails validation |
 | A series moves backwards or shrinks >5%, or has invalid periods, out-of-range values or duplicates | `validate.py` errors. PR checks compare against the PR base commit. |
 | Stale sources (e.g. the manual RBI step not run) | `validate.py` warnings in the run summary |
+| Charts end on stale weekly figures while the daily table is current | Every valid rbi.org.in snapshot is appended to `data/raw/rbi_home_history.jsonl`; daily `usdinr_d` and `gsec10_bench_d` (10-year benchmark bond, named per point) and the daily call rate (`mmo_call`) are charted beside the weekly series |
+| The manual weekly RBI step is missed | From day 8 the page marks weekly series "Awaiting weekly RBI update" and `validate.py` warns |
+| A collector fails quietly (fetch steps may fail without stopping the run) | `pipeline/fetch_status.py` writes each source's outcome to the run summary and `data/raw/fetch_status.json`; two failures in a row open an issue |
+| A hand-entered reading outlives its purpose | `merge_backfill` adds the PDF-sourced March 2026 jobs values only while the API lacks that month |
 
 Errors stop publishing; the last good site stays up. If a fetch fails, the Action keeps the last good raw files (cached).
 
@@ -102,6 +106,18 @@ python3 -m unittest discover -s tests -v     # pipeline checks
 node tests/test_render.js                    # page rendering checks
 ```
 They run on every pull request and push (`.github/workflows/test.yml`) and before each daily publish.
+
+### Dates shown for readings
+
+- **"Released <date>"**: the official release date, from `data/raw/overview_releases.json` (hand-maintained; shown only
+  when its series and period match the reading exactly).
+- **"First published here <date>"**: recorded automatically (`first_seen` in `data/macro.json`) the first time a new
+  latest reading appears in a build. Readings already present before tracking began show no date.
+
+### What readers download
+
+`dashboard/observations.json` holds rows from April 2023 only (the charts' start), plus the last policy-rate step
+before it. Full history stays in `data/macro.json`; the explorer's coverage line and the catalogue show full dates.
 
 ### RBI press-release collectors
 

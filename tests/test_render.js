@@ -249,12 +249,14 @@ test('freshness notice is tied to the next expected release', () => {
   ]);
   const datasets = { observations, catalog: obs([]) };
   const e = el({ series: 'cpi_infl_combined gsec10_w' });
-  load(datasets, '2026-11-25T12:00:00Z').draws.freshness(e);
+  // Weekly RBI series are added by hand: flagged as awaiting the weekly update once an issue is missed (8 days).
+  load(datasets, '2026-11-20T12:00:00Z').draws.freshness(e);
   assert.strictEqual(e.textContent, '');
-  load(datasets, '2026-12-05T12:00:00Z').draws.freshness(e);
-  assert.strictEqual(e.textContent, 'Past expected update window: FBIL 10-year yield.');
+  load(datasets, '2026-11-25T12:00:00Z').draws.freshness(e);
+  assert.strictEqual(e.textContent, 'Awaiting weekly RBI update: FBIL 10-year yield.');
+  // CPI is flagged only after its next expected release.
   load(datasets, '2026-12-17T12:00:00Z').draws.freshness(e);
-  assert.strictEqual(e.textContent, 'Past expected update window: headline CPI, FBIL 10-year yield.');
+  assert.strictEqual(e.textContent, 'Past expected update window: headline CPI. Awaiting weekly RBI update: FBIL 10-year yield.');
 });
 
 test('the IIP headline shows the index level and change in index points', () => {
@@ -265,6 +267,27 @@ test('the IIP headline shows the index level and change in index points', () => 
   draws.kpi(change);
   assert.strictEqual(value.textContent, '124.3');
   assert.strictEqual(change.textContent, '+1.2 index points vs Aug 2026');
+});
+
+// ---------- accuracy and freshness ----------
+test('repo tile says when the change took effect and what it replaced', () => {
+  const rows = [{ series: 'repo', period: '2025-12-05', label: '5 Dec 2025', date: '2025-12-05', value: 5.25 },
+    { series: 'repo', period: '2026-10-07', label: '7 Oct 2026', date: '2026-10-07', value: 5.5 }];
+  const { draws } = load({ observations: obs(rows), catalog: obs([]), snapshot: snapshot(5.5, 5.25) });
+  const c = { textContent: '', dataset: { k: 'repo', part: 'change' }, classList: { add() {}, remove() {} } };
+  draws.kpi(c);
+  assert.strictEqual(c.textContent, '+0.25 pp on 7 Oct 2026 (5.25% since 5 Dec 2025)');
+});
+
+test('weekly RBI series are flagged as awaiting the weekly update after 8 days, not as late', () => {
+  const rows = [{ series: 'forex_w', period: '2026-11-13', label: '13 Nov 2026', date: '2026-11-13', value: 705.3 },
+    { series: 'cpi_infl_combined', period: '2026-10', label: 'Oct 2026', date: '2026-10-15', value: 6.09 }];
+  const early = load({ observations: obs(rows), catalog: obs([]), snapshot: snapshot(5.5, 5.25) }, '2026-11-20T12:00:00Z');
+  const e1 = { textContent: '', dataset: { series: 'forex_w cpi_infl_combined' } }; early.draws.freshness(e1);
+  assert.strictEqual(e1.textContent, '');
+  const late = load({ observations: obs(rows), catalog: obs([]), snapshot: snapshot(5.5, 5.25) }, '2026-11-28T12:00:00Z');
+  const e2 = { textContent: '', dataset: { series: 'forex_w cpi_infl_combined' } }; late.draws.freshness(e2);
+  assert.strictEqual(e2.textContent, 'Awaiting weekly RBI update: weekly reserves.');
 });
 
 if (failures) { console.log(`${failures} failed`); process.exit(1); }
