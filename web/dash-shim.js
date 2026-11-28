@@ -55,6 +55,7 @@
   window.dash = {
     colors: ['var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--c4)', 'var(--c5)'],
     data, ready,
+    seriesCsvBase: 'data/csv/',
     calc(id, spec) { calcs[id] = spec; },
     loader() {},
     onData(fn) { fn(); },
