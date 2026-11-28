@@ -45,8 +45,9 @@ a browser, and d3 in the dashboard.
 
 ## Page layout
 
-- **Overview** opens with six headline indicators and recent changes in unemployment, inflation and industrial
-  production. Official release links and dates appear when the reading matches the period in
+- **Overview** opens with plain-language changes in GDP growth, inflation and unemployment, then six headline
+  indicators. The published HTML includes the summary, headline values and their reference periods. Headline cards
+  show when an update is overdue where the regular release schedule is known. Official release links and dates appear when the reading matches the period in
   `data/raw/overview_releases.json`.
 - **Economy** shows GDP and GVA levels, real household consumption and fixed investment, national jobs data,
   CPI, industrial production, policy rates, bond yields and exchange rates. The RBI current-rates table is
@@ -57,10 +58,27 @@ a browser, and d3 in the dashboard.
   imputation. Use the survey-round selector to switch HCES periods.
 - **Banking** retains credit and deposit growth, the incremental credit–deposit ratio, funding conditions,
   lending and deposit pricing, and their histories.
-- **Explorer** gives access to the underlying national series, including growth rates and discontinued series.
+- **Explorer** gives access to the underlying national series, including growth rates and discontinued series. The public site offers a full-history CSV for each series.
 
 Fixed page text may not mention a month or year unless it is a listed permanent fact (`tests/test_page_text.py`);
 anything that describes the current situation is drawn from the data.
+
+## Data downloads
+
+In **Explorer**, choose a series and select **Download full series (CSV)**. The CSV includes the full coverage held in
+`data/macro.json`, including observations before the chart window. Files are UTF-8 with a byte-order mark for Excel.
+Columns are `series_id`, `period` (source reporting period), `label` (display period), `date` (chart date), `value`,
+and `unit`. For policy rates, `date` is the effective date and the file may include future scheduled changes.
+
+The [published dashboard](https://prathameshtaywade.github.io/india-macro-monitor/) refreshes these relative URLs with each successful build:
+
+| File | Fields and coverage |
+|---|---|
+| [Series catalogue](https://prathameshtaywade.github.io/india-macro-monitor/data/catalog.json) | `rows` with `id`, `name`, `unit`, `freq`, `base`, source fields, and full coverage. Use `id` to join files. |
+| [Chart observations](https://prathameshtaywade.github.io/india-macro-monitor/data/observations.json) | `rows` with `series`, `period`, `label`, `date`, `value`, plus `meta` for build and release details. Covers the chart window starting April 2023, with the prior policy reading carried in. |
+| [RBI rate snapshot](https://prathameshtaywade.github.io/india-macro-monitor/data/snapshot.json) | `rows` with `item`, `group`, `value`, `unit`, and the source's `as_of` date or label. |
+| [State comparisons](https://prathameshtaywade.github.io/india-macro-monitor/data/regions.json) | `rows` with state and union territory CPI and household spending, plus `meta` for reporting periods and sources. |
+| `data/csv/<series_id>.csv` | Full stored history for one catalogue ID, such as `data/csv/cpi_infl_combined.csv`. |
 
 ## Website and automation
 

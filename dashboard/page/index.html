@@ -31,6 +31,9 @@
   .mm-overview .mm-kpis .mm-card { border-top: 2px solid var(--c1); }
   .mm-overview .mm-kpis a { color: inherit; text-decoration: none; }
   .mm-overview .mm-kpis a:hover, .mm-overview .mm-kpis a:focus-visible { text-decoration: underline; }
+  .mm-quick-read { margin: 0; padding: 0 0 0 1.2em; display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-body); line-height: 1.5; }
+  .mm-quick-read:empty, .mm-overview .mm-card .mm-cap:empty, .mm-overview .mm-kc:empty { display: none; }
+  .mm-headline-status { font-weight: var(--cds-font-weight-medium); }
   .mm-release-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--cds-gap-md); }
   .mm-release { border-top: 1px solid var(--color-border-line); padding-top: 12px; display: grid; gap: 5px; align-content: start; }
   .mm-release a, .mm-regional a { color: inherit; text-underline-offset: 3px; }
@@ -47,6 +50,9 @@
   .mm-chip { font: inherit; font-size: var(--cds-font-size-caption); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-bg); color: var(--color-fg); cursor: pointer; }
   .mm-chip[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
   .mm-chip:focus-visible, .mm-row-btn:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+  .mm-download { display: inline-flex; align-items: center; min-height: 44px; box-sizing: border-box; text-decoration: none; }
+  .mm-download:not([href]) { display: none; }
+  .mm-download:hover { text-decoration: underline; }
   .mm-sec { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--cds-gap-md); }
   .mm-sec-h { display: grid; gap: var(--cds-gap-xs); max-width: 80ch; }
   .mm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: var(--cds-gap-md); }
@@ -147,11 +153,11 @@
 <div class="mm">
   <header class="mm-head" id="top">
     <h1>India Macro Monitor</h1>
-    <p class="mm-cap">Official statistics from the Ministry of Statistics and Programme Implementation (MoSPI) and the Reserve Bank of India. Published series updated <span data-draw="built" data-part="obs">—</span>.</p>
+    <p class="mm-cap">Official statistics from the Ministry of Statistics and Programme Implementation (MoSPI) and the Reserve Bank of India. Published series updated <span data-draw="built" data-part="obs" data-prefill="built">—</span>.</p>
   </header>
 
   <span data-draw="policy-check"></span>
-  <p class="mm-flag" id="policy-flag" data-policy-flag hidden role="status"><b>Policy rates may be out of date.</b> RBI's website shows different rates from this dashboard's policy history: <span data-draw="policy-diff">—</span>. The history is updated by hand from the MPC resolution, so the headline repo rate and the policy chart may lag until that is done.</p>
+  <p class="mm-flag" id="policy-flag" data-policy-flag hidden role="status"><b>Policy rates may be out of date.</b> RBI's website shows different rates from this dashboard's policy history: <span data-draw="policy-diff" data-prefill="policy-diff">—</span>. The headline repo rate and policy chart may lag until the effective date is verified.</p>
   <p class="mm-cap" role="status" data-draw="scheduled-policy" data-source="observations"></p>
 
   <nav class="mm-tabs" role="tablist" aria-label="Views">
@@ -165,15 +171,51 @@
   <div class="mm-panel mm-overview" id="tab-overview" data-tab="overview" role="tabpanel" aria-labelledby="tabbtn-overview">
     <section class="mm-sec" aria-labelledby="overview-heading">
       <h2 id="overview-heading">India’s economy at a glance</h2>
+      <ul class="mm-quick-read" aria-label="Latest changes"><!-- QUICK READ --></ul>
       <div class="mm-kpis" id="headline" aria-label="Latest readings">
-      <div class="mm-card" id="kpi-gdp"><a class="mm-kl" href="#growth">Real GDP growth, y/y</a><span class="mm-kv" data-draw="kpi" data-k="gdp_growth_q" data-part="value" data-source="latest" data-field="value" data-where="series=gdp_growth_q">—</span><span class="mm-kc" data-draw="kpi" data-k="gdp_growth_q" data-part="change" data-source="latest" data-field="change" data-where="series=gdp_growth_q">—</span><span class="mm-cap" data-draw="kpi" data-k="gdp_growth_q" data-part="label" data-source="latest" data-field="label" data-where="series=gdp_growth_q">—</span></div>
-      <div class="mm-card" id="kpi-cpi"><a class="mm-kl" href="#prices">Headline inflation, y/y</a><span class="mm-kv" data-draw="kpi" data-k="cpi_infl_combined" data-part="value" data-source="latest" data-field="value" data-where="series=cpi_infl_combined">—</span><span class="mm-kc" data-draw="kpi" data-k="cpi_infl_combined" data-part="change" data-source="latest" data-field="change" data-where="series=cpi_infl_combined">—</span><span class="mm-cap" data-draw="kpi" data-k="cpi_infl_combined" data-part="label" data-source="latest" data-field="label" data-where="series=cpi_infl_combined">—</span><span class="mm-cap" data-draw="vs-band" data-source="latest"></span></div>
-      <div class="mm-card" id="kpi-iip"><a class="mm-kl" href="#industry">Industrial production · 2022-23 = 100</a><span class="mm-kv" data-draw="kpi" data-k="iip_index" data-part="value" data-source="latest" data-field="value" data-where="series=iip_index">—</span><span class="mm-kc" data-draw="kpi" data-k="iip_index" data-part="change" data-source="latest" data-field="change" data-where="series=iip_index">—</span><span class="mm-cap" data-draw="kpi" data-k="iip_index" data-part="label" data-source="latest" data-field="label" data-where="series=iip_index">—</span></div>
-      <div class="mm-card" id="kpi-jobs"><a class="mm-kl" href="#jobs">Unemployment rate · age 15+</a><span class="mm-kv" data-draw="kpi" data-k="plfs_ur" data-part="value" data-source="latest" data-field="value" data-where="series=plfs_ur">—</span><span class="mm-kc" data-draw="kpi" data-k="plfs_ur" data-part="change" data-source="latest" data-field="change" data-where="series=plfs_ur">—</span><span class="mm-cap" data-draw="kpi" data-k="plfs_ur" data-part="label" data-source="latest" data-field="label" data-where="series=plfs_ur">—</span></div>
-      <div class="mm-card" id="kpi-consumption"><a class="mm-kl" href="#demand">Real household consumption</a><span class="mm-kv" data-draw="kpi" data-k="pfce_real_q" data-part="value" data-source="latest" data-field="value" data-where="series=pfce_real_q">—</span><span class="mm-kc" data-draw="consumption-change" data-source="observations">—</span><span class="mm-cap" data-draw="kpi" data-k="pfce_real_q" data-part="label" data-source="latest" data-field="label" data-where="series=pfce_real_q">—</span></div>
-      <div class="mm-card" id="kpi-repo"><a class="mm-kl" href="#policy">RBI policy repo rate</a><span class="mm-kv" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</span><span class="mm-kc" data-draw="kpi" data-k="repo" data-part="change" data-source="latest" data-field="change" data-where="series=repo">—</span><span class="mm-cap" data-draw="kpi" data-k="repo" data-part="label" data-source="latest" data-field="label" data-where="series=repo">—</span></div>
+        <div class="mm-card" id="kpi-gdp">
+          <a class="mm-kl" href="#growth">Real GDP growth, year on year</a>
+          <span class="mm-kv" data-draw="kpi" data-k="gdp_growth_q" data-part="value" data-prefill="gdp_growth_q.value" data-source="latest" data-field="value" data-where="series=gdp_growth_q">—</span>
+          <span class="mm-cap" data-draw="kpi" data-k="gdp_growth_q" data-part="label" data-prefill="gdp_growth_q.label" data-source="latest" data-field="label" data-where="series=gdp_growth_q">—</span>
+          <span class="mm-kc" data-draw="kpi" data-k="gdp_growth_q" data-part="change" data-source="latest" data-field="change" data-where="series=gdp_growth_q"></span>
+          <span class="mm-cap mm-headline-status" data-draw="headline-status" data-k="gdp_growth_q" data-source="observations"></span>
+        </div>
+        <div class="mm-card" id="kpi-cpi">
+          <a class="mm-kl" href="#prices">Consumer price inflation, year on year</a>
+          <span class="mm-kv" data-draw="kpi" data-k="cpi_infl_combined" data-part="value" data-prefill="cpi_infl_combined.value" data-source="latest" data-field="value" data-where="series=cpi_infl_combined">—</span>
+          <span class="mm-cap" data-draw="kpi" data-k="cpi_infl_combined" data-part="label" data-prefill="cpi_infl_combined.label" data-source="latest" data-field="label" data-where="series=cpi_infl_combined">—</span>
+          <span class="mm-kc" data-draw="kpi" data-k="cpi_infl_combined" data-part="change" data-source="latest" data-field="change" data-where="series=cpi_infl_combined"></span>
+          <span class="mm-cap" data-draw="vs-band" data-source="latest"></span>
+          <span class="mm-cap mm-headline-status" data-draw="headline-status" data-k="cpi_infl_combined" data-source="observations"></span>
+        </div>
+        <div class="mm-card" id="kpi-iip">
+          <a class="mm-kl" href="#industry">Industrial production index · 2022-23 = 100</a>
+          <span class="mm-kv" data-draw="kpi" data-k="iip_index" data-part="value" data-prefill="iip_index.value" data-source="latest" data-field="value" data-where="series=iip_index">—</span>
+          <span class="mm-cap" data-draw="kpi" data-k="iip_index" data-part="label" data-prefill="iip_index.label" data-source="latest" data-field="label" data-where="series=iip_index">—</span>
+          <span class="mm-kc" data-draw="kpi" data-k="iip_index" data-part="change" data-source="latest" data-field="change" data-where="series=iip_index"></span>
+          <span class="mm-cap mm-headline-status" data-draw="headline-status" data-k="iip_index" data-source="observations"></span>
+        </div>
+        <div class="mm-card" id="kpi-jobs">
+          <a class="mm-kl" href="#jobs">Unemployment rate, ages 15 and over</a>
+          <span class="mm-kv" data-draw="kpi" data-k="plfs_ur" data-part="value" data-prefill="plfs_ur.value" data-source="latest" data-field="value" data-where="series=plfs_ur">—</span>
+          <span class="mm-cap" data-draw="kpi" data-k="plfs_ur" data-part="label" data-prefill="plfs_ur.label" data-source="latest" data-field="label" data-where="series=plfs_ur">—</span>
+          <span class="mm-kc" data-draw="kpi" data-k="plfs_ur" data-part="change" data-source="latest" data-field="change" data-where="series=plfs_ur"></span>
+          <span class="mm-cap mm-headline-status" data-draw="headline-status" data-k="plfs_ur" data-source="observations"></span>
+        </div>
+        <div class="mm-card" id="kpi-consumption">
+          <a class="mm-kl" href="#demand">Household spending, adjusted for inflation</a>
+          <span class="mm-kv" data-draw="kpi" data-k="pfce_real_q" data-part="value" data-prefill="pfce_real_q.value" data-source="latest" data-field="value" data-where="series=pfce_real_q">—</span>
+          <span class="mm-cap" data-draw="kpi" data-k="pfce_real_q" data-part="label" data-prefill="pfce_real_q.label" data-source="latest" data-field="label" data-where="series=pfce_real_q">—</span>
+          <span class="mm-kc" data-draw="consumption-change" data-source="observations"></span>
+          <span class="mm-cap mm-headline-status" data-draw="headline-status" data-k="pfce_real_q" data-source="observations"></span>
+        </div>
+        <div class="mm-card" id="kpi-repo">
+          <a class="mm-kl" href="#policy">RBI policy interest rate (repo)</a>
+          <span class="mm-kv" data-draw="kpi" data-k="repo" data-part="value" data-prefill="repo.value" data-source="latest" data-field="value" data-where="series=repo">—</span>
+          <span class="mm-cap">Effective <span data-draw="kpi" data-k="repo" data-part="label" data-prefill="repo.label" data-source="latest" data-field="label" data-where="series=repo">—</span></span>
+          <span class="mm-kc" data-draw="kpi" data-k="repo" data-part="change" data-source="latest" data-field="change" data-where="series=repo"></span>
+        </div>
       </div>
-      <p class="mm-cap" role="status" data-draw="freshness" data-series="gdp_growth_q cpi_infl_combined iip_index plfs_ur pfce_real_q"></p>
     </section>
     <section class="mm-sec" id="release-movements" aria-labelledby="changed-heading">
       <h2 id="changed-heading">What changed</h2>
@@ -357,7 +399,10 @@
   <div class="mm-panel" id="tab-explore" data-tab="explore" role="tabpanel" aria-labelledby="tabbtn-explore" hidden>
   <section class="mm-sec" id="explore">
     <div class="mm-sec-h"><h2>Series explorer</h2><p class="mm-muted">Pick any series to see it from April 2023, with its definition, source, full coverage and latest observations.</p></div>
-    <label class="mm-seg" for="ex-pick"><span>Series</span><select class="dash-select" id="ex-pick" data-draw="picker" aria-label="Series" data-source="catalog"></select></label>
+    <div class="mm-bar">
+      <label class="mm-seg" for="ex-pick"><span>Series</span><select class="dash-select" id="ex-pick" data-draw="picker" aria-label="Series" data-source="catalog"></select></label>
+      <a class="mm-chip mm-download" data-draw="series-download" data-source="catalog" download>Download full series (CSV)</a>
+    </div>
     <div class="mm-ex">
       <div class="mm-card"><div class="mm-chart" id="ch-explore" data-draw="chart" data-chart="explore" data-source="observations catalog"></div></div>
       <div class="mm-card" id="ex-about">
@@ -368,7 +413,7 @@
           <dt>Base</dt><dd data-draw="ex" data-part="base">—</dd>
           <dt>Coverage</dt><dd data-draw="ex" data-part="coverage">—</dd>
           <dt>Source</dt><dd data-draw="ex" data-part="source">—</dd>
-          <dt>Query</dt><dd data-draw="ex" data-part="link">—</dd>
+          <dt>Source link</dt><dd data-draw="ex" data-part="link">—</dd>
           <dt>Notes</dt><dd data-draw="ex" data-part="notes">—</dd>
         </dl>
         <h3>Latest observations</h3>
@@ -379,7 +424,7 @@
   </div>
 
   <footer class="mm-foot">
-    <p class="mm-cap">Published series updated <span data-draw="built" data-part="obs">—</span>. Sources, methods and known gaps: <a href="https://github.com/prathameshtaywade/india-macro-monitor#readme" target="_blank" rel="noopener">project README on GitHub</a>.</p>
+    <p class="mm-cap">Published series updated <span data-draw="built" data-part="obs" data-prefill="built">—</span>. <a href="https://github.com/prathameshtaywade/india-macro-monitor#data-downloads" target="_blank" rel="noopener">Data downloads</a> · <a href="https://github.com/prathameshtaywade/india-macro-monitor#readme" target="_blank" rel="noopener">Sources and methodology</a></p>
   </footer>
 </div>
 <script src="app.js"></script>

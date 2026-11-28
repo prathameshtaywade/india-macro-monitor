@@ -26,7 +26,7 @@
     title: 'Latest value per series',
     description: 'Last and previous observation of each series, rounded as shown on the page; change = last minus previous.',
     fn: (observations) => {
-      const places = { gdp_growth_q: 1, iip_index: 1, forex_w: 1, forex_m: 1, scb_credit_yoy: 1, scb_dep_yoy: 1,
+      const places = { gdp_growth_q: 1, iip_index: 1, plfs_ur: 1, forex_w: 1, forex_m: 1, scb_credit_yoy: 1, scb_dep_yoy: 1,
         scb_gap: 2, scb_gap_3m: 2, scb_inc_cd_fytd: 1, mmo_call_spread: 0, mmo_call_spread_5d: 0, mmo_net_liq: 2,
         pricing_gap_fresh: 2 };
       const bySeries = {};
@@ -190,6 +190,10 @@
     const late = byStatus('Past expected update window'), weekly = byStatus('Awaiting weekly RBI update');
     el.textContent = [late.length ? 'Past expected update window: ' + late.join(', ') + '.' : '',
       weekly.length ? 'Awaiting weekly RBI update: ' + weekly.join(', ') + '.' : ''].filter(Boolean).join(' ');
+  });
+  dash.draw('headline-status', (el) => {
+    const id = el.dataset.k;
+    el.textContent = sourceStatus(id, index()?.m.get(id)?.at(-1));
   });
 
   function lineChart(el, cfg) {
@@ -453,7 +457,11 @@
       el.textContent = '—';
       return;
     }
-    if (!r) { el.textContent = statusText(dash.data('latest').status); return; }
+    if (!r) {
+      // The static site already has validated headline values while the data request loads or fails.
+      if (!el.dataset.prefill) el.textContent = statusText(dash.data('latest').status);
+      return;
+    }
     if (part === 'value') el.textContent = c.unit === 'US$ bn' ? r.value.toFixed(c.p) : fmt(c.abs ? Math.abs(r.value) : r.value, c.unit, c.p);
     else if (part === 'label') el.textContent = r.label;
     else if (part === 'change') {
@@ -602,7 +610,8 @@
     const d = dash.data(id);
     const m = (d.meta || []).find((x) => x.label === label);
     const t = m && m.value ? new Date(m.value) : null;
-    el.textContent = t && !isNaN(t) ? d3.utcFormat('%-d %b %Y')(t) : '—';
+    if (t && !isNaN(t)) el.textContent = d3.utcFormat('%-d %b %Y')(t);
+    else if (!el.dataset.prefill) el.textContent = '—';
   });
 
   // ---------- policy history vs rbi.org.in (flag a pending history update) ----------
@@ -626,11 +635,13 @@
   // Empty drawing that shows or hides the stored warning paragraph.
   dash.draw('policy-check', () => {
     const m = policyMismatches();
-    const hide = !(m && m.length);
+    if (!m) return;
+    const hide = !m.length;
     for (const el of document.querySelectorAll('[data-policy-flag]')) if (el.hidden !== hide) el.hidden = hide;
   });
   dash.draw('policy-diff', (el) => {
     const m = policyMismatches();
+    if (!m && el.dataset?.prefill) return;
     el.textContent = m && m.length
       ? m.map((x) => `${x.item} ${x.live.toFixed(2)}% on rbi.org.in vs ${x.hist.toFixed(2)}% in the history (last change ${x.date})`).join('; ')
       : '—';
@@ -671,7 +682,12 @@
       sel.append(og);
     }
     sel.value = MM.ex;
-    sel.onchange = () => { MM.ex = sel.value; dash.draw('chart'); dash.draw('ex'); dash.draw('ex-rows'); };
+    sel.onchange = () => { MM.ex = sel.value; dash.draw('chart'); dash.draw('ex'); dash.draw('ex-rows'); dash.draw('series-download'); };
+  });
+  dash.draw('series-download', (el) => {
+    const series = catalogRows()?.find((r) => r.id === MM.ex);
+    if (dash.seriesCsvBase && series?.obs) el.href = dash.seriesCsvBase + encodeURIComponent(series.id) + '.csv';
+    else el.removeAttribute('href');
   });
   dash.draw('ex', (el) => {
     const cat = catalogRows();
