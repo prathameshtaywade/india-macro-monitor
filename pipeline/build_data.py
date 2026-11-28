@@ -11,6 +11,7 @@ Output schema (per series)
 Period strings: daily/weekly 'YYYY-MM-DD', monthly 'YYYY-MM', quarterly 'YYYY-Qn' (Indian fiscal: Q1=Apr-Jun,
 labelled by fiscal-year start, e.g. 2026-Q1 = Apr-Jun 2026), annual fiscal 'YYYY-YY'.
 """
+from calendar import monthrange
 import json, os, sys, time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -22,6 +23,8 @@ from economic_overview import build_regions, merge_backfill, source_query  # noq
 from macro_sectors import gva_group_growth, gva_group_levels  # noqa: E402
 from rbi_releases import BASE as RBI_RELEASE_URL  # noqa: E402
 from rbi_policy import LEDGER, policy_rows  # noqa: E402
+from research_data import linked_levels  # noqa: E402
+from official_inputs import materialize  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 RAW = os.path.join(ROOT, "data", "raw")
@@ -31,6 +34,14 @@ MON = {m: i for i, m in enumerate(["January", "February", "March", "April", "May
 
 def mospi(name):
     with open(os.path.join(RAW, "mospi", name + ".json")) as f:
+        return json.load(f)
+
+
+def optional_raw(name, default):
+    path = os.path.join(RAW, name)
+    if not os.path.exists(path):
+        return default
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -266,6 +277,11 @@ eur_long = [(ym(x["year"], x["month"]), num(x["value"])) for x in r2["rows"]
 # ---------------- RBI browser extract ----------------
 rbi_path = os.path.join(RAW, "rbi_extract.json")
 RB = json.load(open(rbi_path)) if os.path.exists(rbi_path) else {}
+weekly_html = optional_raw("rbi_weekly_html.json", {})
+for release in weekly_html.values():
+    for key, (period, value) in release["series"].items():
+        if key in ("forex_w_wss", "scb_credit_wss", "scb_dep_wss"):
+            RB.setdefault(key, []).append((period, value, release["issue"]))
 # Weekly WSS points may carry an issue date; keep the newest issue's value for each date.
 for _k in list(RB):
     if is_weekly_key(_k):
@@ -468,6 +484,48 @@ if LDR:
             data=pricing_gap(LDR["walr_fresh"], LDR["wadtdr_fresh"]),
             notes="A market-wide pricing indicator, not a bank's margin: loan mix, funding mix and tenor all affect it.")
 
+# Publish these separately so official headline numbers and bases stay intact.
+by_id = {s["id"]: s for s in S}
+iip_legacy = mospi("iip_2011")
+legacy_cpi = mospi("cpi_2012")
+legacy_gdp = optional_raw("mospi/nas_q_2011_5.json", {"rows": []})
+previous_series = {s["id"]: s["data"] for s in previous.get("series", [])}
+for sid, current, old, overlap, geometric, description in [
+    ("cpi_linked", "cpi_index", [(ym(x["year"], x["month"]), num(x["index"])) for x in legacy_cpi["rows"]
+                                 if x["state"] == "All India" and x["sector"] == "Combined" and x["subgroup"] == "General-Overall"],
+     [f"2025-{m:02d}" for m in range(1, 13)], True, "All-India general CPI; geometric average of the new/old ratios across the 2025 overlap."),
+    ("iip_linked", "iip_index", [(ym(x["year"], x["month"]), num(x["index"])) for x in iip_legacy["rows"]],
+     [f"{2023 if m >= 4 else 2024}-{m:02d}" for m in list(range(4, 13)) + [1, 2, 3]], True,
+     "General IIP; geometric average of the new/old ratios over FY 2023-24, using the currently published index."),
+    ("gdp_linked", "gdp_level_q", [(fq(x["year"], x["quarter"]), (num(x["constant_price"]) or 0) / 1e5) for x in legacy_gdp["rows"]],
+     [f"2022-Q{q}" for q in range(1, 5)], False, "Real GDP; ratio of summed quarterly levels over FY 2022-23."),
+]:
+    new = by_id[current]
+    points = linked_levels(old, new["data"], overlap, geometric)
+    if not points and sid in previous_series:
+        cut = new["data"][0][0]
+        points = [(p, v) for p, v in previous_series[sid] if p < cut] + new["data"]
+    add(id=sid, name=new["name"] + " (linked estimate)", group="Linked history", freq=new["freq"], unit=new["unit"],
+        base=new["base"], source="India Macro Monitor calculation from MoSPI old and new series", source_url=new["source_url"],
+        notes=description + f" Official current-base observations start at {new['data'][0][0]}. Earlier values are our estimate; methodology and coverage changed.",
+        data=points)
+
+for series in materialize(optional_raw("supplementary_points.json", {})):
+    add(**series)
+
+if "repo" in by_id:
+    repo_steps = by_id["repo"]["data"]
+    def inflation_adjusted_repo(period, inflation):
+        y, m = map(int, period.split("-"))
+        end = f"{period}-{monthrange(y, m)[1]:02d}"
+        repo = next((value for day, value in reversed(repo_steps) if day <= end), None)
+        return repo - inflation if repo is not None else None
+
+    add(id="repo_real_expost", name="Repo rate less trailing inflation", group="Rates & yields", freq="Monthly", unit="pp", base="",
+        source="Calculated from RBI policy rate history and MoSPI consumer price inflation", source_url=by_id["repo"]["source_url"],
+        notes="Month-end repo rate minus the same month's year-on-year CPI inflation, in percentage points. A backward-looking proxy for the real policy rate.",
+        data=[(p, inflation_adjusted_repo(p, v)) for p, v in by_id["cpi_infl_combined"]["data"]])
+
 # Keep the previous build time when no series changed, so unchanged days produce no diff.
 gen = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 if previous.get("series") == json.loads(json.dumps(S, ensure_ascii=False)):
@@ -492,7 +550,8 @@ for _s in S:
         first_seen[_s["id"]] = {_p: _today_ist}
 out = {"generated_utc": gen, "snapshot": HOME, "provenance": RB.get("provenance", {}),
        "funding_repo": funding_repo, "series": S, "regions": regions, "first_seen": first_seen,
-       "overview_releases": overview_releases["releases"]}
+       "overview_releases": overview_releases["releases"],
+       "weekly_html_issue": max((r["issue"] for r in weekly_html.values()), default=None)}
 json.dump(out, open(macro_path, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
 for s in S:
     if s["data"]:

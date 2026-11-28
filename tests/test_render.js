@@ -290,5 +290,36 @@ test('weekly RBI series are flagged as awaiting the weekly update after 8 days, 
   assert.strictEqual(e2.textContent, 'Awaiting weekly RBI update: weekly reserves.');
 });
 
+
+const research = require('../web/research.js');
+test('Explorer does not substitute the previous row for a missing calendar month', () => {
+  const series = { id: 'cpi_index', unit: 'Index (2024=100)' };
+  const row = (period, value) => ({ period, date: period + '-15', value });
+  const rows = [row('2026-01', 100), row('2026-03', 110), row('2026-04', 121)];
+  const result = research.transform(series, rows, 'monthly');
+  assert.deepStrictEqual(result.rows.map((p) => p.period), ['2026-04']);
+  assert(Math.abs(result.rows[0].value - 10) < 1e-9);
+});
+test('Explorer rebases two histories at the same first overlapping period', () => {
+  const series = { unit: 'Index' };
+  const left = [{ period: '2026-01', value: 50 }, { period: '2026-02', value: 100 }, { period: '2026-03', value: 120 }];
+  const right = [{ period: '2026-02', value: 80 }, { period: '2026-03', value: 90 }];
+  const base = research.baseline(left, right);
+  assert.strictEqual(base, '2026-02');
+  assert.deepStrictEqual(research.transform(series, left, 'rebased', base).rows.map((p) => p.value), [100, 120]);
+  assert.deepStrictEqual(research.transform(series, right, 'rebased', base).rows.map((p) => p.value), [100, 112.5]);
+});
+test('Seasonal view removes a constant monthly seasonal pattern from five full years', () => {
+  const series = { unit: 'Index', freq: 'Monthly', obs: 60 };
+  const rows = Array.from({ length: 60 }, (_, i) => ({
+    date: String(2020 + Math.floor(i/12)) + '-' + String(i%12 + 1).padStart(2, '0') + '-15',
+    value: i%12 === 0 ? 120 : 100,
+  }));
+  const adjusted = research.transform(series, rows, 'adjusted').rows;
+  assert.strictEqual(adjusted.length, 60);
+  assert(adjusted.every((p) => Math.abs(p.value - adjusted[0].value) < 1e-9));
+  assert.strictEqual(research.transform(series, rows.slice(1), 'adjusted').rows.length, 0);
+});
+
 if (failures) { console.log(`${failures} failed`); process.exit(1); }
 console.log('all render checks passed');

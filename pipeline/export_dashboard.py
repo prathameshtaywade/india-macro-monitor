@@ -85,6 +85,8 @@ def main():
     pending = (M.get("funding_repo") or {}).get("pending_from")
     if pending:
         meta.append({"label": "Repo spread pending from", "value": pending})
+    if M.get("weekly_html_issue"):
+        meta.append({"label": "Weekly RBI extract issue", "value": M["weekly_html_issue"]})
     for release in M.get("overview_releases", []):
         meta.append({"label": "Official release", "value": release})
     out = os.path.join(ROOT, "dashboard")

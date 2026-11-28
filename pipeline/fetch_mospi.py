@@ -43,6 +43,7 @@ QUERIES = {
     "nas_a_2022_21": ("/api/nas/getNASData", dict(base_year="2022-23", series="Current", frequency_code="Annually", indicator_code="21")),
     "nas_a_2022_22": ("/api/nas/getNASData", dict(base_year="2022-23", series="Current", frequency_code="Annually", indicator_code="22")),
     "nas_q_2011_21": ("/api/nas/getNASData", dict(base_year="2011-12", series="Current", frequency_code="Quarterly", indicator_code="21")),
+    "nas_q_2011_5": ("/api/nas/getNASData", dict(base_year="2011-12", series="Current", frequency_code="Quarterly", indicator_code="5")),
     "nas_q_2011_22": ("/api/nas/getNASData", dict(base_year="2011-12", series="Current", frequency_code="Quarterly", indicator_code="22")),
     "nas_a_2011_22": ("/api/nas/getNASData", dict(base_year="2011-12", series="Current", frequency_code="Annually", indicator_code="22")),
     # ---- CPI ----

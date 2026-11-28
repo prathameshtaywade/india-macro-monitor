@@ -21,6 +21,7 @@ SOURCES = {
     "RBI_HOME": "rbi.org.in Current Rates",
     "RBI_POLICY": "RBI repo-rate circulars",
     "RBI_RELEASES": "RBI money-market and lending-rate releases",
+    "PUBLIC_INPUTS": "Public RBI, DPIIT, CGA and GST reports",
 }
 
 

@@ -53,6 +53,12 @@
   .mm-download { display: inline-flex; align-items: center; min-height: 44px; box-sizing: border-box; text-decoration: none; }
   .mm-download:not([href]) { display: none; }
   .mm-download:hover { text-decoration: underline; }
+  .mm-tools { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); align-items: end; }
+  .mm-tools label { display: grid; gap: var(--cds-gap-xs); max-width: 100%; min-width: 0; }
+  .mm-tools input { min-width: 0; max-width: 100%; box-sizing: border-box; }
+  .mm-details-body { display: grid; gap: var(--cds-gap-sm); margin-top: var(--cds-gap-sm); }
+  .mm-links { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); }
+  .mm-links a, .mm-chart-link { color: inherit; text-underline-offset: .2em; }
   .mm-sec { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--cds-gap-md); }
   .mm-sec-h { display: grid; gap: var(--cds-gap-xs); max-width: 80ch; }
   .mm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: var(--cds-gap-md); }
@@ -153,7 +159,7 @@
 <div class="mm">
   <header class="mm-head" id="top">
     <h1>India Macro Monitor</h1>
-    <p class="mm-cap">Official statistics from the Ministry of Statistics and Programme Implementation (MoSPI) and the Reserve Bank of India. Published series updated <span data-draw="built" data-part="obs" data-prefill="built">—</span>.</p>
+    <p class="mm-cap">Official statistics on India’s economy and banking sector. Published series updated <span data-draw="built" data-part="obs" data-prefill="built">—</span>.</p>
   </header>
 
   <span data-draw="policy-check"></span>
@@ -217,9 +223,37 @@
         </div>
       </div>
     </section>
+    <div class="mm-links mm-cap" data-web-only hidden>
+      <a href="calendar.html">Release calendar</a><a href="feed.xml">Subscribe to release alerts (RSS)</a><a href="about.html">About and corrections</a>
+      <a data-share="overview" href="share/overview/">Share Overview on WhatsApp</a>
+    </div>
+    <details data-web-only hidden>
+      <summary>What this could mean for you</summary>
+      <div class="mm-details-body" data-draw="reader-tools" data-source="observations">
+        <div class="mm-grid">
+          <div class="mm-card"><h3>Fixed deposit versus inflation</h3>
+            <label>Annual FD rate (%) <input class="dash-select" type="number" data-calc="fd" min="0" max="30" step="0.01" value="7"></label>
+            <output data-result="fd"></output><p class="mm-cap">Illustrative purchasing-power change before tax, using the latest annual CPI reading.</p></div>
+          <div class="mm-card"><h3>Cost of US dollars</h3>
+            <label>US dollars <input class="dash-select" type="number" data-calc="usd" min="0" max="100000000" step="1" value="10000"></label>
+            <output data-result="usd"></output><p class="mm-cap">Uses the RBI-published FBIL reference rate. Bank spreads and fees vary.</p></div>
+          <div class="mm-card"><h3>Home loan monthly payment</h3>
+            <div class="mm-tools"><label>Loan amount (₹)<input class="dash-select" type="number" min="1" max="1000000000" value="5000000" data-calc="principal"></label>
+              <label>Annual rate (%)<input class="dash-select" type="number" min="0" max="40" step="0.01" value="8" data-calc="interest"></label>
+              <label>Years<input class="dash-select" type="number" min="1" max="50" value="20" data-calc="years"></label></div>
+            <output data-result="emi"></output><p class="mm-cap" data-result="housing"></p>
+            <a class="mm-cap mm-chart-link" href="#series=housing_loan_rate">RBI housing-loan rate history</a></div>
+        </div>
+      </div>
+    </details>
     <section class="mm-sec" id="release-movements" aria-labelledby="changed-heading">
       <h2 id="changed-heading">What changed</h2>
       <div class="mm-release-grid" data-draw="what-changed" data-source="observations catalog"></div>
+    </section>
+    <section class="mm-sec" id="coming-up" data-web-only hidden>
+      <h2>Coming up</h2>
+      <ul class="mm-quick-read"><!-- NEXT RELEASES --></ul>
+      <p class="mm-cap"><a class="mm-chart-link" href="calendar.html">Full calendar and download</a></p>
     </section>
   </div>
 
@@ -239,12 +273,13 @@
       <p class="mm-muted">Growth rates and discontinued GDP and IIP series are available in the Explorer.</p>
       <label class="mm-chip mm-check" for="show-old"><input type="checkbox" id="show-old"> Show discontinued CPI series</label>
       <p class="mm-cap mm-touch-note">Tap a chart to see values.</p>
+      <a class="mm-cap mm-chart-link" data-web-only hidden data-share="macro" href="share/macro/">Share Economy on WhatsApp</a>
     </div>
 
   <section class="mm-sec" id="growth">
     <div class="mm-sec-h"><h2>Economic output: GDP and GVA</h2><p class="mm-muted">Quarterly levels in ₹ lakh crore at constant 2022-23 prices. Quarters follow India’s financial year (Q1 = April–June).</p></div>
     <div class="mm-grid">
-      <div class="mm-card"><h3>Real GDP and GVA</h3><div class="mm-chart" id="ch-growth" data-draw="chart" data-chart="output" data-source="observations"></div><p class="mm-cap">Source: MoSPI National Accounts, indicators 5 and 1.</p></div>
+      <div class="mm-card"><h3>Real GDP and GVA</h3><div class="mm-chart" id="ch-growth" data-draw="chart" data-chart="output" data-source="observations"></div><p class="mm-cap">Source: MoSPI National Accounts. <a class="mm-chart-link" data-web-only hidden href="#series=gdp_linked">Longer linked estimate</a></p></div>
       <div class="mm-card mm-sector-card"><h3>Real GVA by sector</h3><div class="mm-chart mm-sector-chart" id="ch-sectors" data-draw="sectors" data-source="observations catalog"></div><p class="mm-cap">Source: MoSPI National Accounts. Broad-sector GVA sums its component industries.</p></div>
     </div>
   </section>
@@ -280,28 +315,36 @@
   </section>
 
   <section class="mm-sec" id="policy">
-    <div class="mm-sec-h"><h2>Monetary policy</h2><p class="mm-muted">Policy rates as step lines from their effective dates, with the weekly weighted average call money rate, which policy aims to keep near the repo rate. The latest change was a <span data-draw="repo-move">—</span> to <b class="mm-num" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</b>, effective <span data-draw="kpi" data-k="repo" data-part="label">—</span>.</p></div>
-    <div class="mm-card"><h3>Repo, SDF and MSF corridor</h3><div class="mm-chart" id="ch-policy" data-draw="chart" data-chart="policy" data-source="observations"></div><p class="mm-cap">Source: RBI Handbook of Statistics (policy rates table), then MPC resolutions for later changes; WSS Table 5 for the call rate.</p></div>
+    <div class="mm-sec-h"><h2>Monetary policy</h2><p class="mm-muted">Policy rates shown from their effective dates, alongside the daily overnight rate banks pay each other. The latest policy change was a <span data-draw="repo-move">—</span> to <b class="mm-num" data-draw="kpi" data-k="repo" data-part="value" data-source="latest" data-field="value" data-where="series=repo">—</b>, effective <span data-draw="kpi" data-k="repo" data-part="label">—</span>.</p></div>
+    <div class="mm-card"><h3>RBI policy rates and the overnight call rate</h3><div class="mm-chart" id="ch-policy" data-draw="chart" data-chart="policy" data-source="observations"></div><p class="mm-cap">Source: RBI policy decisions and Money Market Operations releases.</p></div>
   </section>
 
   <section class="mm-sec" id="rates">
-    <div class="mm-sec-h"><h2>Government bond yields</h2><p class="mm-muted">Weekly benchmark and auction yields are shown separately from the RBI Handbook’s month-end yields on actual SGL trades by residual maturity.</p></div>
-    <p class="mm-cap" role="status" data-draw="freshness" data-series="gsec10_w tb91_w gsec10_bench_d"></p>
+    <div class="mm-sec-h"><h2>Government bond yields</h2><p class="mm-muted">The headline 10-year yield is for the benchmark bond traded in the market. <a class="mm-chart-link" data-web-only hidden href="#series=gsec10_w">View the alternative weekly FBIL par yield</a>.</p></div>
+    <p class="mm-cap" role="status" data-draw="freshness" data-series="tb91_w gsec10_bench_d"></p>
     <div class="mm-grid">
-      <div class="mm-card"><h3>Weekly benchmark and auction yields</h3><div class="mm-chart" id="ch-yields" data-draw="chart" data-chart="yields" data-source="observations"></div><p class="mm-cap">Source: RBI Weekly Statistical Supplement, Table 5.</p></div>
+      <div class="mm-card"><h3>Benchmark bond and Treasury bill yields</h3><div class="mm-chart" id="ch-yields" data-draw="chart" data-chart="yields" data-source="observations"></div><p class="mm-cap">Source: RBI current rates and the Weekly Statistical Supplement.</p></div>
       <div class="mm-card"><h3>Historical month-end traded yields</h3><div class="mm-chart" id="ch-yields-history" data-draw="chart" data-chart="yields-history" data-source="observations"></div><p class="mm-cap">Source: RBI Handbook Table 178. Coverage ends at the latest Handbook’s cut-off.</p></div>
     </div>
+    <details data-web-only hidden><summary>Yield by bond maturity</summary>
+      <div class="mm-details-body" data-draw="yield-curve" data-source="snapshot"></div>
+      <p class="mm-cap">Observed bonds from the RBI rate table. Coverage depends on the bonds quoted.</p>
+    </details>
   </section>
 
   <section class="mm-sec" id="external">
     <div class="mm-sec-h"><h2>Forex reserves and the rupee</h2><p class="mm-muted">Reserves are the total of foreign currency assets, gold, SDRs and the IMF reserve position. Exchange rates are RBI/FBIL reference rates in rupees per unit of foreign currency, so a rise means a weaker rupee.</p></div>
     <p class="mm-cap" role="status" data-draw="freshness" data-series="forex_w usdinr_w usdinr_d"></p>
     <div class="mm-grid">
-      <div class="mm-card"><h3>Foreign exchange reserves, US$ bn</h3><div class="mm-chart" id="ch-forex" data-draw="chart" data-chart="forex" data-source="observations"></div><p class="mm-cap">Source: RBI via MoSPI API (indicator 47, from 1990), Handbook Tables 210 and 215, WSS Table 2.</p></div>
-      <div class="mm-card"><h3>USD/INR, rupees per US dollar</h3><div class="mm-chart" id="ch-fx" data-draw="chart" data-chart="fx" data-source="observations"></div><p class="mm-cap">Source: RBI via MoSPI API (indicator 33, from 1992), Handbook Table 205, WSS Table 5.</p></div>
-      <div class="mm-card"><h3>EUR/INR, rupees per euro</h3><div class="mm-chart" id="ch-fx-eur" data-draw="chart" data-chart="fx-eur" data-source="observations"></div><p class="mm-cap">Source: RBI via MoSPI API (indicator 33) and RBI Handbook Table 205. Monthly averages.</p></div>
+      <div class="mm-card"><h3>Foreign exchange reserves, US$ bn</h3><div class="mm-chart" id="ch-forex" data-draw="chart" data-chart="forex" data-source="observations"></div><p class="mm-cap">Source: RBI and MoSPI.</p></div>
+      <div class="mm-card"><h3>USD/INR, rupees per US dollar</h3><div class="mm-chart" id="ch-fx" data-draw="chart" data-chart="fx" data-source="observations"></div><p class="mm-cap">Source: RBI and FBIL.</p></div>
+      <div class="mm-card"><h3>EUR/INR, rupees per euro</h3><div class="mm-chart" id="ch-fx-eur" data-draw="chart" data-chart="fx-eur" data-source="observations"></div><p class="mm-cap">Source: RBI and MoSPI. Monthly averages.</p></div>
     </div>
   </section>
+
+  <details data-web-only hidden><summary>More prices, fiscal, trade and banking indicators</summary>
+    <div class="mm-details-body" data-draw="extra-indicators" data-source="observations catalog"></div>
+  </details>
 
   <section class="mm-sec" id="current-rates" aria-labelledby="current-rates-heading">
     <div class="mm-card">
@@ -314,13 +357,17 @@
   </div>
 
   <div class="mm-panel" id="tab-states" data-tab="states" role="tabpanel" aria-labelledby="tabbtn-states" hidden>
+    <a class="mm-cap mm-chart-link" data-web-only hidden data-share="states" href="share/states/">Share States on WhatsApp</a>
     <section class="mm-sec" id="state-comparison" aria-labelledby="states-heading">
       <div class="mm-sec-h"><h2 class="mm-state-title" id="states-heading">Compare two states</h2><p class="mm-muted">Compare household spending and inflation across states and union territories.</p></div>
       <div class="mm-state-controls">
-        <label><span class="mm-kl">First state</span><select class="dash-select" data-draw="region-picker" data-source="regions" data-picker="left" disabled></select></label>
-        <label><span class="mm-kl">Second state</span><select class="dash-select" data-draw="region-picker" data-source="regions" data-picker="right" disabled></select></label>
+        <label><span class="mm-kl">Your state or territory</span><select class="dash-select" data-draw="region-picker" data-source="regions" data-picker="left" disabled></select></label>
+        <label><span class="mm-kl">Compare with</span><select class="dash-select" data-draw="region-picker" data-source="regions" data-picker="right" disabled></select></label>
         <label><span class="mm-kl">Spending survey round</span><select class="dash-select" data-draw="region-picker" data-source="regions" data-picker="round" disabled></select></label>
       </div>
+      <details><summary>Where your state stands</summary>
+        <div class="mm-details-body" data-draw="state-ranking" data-source="regions"></div>
+      </details>
       <div class="mm-grid">
         <div class="mm-card"><h3>Household spending</h3><div class="mm-regional" data-draw="regional-chart" data-source="regions" data-metric="mpce" aria-live="polite"></div>
           <p class="mm-cap">Nominal monthly spending per person, excluding the imputed value of free welfare items.</p></div>
@@ -331,6 +378,7 @@
   </div>
 
   <div class="mm-panel" id="tab-brief" data-tab="brief" role="tabpanel" aria-labelledby="tabbtn-brief" hidden>
+  <a class="mm-cap mm-chart-link" data-web-only hidden data-share="brief" href="share/brief/">Share Banking on WhatsApp</a>
   <p class="mm-cap" role="status" data-draw="freshness" data-series="scb_gap mmo_call mmo_net_liq walr_fresh wadtdr_fresh"></p>
   <section class="mm-card mm-brief" id="brief" aria-labelledby="brief-h">
     <div class="mm-sec-h">
@@ -398,28 +446,44 @@
 
   <div class="mm-panel" id="tab-explore" data-tab="explore" role="tabpanel" aria-labelledby="tabbtn-explore" hidden>
   <section class="mm-sec" id="explore">
-    <div class="mm-sec-h"><h2>Series explorer</h2><p class="mm-muted">Pick any series to see it from April 2023, with its definition, source, full coverage and latest observations.</p></div>
+    <div class="mm-sec-h"><h2>Series explorer</h2><p class="mm-muted">Pick a series to see its history, source and latest observations.</p></div>
+    <a class="mm-cap mm-chart-link" data-web-only hidden data-share="explore" href="share/explore/">Share Explorer on WhatsApp</a>
     <div class="mm-bar">
       <label class="mm-seg" for="ex-pick"><span>Series</span><select class="dash-select" id="ex-pick" data-draw="picker" aria-label="Series" data-source="catalog"></select></label>
       <a class="mm-chip mm-download" data-draw="series-download" data-source="catalog" download>Download full series (CSV)</a>
     </div>
+    <div class="mm-sec" data-web-only hidden>
+      <div class="mm-tools">
+        <label>Compare with <select class="dash-select" data-draw="compare-picker" data-source="catalog"></select></label>
+        <label>Display <select class="dash-select" data-draw="transform-picker" data-source="catalog"></select></label>
+        <a class="mm-chip mm-download" data-draw="series-permalink" data-source="catalog">Link to this chart</a>
+      </div>
+      <p class="mm-cap" data-draw="research-status" data-source="catalog"></p>
+    </div>
     <div class="mm-ex">
       <div class="mm-card"><div class="mm-chart" id="ch-explore" data-draw="chart" data-chart="explore" data-source="observations catalog"></div></div>
       <div class="mm-card" id="ex-about">
-        <dl class="mm-dl" data-source="catalog">
+        <details><summary>Source and methodology</summary><dl class="mm-dl mm-details-body" data-source="catalog">
           <dt>Series</dt><dd data-draw="ex" data-part="name">—</dd>
           <dt>Unit</dt><dd data-draw="ex" data-part="unit">—</dd>
           <dt>Frequency</dt><dd data-draw="ex" data-part="freq">—</dd>
           <dt>Base</dt><dd data-draw="ex" data-part="base">—</dd>
           <dt>Coverage</dt><dd data-draw="ex" data-part="coverage">—</dd>
+          <dt>Next scheduled update</dt><dd data-draw="ex" data-part="next">—</dd>
           <dt>Source</dt><dd data-draw="ex" data-part="source">—</dd>
           <dt>Source link</dt><dd data-draw="ex" data-part="link">—</dd>
           <dt>Notes</dt><dd data-draw="ex" data-part="notes">—</dd>
-        </dl>
+        </dl></details>
         <h3>Latest observations</h3>
         <div class="mm-tw"><table data-source="observations" data-row-key="series,period"><thead><tr><th data-field="label">Period</th><th class="r" data-field="value">Value</th></tr></thead><tbody data-draw="ex-rows"></tbody></table></div>
       </div>
     </div>
+    <details data-web-only hidden><summary>First published versus latest</summary>
+      <div class="mm-details-body" data-draw="revisions-view" data-source="research catalog"></div>
+    </details>
+    <details data-web-only hidden><summary>Actual versus forecast</summary>
+      <div class="mm-details-body" data-draw="surprises-view" data-source="research catalog"></div>
+    </details>
   </section>
   </div>
 

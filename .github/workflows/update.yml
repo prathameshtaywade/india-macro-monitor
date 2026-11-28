@@ -8,7 +8,7 @@ on:
   workflow_dispatch: {}
   push:
     branches: [main]
-    paths: ["pipeline/**", "web/**", "dashboard/page/**", "tests/**", "data/raw/rbi_extract.json", "data/raw/rbi_policy_circulars.json", "data/raw/overview_releases.json", ".github/workflows/update.yml"]
+    paths: ["pipeline/**", "web/**", "dashboard/page/**", "tests/**", "data/raw/rbi_extract.json", "data/raw/rbi_policy_circulars.json", "data/raw/overview_releases.json", "data/raw/research_evidence.json", "data/raw/supplementary_points.json", ".github/workflows/update.yml"]
 
 permissions:
   contents: write
@@ -33,6 +33,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+
+      - name: Install parsing and preview dependencies
+        run: python3 -m pip install -r web/requirements.txt
 
       - name: Offline tests (block publishing on failure)
         run: |
@@ -67,6 +70,11 @@ jobs:
         continue-on-error: true
         run: python3 pipeline/fetch_rbi_releases.py
 
+      - name: Fetch public weekly RBI and supplementary series
+        id: public_inputs
+        continue-on-error: true
+        run: python3 pipeline/official_inputs.py
+
       - name: Record source fetch outcomes
         id: fetch_status
         env:
@@ -74,6 +82,7 @@ jobs:
           OUTCOME_RBI_HOME: ${{ steps.rbi_home.outcome }}
           OUTCOME_RBI_POLICY: ${{ steps.rbi_policy.outcome }}
           OUTCOME_RBI_RELEASES: ${{ steps.rbi_releases.outcome }}
+          OUTCOME_PUBLIC_INPUTS: ${{ steps.public_inputs.outcome }}
         run: python3 pipeline/fetch_status.py
 
       - name: Open an issue when a source has failed two runs in a row
@@ -124,6 +133,8 @@ jobs:
           fi
 
       - name: Build site
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
         run: |
           python3 pipeline/export_dashboard.py
           python3 pipeline/build_site.py
@@ -134,6 +145,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/macro.json data/raw/rbi_home.json data/raw/rbi_home_history.jsonl data/raw/fetch_status.json data/raw/rbi_policy_circulars.json data/raw/rbi_mmo.jsonl data/raw/rbi_lending.jsonl dashboard/observations.json dashboard/catalog.json dashboard/snapshot.json dashboard/regions.json
+          git add data/raw/revision_history.jsonl data/raw/supplementary_points.json data/raw/rbi_weekly_html.json
           if git diff --cached --quiet; then
             echo "No data changes."
           else
