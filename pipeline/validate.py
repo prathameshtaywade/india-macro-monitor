@@ -52,6 +52,9 @@ STALE_DAYS = {"Daily": 6, "Weekly": 21, "Monthly": 75, "Monthly / fortnightly": 
 HANDBOOK_HISTORY = {"gsec10", "gsec5", "gsec1", "forex_m", "usdinr_m", "eurinr_m"}
 PRICING_SERIES = ("walr_fresh", "walr_out", "wadtdr_fresh", "wadtdr_out", "pricing_gap_fresh", "mclr_1y_median")
 SNAPSHOT_STALE_DAYS = 4
+# Weekly Statistical Supplement series are added by hand (pipeline/rbi_extract.js); warn once an issue is missed.
+WSS_SERIES = ("forex_w", "gsec10_w", "usdinr_w", "call_w", "tb91_w")
+WSS_LAG_DAYS = 8
 
 
 def read_expected_ids(path=IDS_FILE):
@@ -164,6 +167,14 @@ def validate(cur, prev=None, today=None, expected_ids=None, core=None):
             gap = (second.year - first.year) * 12 + second.month - first.month
             if gap > 1:
                 warnings.append(f"`{sid}` has {gap - 1} missing month(s) between {first:%Y-%m} and {second:%Y-%m}")
+
+    wss_last = [series[sid]["data"][-1][0] for sid in WSS_SERIES if sid in series and series[sid]["data"]]
+    if wss_last:
+        newest = max(wss_last)
+        lag = (today - dt.date.fromisoformat(newest)).days
+        if lag >= WSS_LAG_DAYS:
+            warnings.append(f"weekly RBI supplement data end {newest} ({lag} days ago): run the weekly RBI step "
+                            "(pipeline/rbi_extract.js + merge_rbi.py)")
 
     snap = cur.get("snapshot") or {}
     errors += [f"rbi.org.in snapshot: {e}" for e in snapshot_errors(snap)]

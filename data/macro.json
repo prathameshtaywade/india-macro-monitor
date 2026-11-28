@@ -1,5 +1,5 @@
 {
-"generated_utc": "2026-11-27T13:09:40Z",
+"generated_utc": "2026-11-28T06:59:15Z",
 "snapshot": {
 "fetched_utc": "2026-11-27T13:09:05Z",
 "source_url": "https://www.rbi.org.in/",
@@ -15965,6 +15965,64 @@
 ]
 },
 {
+"id": "usdinr_d",
+"name": "USD/INR – FBIL reference rate (daily)",
+"group": "External",
+"unit": "₹ per US$",
+"freq": "Daily",
+"base": "",
+"source": "RBI – rbi.org.in Current Rates (FBIL reference rate, 1.00 pm)",
+"source_url": "https://www.rbi.org.in/",
+"notes": "Collected daily from the snapshot since November 2026; dated by RBI's 'as at' date. Earlier weeks come from the Weekly Statistical Supplement series.",
+"data": [
+[
+"2026-11-23",
+92.7968
+],
+[
+"2026-11-25",
+92.4895
+],
+[
+"2026-11-26",
+92.4799
+],
+[
+"2026-11-27",
+92.9139
+]
+]
+},
+{
+"id": "gsec10_bench_d",
+"name": "10-year benchmark G-Sec, traded yield (daily)",
+"group": "Rates & yields",
+"unit": "% p.a.",
+"freq": "Daily",
+"base": "",
+"source": "RBI – rbi.org.in Current Rates (G-Sec market)",
+"source_url": "https://www.rbi.org.in/",
+"notes": "Yield of the listed bond maturing about ten years ahead (currently 6.94% GS 2036). The bond changes when RBI issues a new 10-year benchmark. Not the same measure as FBIL's par yield.",
+"data": [
+[
+"2026-11-19",
+7.2629
+],
+[
+"2026-11-23",
+7.2105
+],
+[
+"2026-11-25",
+7.1641
+],
+[
+"2026-11-26",
+7.2363
+]
+]
+},
+{
 "id": "mmo_call",
 "name": "Call money rate, weighted average (daily)",
 "unit": "%",
@@ -23343,6 +23401,16 @@
 "rural": 3.86,
 "urban": 3.03,
 "combined": 3.46
+},
+"inflation_prev": {
+"rural": 5.01,
+"urban": 3.56,
+"combined": 4.3
+},
+"inflation_3m": {
+"rural": 4.32,
+"urban": 3.39,
+"combined": 3.87
 }
 },
 {
@@ -23362,6 +23430,16 @@
 "rural": 7.81,
 "urban": 6.37,
 "combined": 7.25
+},
+"inflation_prev": {
+"rural": 6.63,
+"urban": 5.74,
+"combined": 6.29
+},
+"inflation_3m": {
+"rural": 6.78,
+"urban": 5.7,
+"combined": 6.36
 }
 },
 {
@@ -23381,6 +23459,16 @@
 "rural": 4.62,
 "urban": 3.5,
 "combined": 4.33
+},
+"inflation_prev": {
+"rural": 3.85,
+"urban": 3.29,
+"combined": 3.7
+},
+"inflation_3m": {
+"rural": 3.82,
+"urban": 3.41,
+"combined": 3.71
 }
 },
 {
@@ -23400,6 +23488,16 @@
 "rural": 4.94,
 "urban": 3.23,
 "combined": 4.59
+},
+"inflation_prev": {
+"rural": 5.03,
+"urban": 3.06,
+"combined": 4.62
+},
+"inflation_3m": {
+"rural": 5.07,
+"urban": 3.16,
+"combined": 4.68
 }
 },
 {
@@ -23419,6 +23517,16 @@
 "rural": 5.79,
 "urban": 5.18,
 "combined": 5.71
+},
+"inflation_prev": {
+"rural": 5.58,
+"urban": 4.88,
+"combined": 5.48
+},
+"inflation_3m": {
+"rural": 5.24,
+"urban": 4.64,
+"combined": 5.15
 }
 },
 {
@@ -23437,6 +23545,14 @@
 "inflation": {
 "urban": 5.23,
 "combined": 5.23
+},
+"inflation_prev": {
+"urban": 4.39,
+"combined": 4.39
+},
+"inflation_3m": {
+"urban": 4.57,
+"combined": 4.57
 }
 },
 {
@@ -23456,6 +23572,16 @@
 "rural": 6.72,
 "urban": 4.59,
 "combined": 5.99
+},
+"inflation_prev": {
+"rural": 5.59,
+"urban": 3.92,
+"combined": 5.02
+},
+"inflation_3m": {
+"rural": 5.48,
+"urban": 3.88,
+"combined": 4.93
 }
 },
 {
@@ -23475,6 +23601,16 @@
 "rural": 6.61,
 "urban": 7.92,
 "combined": 7.59
+},
+"inflation_prev": {
+"rural": 5.57,
+"urban": 6.95,
+"combined": 6.6
+},
+"inflation_3m": {
+"rural": 5.88,
+"urban": 7.12,
+"combined": 6.8
 }
 },
 {
@@ -23494,6 +23630,16 @@
 "rural": 5.24,
 "urban": 3.77,
 "combined": 3.8
+},
+"inflation_prev": {
+"rural": 5.06,
+"urban": 3.37,
+"combined": 3.4
+},
+"inflation_3m": {
+"rural": 4.8,
+"urban": 3.24,
+"combined": 3.27
 }
 },
 {
@@ -23513,6 +23659,16 @@
 "rural": 4.33,
 "urban": 4.72,
 "combined": 4.58
+},
+"inflation_prev": {
+"rural": 3.67,
+"urban": 4.07,
+"combined": 3.92
+},
+"inflation_3m": {
+"rural": 3.75,
+"urban": 4.18,
+"combined": 4.02
 }
 },
 {
@@ -23532,6 +23688,16 @@
 "rural": 6.06,
 "urban": 5.46,
 "combined": 5.71
+},
+"inflation_prev": {
+"rural": 5.76,
+"urban": 4.67,
+"combined": 5.11
+},
+"inflation_3m": {
+"rural": 5.73,
+"urban": 4.94,
+"combined": 5.26
 }
 },
 {
@@ -23551,6 +23717,16 @@
 "rural": 5.2,
 "urban": 3.56,
 "combined": 4.38
+},
+"inflation_prev": {
+"rural": 5.08,
+"urban": 3.65,
+"combined": 4.36
+},
+"inflation_3m": {
+"rural": 4.94,
+"urban": 3.53,
+"combined": 4.23
 }
 },
 {
@@ -23570,6 +23746,16 @@
 "rural": 4.28,
 "urban": 4.21,
 "combined": 4.27
+},
+"inflation_prev": {
+"rural": 3.93,
+"urban": 4.5,
+"combined": 4.02
+},
+"inflation_3m": {
+"rural": 3.98,
+"urban": 4.42,
+"combined": 4.05
 }
 },
 {
@@ -23589,6 +23775,16 @@
 "rural": 4.87,
 "urban": 4.91,
 "combined": 4.88
+},
+"inflation_prev": {
+"rural": 4.12,
+"urban": 4.65,
+"combined": 4.27
+},
+"inflation_3m": {
+"rural": 4.34,
+"urban": 4.65,
+"combined": 4.42
 }
 },
 {
@@ -23608,6 +23804,16 @@
 "rural": 6.44,
 "urban": 4.86,
 "combined": 5.9
+},
+"inflation_prev": {
+"rural": 5.58,
+"urban": 3.94,
+"combined": 5.02
+},
+"inflation_3m": {
+"rural": 5.13,
+"urban": 3.82,
+"combined": 4.69
 }
 },
 {
@@ -23627,6 +23833,16 @@
 "rural": 7.54,
 "urban": 6.6,
 "combined": 7.07
+},
+"inflation_prev": {
+"rural": 6.45,
+"urban": 5.28,
+"combined": 5.86
+},
+"inflation_3m": {
+"rural": 6.58,
+"urban": 5.54,
+"combined": 6.06
 }
 },
 {
@@ -23646,6 +23862,16 @@
 "rural": 7.01,
 "urban": 5.58,
 "combined": 6.22
+},
+"inflation_prev": {
+"rural": 5.61,
+"urban": 4.98,
+"combined": 5.26
+},
+"inflation_3m": {
+"rural": 5.98,
+"urban": 4.9,
+"combined": 5.38
 }
 },
 {
@@ -23665,6 +23891,16 @@
 "rural": 6.8,
 "urban": 4.95,
 "combined": 6.34
+},
+"inflation_prev": {
+"rural": 6.37,
+"urban": 4.46,
+"combined": 5.9
+},
+"inflation_3m": {
+"rural": 6.26,
+"urban": 4.56,
+"combined": 5.84
 }
 },
 {
@@ -23684,6 +23920,16 @@
 "rural": 5.68,
 "urban": 4.92,
 "combined": 5.13
+},
+"inflation_prev": {
+"rural": 4.4,
+"urban": 3.78,
+"combined": 3.95
+},
+"inflation_3m": {
+"rural": 4.57,
+"urban": 3.88,
+"combined": 4.07
 }
 },
 {
@@ -23703,6 +23949,16 @@
 "rural": 7.66,
 "urban": 6.46,
 "combined": 7.19
+},
+"inflation_prev": {
+"rural": 7.31,
+"urban": 5.72,
+"combined": 6.68
+},
+"inflation_3m": {
+"rural": 6.95,
+"urban": 5.72,
+"combined": 6.47
 }
 },
 {
@@ -23722,6 +23978,16 @@
 "rural": 6.86,
 "urban": 5.2,
 "combined": 5.85
+},
+"inflation_prev": {
+"rural": 6.12,
+"urban": 4.56,
+"combined": 5.17
+},
+"inflation_3m": {
+"rural": 6.22,
+"urban": 4.66,
+"combined": 5.27
 }
 },
 {
@@ -23741,6 +24007,16 @@
 "rural": 5.51,
 "urban": 3.66,
 "combined": 4.91
+},
+"inflation_prev": {
+"rural": 5.74,
+"urban": 3.78,
+"combined": 5.1
+},
+"inflation_3m": {
+"rural": 5.39,
+"urban": 3.65,
+"combined": 4.83
 }
 },
 {
@@ -23760,6 +24036,16 @@
 "rural": 3.8,
 "urban": 3.16,
 "combined": 3.63
+},
+"inflation_prev": {
+"rural": 3.72,
+"urban": 3.23,
+"combined": 3.6
+},
+"inflation_3m": {
+"rural": 3.45,
+"urban": 3.01,
+"combined": 3.34
 }
 },
 {
@@ -23779,6 +24065,16 @@
 "rural": 3.19,
 "urban": 2.58,
 "combined": 2.85
+},
+"inflation_prev": {
+"rural": 3.14,
+"urban": 2.63,
+"combined": 2.85
+},
+"inflation_3m": {
+"rural": 3.05,
+"urban": 2.4,
+"combined": 2.68
 }
 },
 {
@@ -23798,6 +24094,16 @@
 "rural": 4.0,
 "urban": 3.1,
 "combined": 3.66
+},
+"inflation_prev": {
+"rural": 3.28,
+"urban": 3.12,
+"combined": 3.22
+},
+"inflation_3m": {
+"rural": 3.37,
+"urban": 3.04,
+"combined": 3.25
 }
 },
 {
@@ -23817,6 +24123,16 @@
 "rural": 7.74,
 "urban": 5.63,
 "combined": 7.17
+},
+"inflation_prev": {
+"rural": 7.25,
+"urban": 5.24,
+"combined": 6.71
+},
+"inflation_3m": {
+"rural": 6.97,
+"urban": 5.11,
+"combined": 6.47
 }
 },
 {
@@ -23836,6 +24152,16 @@
 "rural": 8.03,
 "urban": 7.93,
 "combined": 7.96
+},
+"inflation_prev": {
+"rural": 7.07,
+"urban": 6.77,
+"combined": 6.86
+},
+"inflation_3m": {
+"rural": 7.08,
+"urban": 6.81,
+"combined": 6.89
 }
 },
 {
@@ -23855,6 +24181,16 @@
 "rural": 5.75,
 "urban": 5.42,
 "combined": 5.6
+},
+"inflation_prev": {
+"rural": 5.63,
+"urban": 4.84,
+"combined": 5.26
+},
+"inflation_3m": {
+"rural": 5.48,
+"urban": 4.66,
+"combined": 5.1
 }
 },
 {
@@ -23874,6 +24210,16 @@
 "rural": 6.33,
 "urban": 5.09,
 "combined": 5.89
+},
+"inflation_prev": {
+"rural": 6.25,
+"urban": 4.74,
+"combined": 5.72
+},
+"inflation_3m": {
+"rural": 6.09,
+"urban": 4.74,
+"combined": 5.62
 }
 },
 {
@@ -23893,6 +24239,16 @@
 "rural": 5.65,
 "urban": 4.48,
 "combined": 5.25
+},
+"inflation_prev": {
+"rural": 5.18,
+"urban": 4.15,
+"combined": 4.83
+},
+"inflation_3m": {
+"rural": 5.29,
+"urban": 4.2,
+"combined": 4.92
 }
 },
 {
@@ -23912,6 +24268,16 @@
 "rural": 7.86,
 "urban": 6.84,
 "combined": 7.29
+},
+"inflation_prev": {
+"rural": 7.17,
+"urban": 6.53,
+"combined": 6.81
+},
+"inflation_3m": {
+"rural": 7.04,
+"urban": 6.38,
+"combined": 6.67
 }
 },
 {
@@ -23931,6 +24297,16 @@
 "rural": 8.05,
 "urban": 6.68,
 "combined": 7.26
+},
+"inflation_prev": {
+"rural": 7.22,
+"urban": 6.21,
+"combined": 6.64
+},
+"inflation_3m": {
+"rural": 7.35,
+"urban": 6.26,
+"combined": 6.72
 }
 },
 {
@@ -23950,6 +24326,16 @@
 "rural": 5.0,
 "urban": 4.17,
 "combined": 4.8
+},
+"inflation_prev": {
+"rural": 3.85,
+"urban": 4.33,
+"combined": 3.96
+},
+"inflation_3m": {
+"rural": 4.06,
+"urban": 4.26,
+"combined": 4.1
 }
 },
 {
@@ -23969,6 +24355,16 @@
 "rural": 7.2,
 "urban": 4.88,
 "combined": 6.47
+},
+"inflation_prev": {
+"rural": 6.71,
+"urban": 4.72,
+"combined": 6.08
+},
+"inflation_3m": {
+"rural": 6.5,
+"urban": 4.55,
+"combined": 5.88
 }
 },
 {
@@ -23988,6 +24384,16 @@
 "rural": 5.84,
 "urban": 4.66,
 "combined": 5.41
+},
+"inflation_prev": {
+"rural": 5.95,
+"urban": 4.64,
+"combined": 5.48
+},
+"inflation_3m": {
+"rural": 5.62,
+"urban": 4.39,
+"combined": 5.18
 }
 },
 {
@@ -24007,6 +24413,16 @@
 "rural": 5.08,
 "urban": 4.13,
 "combined": 4.66
+},
+"inflation_prev": {
+"rural": 4.44,
+"urban": 3.53,
+"combined": 4.04
+},
+"inflation_3m": {
+"rural": 4.38,
+"urban": 3.5,
+"combined": 3.99
 }
 }
 ],
@@ -24016,14 +24432,297 @@
 "value": "2026-10"
 },
 {
+"label": "Previous inflation period",
+"value": "2026-09"
+},
+{
+"label": "Inflation average window",
+"value": "2026-08 to 2026-10"
+},
+{
 "label": "Inflation source",
-"value": "https://api.mospi.gov.in/api/cpi/getCPIData?base_year=2024&series=Current&division_code=0&year=2026&month=October"
+"value": "https://api.mospi.gov.in/api/cpi/getCPIData?base_year=2024&series=Current&division_code=0&year=2026&month_code=8%2C9%2C10"
 },
 {
 "label": "Household spending source",
 "value": "https://api.mospi.gov.in/api/hces/getHcesRecords?indicator_code=1&imputation_type_code=1"
 }
 ]
+},
+"first_seen": {
+"gdp_growth_q": {
+"2026-Q1": null
+},
+"gdp_growth_q_nominal": {
+"2026-Q1": null
+},
+"gdp_growth_q_old": {
+"2025-Q2": null
+},
+"gva_growth_q": {
+"2026-Q1": null
+},
+"gva_level_q": {
+"2026-Q1": null
+},
+"gva_primary_level": {
+"2026-Q1": null
+},
+"gva_secondary_level": {
+"2026-Q1": null
+},
+"gva_services_level": {
+"2026-Q1": null
+},
+"gva_agriculture_level": {
+"2026-Q1": null
+},
+"gva_mining_level": {
+"2026-Q1": null
+},
+"gva_manufacturing_level": {
+"2026-Q1": null
+},
+"gva_utilities_level": {
+"2026-Q1": null
+},
+"gva_construction_level": {
+"2026-Q1": null
+},
+"gva_trade_level": {
+"2026-Q1": null
+},
+"gva_financial_level": {
+"2026-Q1": null
+},
+"gva_public_level": {
+"2026-Q1": null
+},
+"gva_primary": {
+"2026-Q1": null
+},
+"gva_secondary": {
+"2026-Q1": null
+},
+"gva_services": {
+"2026-Q1": null
+},
+"gva_agriculture": {
+"2026-Q1": null
+},
+"gva_mining": {
+"2026-Q1": null
+},
+"gva_manufacturing": {
+"2026-Q1": null
+},
+"gva_utilities": {
+"2026-Q1": null
+},
+"gva_construction": {
+"2026-Q1": null
+},
+"gva_trade": {
+"2026-Q1": null
+},
+"gva_financial": {
+"2026-Q1": null
+},
+"gva_public": {
+"2026-Q1": null
+},
+"gdp_level_q": {
+"2026-Q1": null
+},
+"gdp_growth_a": {
+"2025-26": null
+},
+"pfce_real_q": {
+"2026-Q1": null
+},
+"gfcf_real_q": {
+"2026-Q1": null
+},
+"plfs_ur": {
+"2026-10": null
+},
+"plfs_ur_rural": {
+"2026-10": null
+},
+"plfs_ur_urban": {
+"2026-10": null
+},
+"plfs_lfpr": {
+"2026-10": null
+},
+"plfs_lfpr_female": {
+"2026-10": null
+},
+"plfs_wpr": {
+"2026-10": null
+},
+"cpi_infl_combined": {
+"2026-10": null
+},
+"cpi_index": {
+"2026-10": null
+},
+"cpi_infl_rural": {
+"2026-10": null
+},
+"cpi_infl_urban": {
+"2026-10": null
+},
+"cpi_food": {
+"2026-10": null
+},
+"cpi_infl_old": {
+"2025-12": null
+},
+"cfpi_old": {
+"2025-12": null
+},
+"iip_growth": {
+"2026-09": null
+},
+"iip_index": {
+"2026-09": null
+},
+"iip_mining": {
+"2026-09": null
+},
+"iip_mining_index": {
+"2026-09": null
+},
+"iip_manufacturing": {
+"2026-09": null
+},
+"iip_manufacturing_index": {
+"2026-09": null
+},
+"iip_electricity": {
+"2026-09": null
+},
+"iip_electricity_index": {
+"2026-09": null
+},
+"iip_water": {
+"2026-09": null
+},
+"iip_water_index": {
+"2026-09": null
+},
+"iip_growth_old": {
+"2026-03": null
+},
+"repo": {
+"2026-10-07": null
+},
+"sdf": {
+"2026-10-07": null
+},
+"msf": {
+"2026-10-07": null
+},
+"crr": {
+"2025-11-29": null
+},
+"slr": {
+"2020-04-11": null
+},
+"gsec10": {
+"2026-06": null
+},
+"gsec5": {
+"2026-06": null
+},
+"gsec1": {
+"2026-06": null
+},
+"gsec10_w": {
+"2026-11-13": null
+},
+"forex_w": {
+"2026-11-13": null
+},
+"forex_m": {
+"2026-05": null
+},
+"usdinr_m": {
+"2026-06": null
+},
+"eurinr_m": {
+"2026-06": null
+},
+"scb_credit": {
+"2026-10": null
+},
+"scb_credit_yoy": {
+"2026-10": null
+},
+"scb_dep": {
+"2026-10": null
+},
+"scb_dep_yoy": {
+"2026-10": null
+},
+"scb_gap": {
+"2026-10": null
+},
+"scb_gap_3m": {
+"2026-10": null
+},
+"scb_inc_cd_fytd": {
+"2026-10": null
+},
+"usdinr_w": {
+"2026-11-13": null
+},
+"call_w": {
+"2026-11-13": null
+},
+"tb91_w": {
+"2026-11-13": null
+},
+"usdinr_d": {
+"2026-11-27": "2026-11-28"
+},
+"gsec10_bench_d": {
+"2026-11-26": "2026-11-28"
+},
+"mmo_call": {
+"2026-11-26": "2026-11-27"
+},
+"mmo_overnight": {
+"2026-11-26": "2026-11-27"
+},
+"mmo_net_liq": {
+"2026-11-26": "2026-11-27"
+},
+"mmo_call_spread": {
+"2026-11-26": "2026-11-27"
+},
+"mmo_call_spread_5d": {
+"2026-11-26": "2026-11-27"
+},
+"walr_fresh": {
+"2026-09": null
+},
+"walr_out": {
+"2026-09": null
+},
+"wadtdr_fresh": {
+"2026-09": null
+},
+"wadtdr_out": {
+"2026-09": null
+},
+"mclr_1y_median": {
+"2026-10": null
+},
+"pricing_gap_fresh": {
+"2026-09": null
+}
 },
 "overview_releases": [
 {

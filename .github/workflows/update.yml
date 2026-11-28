@@ -48,20 +48,52 @@ jobs:
           restore-keys: mospi-raw-
 
       - name: Fetch MoSPI series
+        id: mospi
         continue-on-error: true
         run: python3 pipeline/fetch_mospi.py
 
       - name: Fetch RBI current rates
+        id: rbi_home
         continue-on-error: true
         run: python3 pipeline/fetch_rbi_home.py
 
       - name: Verify RBI repo-rate changes from official circulars
+        id: rbi_policy
         continue-on-error: true
         run: python3 pipeline/rbi_policy.py
 
       - name: Fetch RBI money-market and lending-rate releases
+        id: rbi_releases
         continue-on-error: true
         run: python3 pipeline/fetch_rbi_releases.py
+
+      - name: Record source fetch outcomes
+        id: fetch_status
+        env:
+          OUTCOME_MOSPI: ${{ steps.mospi.outcome }}
+          OUTCOME_RBI_HOME: ${{ steps.rbi_home.outcome }}
+          OUTCOME_RBI_POLICY: ${{ steps.rbi_policy.outcome }}
+          OUTCOME_RBI_RELEASES: ${{ steps.rbi_releases.outcome }}
+        run: python3 pipeline/fetch_status.py
+
+      - name: Open an issue when a source has failed two runs in a row
+        if: steps.fetch_status.outputs.alert != '' && github.event_name != 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ALERT: ${{ steps.fetch_status.outputs.alert }}
+        run: |
+          TITLE="Data source failing: $ALERT"
+          if [ -z "$(gh issue list --state open --search "Data source failing in:title" --json number --jq '.[].number')" ]; then
+            {
+              echo "These sources have failed in at least two consecutive daily runs: **$ALERT**."
+              echo
+              echo "The dashboard keeps showing the last good data, and each chart flags readings that are past their expected update window."
+              echo "Run details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            } > body.md
+            gh issue create --title "$TITLE" --body-file body.md
+          else
+            echo "An open issue already tracks failing sources."
+          fi
 
       - name: Build dataset
         run: python3 pipeline/build_data.py
@@ -101,7 +133,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/macro.json data/raw/rbi_home.json data/raw/rbi_policy_circulars.json data/raw/rbi_mmo.jsonl data/raw/rbi_lending.jsonl dashboard/observations.json dashboard/catalog.json dashboard/snapshot.json dashboard/regions.json
+          git add data/macro.json data/raw/rbi_home.json data/raw/rbi_home_history.jsonl data/raw/fetch_status.json data/raw/rbi_policy_circulars.json data/raw/rbi_mmo.jsonl data/raw/rbi_lending.jsonl dashboard/observations.json dashboard/catalog.json dashboard/snapshot.json dashboard/regions.json
           if git diff --cached --quiet; then
             echo "No data changes."
           else

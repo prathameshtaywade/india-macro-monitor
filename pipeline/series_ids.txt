@@ -89,3 +89,5 @@ wadtdr_fresh
 wadtdr_out
 mclr_1y_median
 pricing_gap_fresh
+usdinr_d
+gsec10_bench_d

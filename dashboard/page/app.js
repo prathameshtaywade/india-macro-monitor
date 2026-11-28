@@ -111,15 +111,17 @@
       ['iip_index', 'General IIP'], ['iip_manufacturing_index', 'Manufacturing', { dash: true }]] },
     policy: { unit: '%', aria: 'Step chart of repo, SDF and MSF rates with the call money rate', series: [
       ['repo', 'Repo', { step: true }], ['sdf', 'SDF', { step: true }], ['msf', 'MSF', { step: true }],
-      ['call_w', 'Call money (weekly)', { dash: true }]] },
+      ['mmo_call', 'Call money (daily)', { dash: true }]] },
     yields: { unit: '%', aria: 'Line chart of weekly government yields', series: [
-      ['gsec10_w', '10-year FBIL par yield'], ['tb91_w', '91-day T-bill auction cut-off', { dash: true }]] },
+      ['gsec10_w', '10-year FBIL par yield (weekly)'], ['gsec10_bench_d', '10-year benchmark bond, traded (daily)'],
+      ['tb91_w', '91-day T-bill auction cut-off', { dash: true }]] },
     'yields-history': { unit: '%', aria: 'Line chart of historical month-end traded yields', series: [
       ['gsec10', '10-year'], ['gsec5', '5-year'], ['gsec1', '1-year']] },
     forex: { unit: 'US$ bn', aria: 'Line chart of foreign exchange reserves', series: [
       ['forex_w', 'Weekly'], ['forex_m', 'Month-end history', { muted: true, dash: true }]] },
     fx: { unit: '₹ per US$', aria: 'Line chart of rupees per US dollar', series: [
-      ['usdinr_w', 'USD/INR, week-end reference rate'], ['usdinr_m', 'USD/INR, monthly average', { muted: true, dash: true }]] },
+      ['usdinr_w', 'USD/INR, week-end reference rate'], ['usdinr_d', 'USD/INR, FBIL reference (daily)'],
+      ['usdinr_m', 'USD/INR, monthly average', { muted: true, dash: true }]] },
     'fx-eur': { unit: '₹ per €', aria: 'Line chart of rupees per euro', series: [
       ['eurinr_m', 'EUR/INR, monthly average']] },
     brief: { unit: 'pp', zero: true, months: 12, dots: true, shade: REPORTING_MIX,
@@ -159,7 +161,9 @@
     if (id.startsWith('iip_') && id !== 'iip_growth_old') return dayOfMonth(3, 5);
     if (id === 'mclr_1y_median') return dayOfMonth(2, 6);
     if (PRICING_SERIES.has(id) || BANK_SERIES.has(id)) return dayOfMonth(3, 6);
-    if (WSS_SERIES.has(id)) return new Date(+point.d + 17 * DAY_MS);
+    // The weekly supplement is added by hand, so flag it as soon as one weekly issue is missed.
+    if (WSS_SERIES.has(id)) return new Date(+point.d + 8 * DAY_MS);
+    if (id === 'usdinr_d' || id === 'gsec10_bench_d') return new Date(+point.d + 7 * DAY_MS);
     if (id === 'mmo_net_liq' || id === 'mmo_call' || id === 'mmo_overnight') return new Date(+point.d + 7 * DAY_MS);
     return null;
   }
@@ -167,7 +171,8 @@
   function sourceStatus(id, point) {
     if (ARCHIVE_SERIES.has(id)) return 'Historical series';
     const due = point && sourceDueDate(id, point);
-    return due && parse(dashboardDay) >= due ? 'Past expected update window' : '';
+    if (!(due && parse(dashboardDay) >= due)) return '';
+    return WSS_SERIES.has(id) ? 'Awaiting weekly RBI update' : 'Past expected update window';
   }
 
   const SOURCE_LABELS = {
@@ -175,13 +180,16 @@
     plfs_ur: 'monthly labour survey', pfce_real_q: 'household consumption',
     scb_gap: 'bank credit and deposits', mmo_net_liq: 'RBI liquidity', mmo_call: 'daily call money',
     walr_fresh: 'fresh lending rates', wadtdr_fresh: 'fresh deposit rates', gsec10_w: 'FBIL 10-year yield',
-    forex_w: 'weekly reserves', usdinr_w: 'weekly USD/INR',
+    forex_w: 'weekly reserves', usdinr_w: 'weekly USD/INR', call_w: 'weekly call rate', tb91_w: '91-day T-bill',
+    usdinr_d: 'daily USD/INR', gsec10_bench_d: 'daily 10-year benchmark yield',
   };
   dash.draw('freshness', (el) => {
     const I = index();
-    const labels = (el.dataset.series || '').split(' ').filter((id) =>
-      sourceStatus(id, I?.m.get(id)?.at(-1)) === 'Past expected update window').map((id) => SOURCE_LABELS[id]);
-    el.textContent = labels.length ? 'Past expected update window: ' + labels.join(', ') + '.' : '';
+    const ids = (el.dataset.series || '').split(' ').filter(Boolean);
+    const byStatus = (status) => ids.filter((id) => sourceStatus(id, I?.m.get(id)?.at(-1)) === status).map((id) => SOURCE_LABELS[id] || id);
+    const late = byStatus('Past expected update window'), weekly = byStatus('Awaiting weekly RBI update');
+    el.textContent = [late.length ? 'Past expected update window: ' + late.join(', ') + '.' : '',
+      weekly.length ? 'Awaiting weekly RBI update: ' + weekly.join(', ') + '.' : ''].filter(Boolean).join(' ');
   });
 
   function lineChart(el, cfg) {
@@ -454,7 +462,9 @@
       const a = Math.abs(d).toFixed(c.p);
       const amt = c.unit === '%' || c.unit === 'pp' ? a + ' pp' : c.unit === 'bp' ? a + ' bp' : c.unit === IIP_UNIT ? a + ' index points' : c.unit === '₹ crore'
         ? '₹' + Math.abs(d).toLocaleString('en-IN', { maximumFractionDigits: c.p }) + ' crore' : c.unit === 'US$ bn' ? '$' + a + ' bn' : '₹' + a;
-      el.textContent = (k === 'repo' ? sign + amt + ', from ' + fmt(r.prev, '%', 2) + ' on ' : sign + amt + ' vs ') + r.prev_label;
+      el.textContent = k === 'repo'
+        ? `${sign}${amt} on ${r.label} (${fmt(r.prev, '%', 2)} since ${r.prev_label})`
+        : sign + amt + ' vs ' + r.prev_label;
       el.classList.add('is-flat');
     }
   });
@@ -467,9 +477,12 @@
   });
 
   const RELEASE_METRICS = [
+    ['gdp_growth_q', 'Real GDP growth', '#growth', 'percentage points'],
     ['plfs_ur', 'Unemployment', '#jobs', 'percentage points'],
     ['cpi_infl_combined', 'Headline inflation', '#prices', 'percentage points'],
     ['iip_index', 'Industrial production', '#industry', 'index points'],
+    ['scb_gap', 'Credit growth minus deposit growth', '#brief', 'percentage points'],
+    ['repo', 'Policy repo rate', '#policy', 'percentage points'],
   ];
   dash.draw('what-changed', (el) => {
     const observations = dash.data('observations');
@@ -486,14 +499,20 @@
       const heading = card.append('h3');
       heading.append('a').attr('href', href).text(title);
       const value = fmt(reading.value, K[id].unit, K[id].p);
-      const change = reading.change == null ? '' : (reading.change === 0 ? 'Unchanged from ' :
-        (reading.change > 0 ? 'Up ' : 'Down ') + Math.abs(reading.change).toFixed(K[id].p) + ' ' + deltaUnit + ' from ') + reading.prev_label;
-      card.append('p').attr('class', 'mm-release-value').text(value + ' in ' + reading.label);
+      const change = reading.change == null ? '' : id === 'repo'
+        // A step series: say what the previous rate was and since when, not "from <date>".
+        ? `${reading.change > 0 ? 'Up' : 'Down'} ${Math.abs(reading.change).toFixed(K[id].p)} ${deltaUnit}; ${fmt(reading.prev, '%', 2)} had applied since ${reading.prev_label}`
+        : (reading.change === 0 ? 'Unchanged from ' :
+          (reading.change > 0 ? 'Up ' : 'Down ') + Math.abs(reading.change).toFixed(K[id].p) + ' ' + deltaUnit + ' from ') + reading.prev_label;
+      card.append('p').attr('class', 'mm-release-value').text(value + (id === 'repo' ? ' from ' : ' in ') + reading.label);
       if (change) card.append('p').attr('class', 'mm-cap').text(change);
       const url = release?.url ?? catalog.find((series) => series.id === id)?.source_url;
+      // Official release date when we hold it; otherwise the date this reading first appeared here, if known.
+      const firstSeen = catalog.find((series) => series.id === id)?.first_seen;
       if (url && url.startsWith('https://')) {
         const source = card.append('p').attr('class', 'mm-cap');
         if (release) source.append('span').text('Released ' + d3.utcFormat('%-d %b %Y')(parse(release.published)) + ' · ');
+        else if (firstSeen) source.append('span').text('First published here ' + d3.utcFormat('%-d %b %Y')(parse(firstSeen)) + ' · ');
         source.append('a').attr('href', url).attr('target', '_blank').attr('rel', 'noopener').text(release ? 'Official release' : 'Source data');
       }
     }
@@ -727,6 +746,8 @@
     const period = spending ? round : d3.utcFormat('%B %Y')(parse(meta('Inflation period') + '-01'));
     const dimensions = spending ? ['rural', 'urban'] : ['combined', 'rural', 'urban'];
     const values = pair.map((row) => spending ? row.mpce[round] ?? {} : row.inflation);
+    const win = (meta('Inflation average window') || '').split(' to ');
+    const averageWindow = win.length === 2 ? win.map((m) => d3.utcFormat('%b %Y')(parse(m + '-01'))).join('–') : 'three months';
     const available = values.flatMap((row) => dimensions.map((key) => row[key]).filter(Number.isFinite));
     const scale = d3.scaleLinear().domain(d3.extent([0, ...available])).range([0, 100]);
     el.replaceChildren();
@@ -745,6 +766,14 @@
             .style('left', scale(Math.min(value, 0)) + '%').style('width', Math.abs(scale(value) - scale(0)) + '%');
         }
         row.append('b').text(!Number.isFinite(value) ? '—' : spending ? '₹' + value.toLocaleString('en-IN') : fmt(value, '%', 2));
+      }
+      if (!spending) {
+        // One month is noisy at state level: show the previous month and the 3-month average beside it.
+        const ctx = pair.map((state) => {
+          const prev = state.inflation_prev?.[key], avg = state.inflation_3m?.[key];
+          return `${state.name} ${Number.isFinite(prev) ? fmt(prev, '%', 2) : '—'} / ${Number.isFinite(avg) ? fmt(avg, '%', 2) : '—'}`;
+        });
+        group.append('p').attr('class', 'mm-cap').text(`Previous month / 3-month average (${averageWindow}): ` + ctx.join(' · '));
       }
     }
     const url = meta(spending ? 'Household spending source' : 'Inflation source');
